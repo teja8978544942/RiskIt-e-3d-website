@@ -86,10 +86,10 @@ export default function PourPage() {
         if (!mountRef.current || typeof window === 'undefined') return;
 
         if (!popSoundRef.current) {
-            popSoundRef.current = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_19b1683932.mp3');
+            popSoundRef.current = new Audio('https://actions.google.com/sounds/v1/household/can_opener.ogg');
         }
         if (!pourSoundRef.current) {
-            pourSoundRef.current = new Audio('https://cdn.pixabay.com/audio/2022/09/20/audio_5514f6b289.mp3');
+            pourSoundRef.current = new Audio('https://actions.google.com/sounds/v1/water/pouring_water.ogg');
             pourSoundRef.current.loop = true;
         }
         

@@ -72,18 +72,22 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
     const topGroup = new THREE.Group();
     topGroup.position.y = bodyHeight / 2;
 
+    const topRecessY = -0.06;
+
+    // A single, flat recessed panel
     const centerPanel = new THREE.Mesh(
-        new THREE.CylinderGeometry(canRadius * 0.8, canRadius * 0.8, 0.02, segments),
+        new THREE.CylinderGeometry(canRadius * 0.98, canRadius * 0.98, 0.02, segments),
         metalMaterial
     );
-    centerPanel.position.y = -0.05;
+    centerPanel.position.y = topRecessY;
     topGroup.add(centerPanel);
-    
+
+    // Sloped panel connecting rim to recessed panel
     const slopedPanel = new THREE.Mesh(
-        new THREE.CylinderGeometry(canRadius * 0.98, canRadius * 0.8, 0.06, segments),
+        new THREE.CylinderGeometry(canRadius, canRadius * 0.98, -topRecessY, segments),
         metalMaterial
     );
-    slopedPanel.position.y = -0.02;
+    slopedPanel.position.y = topRecessY / 2;
     topGroup.add(slopedPanel);
     
     const rim = new THREE.Mesh(
@@ -97,24 +101,25 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
     const mouthShape = new THREE.Shape();
     const mouthWidth = 0.2;
     const mouthHeight = 0.4;
-    const mouthRadius = 0.1;
     mouthShape.absellipse(0, 0, mouthWidth, mouthHeight, 0, Math.PI * 2, false, 0);
 
     const mouthExtrudeSettings = {
         steps: 1,
-        depth: 0.02,
+        depth: 0.01, // Shallower indent
         bevelEnabled: true,
-        bevelThickness: 0.01,
-        bevelSize: 0.01,
+        bevelThickness: 0.005,
+        bevelSize: 0.005,
         bevelSegments: 1,
     };
     const mouthGeom = new THREE.ExtrudeGeometry(mouthShape, mouthExtrudeSettings);
     const mouthIndent = new THREE.Mesh(mouthGeom, metalMaterial);
-    // Position the mouth indent on the can top
-    mouthIndent.position.set(-0.35, -0.06, 0);
+    
+    // Position the mouth indent on the can top, relative to the pull tab's action
+    mouthIndent.position.set(0.35, topRecessY + 0.005, 0);
     mouthIndent.rotation.x = -Math.PI / 2;
     topGroup.add(mouthIndent);
 
+    // Create a single pull-tab unit that pivots around the rivet
     const pullTab = new THREE.Group();
     pullTab.name = "pullTab";
 
@@ -122,9 +127,10 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
     const arcRadius = 0.22;
     const holeRadius = 0.1;
     const leverWidth = 0.08;
-    tabShape.moveTo(-leverWidth, -0.45);
-    tabShape.lineTo(leverWidth, -0.45);
-    tabShape.absarc(0, -arcRadius, arcRadius, Math.PI * 1.4, Math.PI * -0.4, false);
+    // The shape is defined with the rivet hole at its origin (0,0)
+    tabShape.moveTo(-leverWidth, 0.45);
+    tabShape.lineTo(leverWidth, 0.45);
+    tabShape.absarc(0, arcRadius, arcRadius, Math.PI * 0.4, Math.PI * -1.4, true);
     tabShape.closePath();
 
     const tabHole = new THREE.Path();
@@ -135,18 +141,19 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
     const tabGeom = new THREE.ExtrudeGeometry(tabShape, extrudeSettings);
     const tabMesh = new THREE.Mesh(tabGeom, metalMaterial);
     tabMesh.rotation.x = Math.PI / 2;
-
-    const rivetGeom = new THREE.CylinderGeometry(0.05, 0.06, 0.04, 16);
+    
+    // The rivet is the center of the pullTab group
+    const rivetGeom = new THREE.CylinderGeometry(0.05, 0.06, 0.045, 16);
     const rivet = new THREE.Mesh(rivetGeom, metalMaterial);
     rivet.rotation.x = Math.PI / 2;
-    rivet.position.y = -0.03;
     
-    pullTab.add(tabMesh);
-    pullTab.position.set(0.2, 0, 0);
-    pullTab.rotation.z = Math.PI / 16;
-    pullTab.rotation.y = -Math.PI / 9;
+    pullTab.add(tabMesh, rivet);
     
-    topGroup.add(pullTab, rivet);
+    // Position the entire pullTab assembly onto the recessed lid
+    pullTab.position.set(0, topRecessY + 0.02, 0);
+    pullTab.rotation.z = -Math.PI / 18;
+
+    topGroup.add(pullTab);
     canGroup.add(topGroup);
 
     const bottomTaperGeom = new THREE.CylinderGeometry(canRadius * 0.98, canRadius, 0.05, segments);
