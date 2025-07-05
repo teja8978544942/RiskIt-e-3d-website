@@ -179,8 +179,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-    // Position camera to look down slightly, to see the wave coming from the bottom
-    camera.position.set(0, 1.5, 6);
+    camera.position.set(0, 3, 5);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -214,28 +213,31 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     });
     
     const wavePlane = new THREE.Mesh(geometry, material);
-    // Start wave off-screen at the bottom
-    wavePlane.position.y = -8;
-    // Keep it tilted for a 3D surface look
-    wavePlane.rotation.x = -Math.PI / 4;
+    wavePlane.rotation.x = -Math.PI / 2;
+    wavePlane.position.y = -10; // Start below the viewport
     scene.add(wavePlane);
     
     let animationFrameId: number;
     const startTime = clock.getElapsedTime();
+    let isClosed = false;
 
     const animate = () => {
       const elapsedTime = clock.getElapsedTime();
-      material.uniforms.uTime.value = elapsedTime * 0.4; // Slower internal wave motion
+      material.uniforms.uTime.value = elapsedTime * 0.4;
 
-      // Use a slow, smooth progression for the main animation
-      const progress = Math.min((elapsedTime - startTime) / 10.0, 1.0); // 10 seconds total duration
-      const easedProgress = 1 - Math.pow(1 - progress, 3); // Ease out cubic
+      const progress = Math.min((elapsedTime - startTime) / 6.0, 1.0);
+      const easedProgress = 1 - Math.pow(1 - progress, 2);
 
-      // Animate the wave plane sweeping up the screen from bottom to top
-      wavePlane.position.y = THREE.MathUtils.lerp(-8, 8, easedProgress);
+      // Animate the water level rising up to fill the screen
+      wavePlane.position.y = THREE.MathUtils.lerp(-10, 2, easedProgress);
       
       renderer.render(scene, camera);
       animationFrameId = requestAnimationFrame(animate);
+
+      if (progress >= 1.0 && !isClosed) {
+          isClosed = true;
+          onCloseRef.current();
+      }
     };
     animate();
 
@@ -245,26 +247,13 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
         renderer.setSize(window.innerWidth, window.innerHeight);
     };
     window.addEventListener('resize', onResize);
-    
-    const closeTimeout = setTimeout(() => {
-      onCloseRef.current();
-    }, 10500); // Increased timeout to match slower animation
-
-    const handleClick = () => {
-        onCloseRef.current();
-    };
-    currentMount.addEventListener('click', handleClick);
 
     return () => {
         window.removeEventListener('resize', onResize);
-        clearTimeout(closeTimeout);
-        if (currentMount) {
-            currentMount.removeEventListener('click', handleClick);
-            if (renderer.domElement.parentElement === currentMount) {
-                currentMount.removeChild(renderer.domElement);
-            }
-        }
         cancelAnimationFrame(animationFrameId);
+        if (currentMount && renderer.domElement.parentElement === currentMount) {
+          currentMount.removeChild(renderer.domElement);
+        }
         geometry.dispose();
         material.dispose();
         renderer.dispose();
@@ -273,11 +262,11 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
 
   return (
     <div 
-        className="fixed inset-0 z-[60]"
+        className="fixed inset-0 z-[60] bg-[#043936]"
     >
         <div ref={mountRef} className="absolute inset-0" />
         <div 
-            className="absolute inset-0 flex items-start justify-center pointer-events-none pt-10"
+            className="absolute inset-0 flex items-start justify-center pointer-events-none pt-2"
         >
             <h1 className="font-headline text-black text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
                 Let's dive through your thirst
