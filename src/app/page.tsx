@@ -11,19 +11,50 @@ import {
 } from '@/components/ui/carousel';
 import { ArrowDown } from 'lucide-react';
 import Image from 'next/image';
+import { generateFlavorImage } from '@/ai/flows/generate-flavor-image-flow';
+
 
 const flavors = [
-  { name: 'Midnight Chocolate', hint: 'soda bottle chocolate', imageUrl: 'https://images.unsplash.com/photo-1604576398343-3e0f496a7b3c?w=300&h=500&fit=crop&q=80' },
-  { name: 'Citrus Surge', hint: 'soda bottle citrus', imageUrl: 'https://images.unsplash.com/photo-1574712391023-747228a40578?w=300&h=500&fit=crop&q=80' },
-  { name: 'Berry Blitz', hint: 'soda bottle berry', imageUrl: 'https://images.unsplash.com/photo-1554497103-67896350eda4?w=300&h=500&fit=crop&q=80' },
-  { name: 'Tropical Fusion', hint: 'soda bottle tropical', imageUrl: 'https://images.unsplash.com/photo-1588675646184-f5b0b3b142de?w=300&h=500&fit=crop&q=80' },
-  { name: 'Arctic Mint', hint: 'soda bottle mint', imageUrl: 'https://images.unsplash.com/photo-1575389648583-58e1ceb56653?w=300&h=500&fit=crop&q=80' },
-  { name: 'Spiced Apple', hint: 'soda bottle apple', imageUrl: 'https://images.unsplash.com/photo-1598434316938-1a525e982142?w=300&h=500&fit=crop&q=80' },
-  { name: 'Cherry Bomb', hint: 'soda bottle cherry', imageUrl: 'https://images.unsplash.com/photo-1594458350343-46c5a098b6a3?w=300&h=500&fit=crop&q=80' },
-  { name: 'Grape Escape', hint: 'soda bottle grape', imageUrl: 'https://images.unsplash.com/photo-1627751929388-3d856b3e6e87?w=300&h=500&fit=crop&q=80' },
+  { name: 'Midnight Chocolate', hint: 'soda bottle chocolate' },
+  { name: 'Citrus Surge', hint: 'soda bottle citrus' },
+  { name: 'Berry Blitz', hint: 'soda bottle berry' },
+  { name: 'Tropical Fusion', hint: 'soda bottle tropical' },
+  { name: 'Arctic Mint', hint: 'soda bottle mint' },
+  { name: 'Spiced Apple', hint: 'soda bottle apple' },
+  { name: 'Cherry Bomb', hint: 'soda bottle cherry' },
+  { name: 'Grape Escape', hint: 'soda bottle grape' },
 ];
 
-export default function Home() {
+const fallbackImages: Record<string, string> = {
+  'Midnight Chocolate': 'https://images.unsplash.com/photo-1627063045431-729905106043?w=300&h=500&fit=crop&q=80',
+  'Citrus Surge': 'https://images.unsplash.com/photo-1613588241615-3746653913f4?w=300&h=500&fit=crop&q=80',
+  'Berry Blitz': 'https://images.unsplash.com/photo-1627751929388-3d856b3e6e87?w=300&h=500&fit=crop&q=80',
+  'Tropical Fusion': 'https://images.unsplash.com/photo-1588675646184-f5b0b3b142de?w=300&h=500&fit=crop&q=80',
+  'Arctic Mint': 'https://images.unsplash.com/photo-1575389648583-58e1ceb56653?w=300&h=500&fit=crop&q=80',
+  'Spiced Apple': 'https://images.unsplash.com/photo-1598434316938-1a525e982142?w=300&h=500&fit=crop&q=80',
+  'Cherry Bomb': 'https://images.unsplash.com/photo-1594458350343-46c5a098b6a3?w=300&h=500&fit=crop&q=80',
+  'Grape Escape': 'https://images.unsplash.com/photo-1627751929388-3d856b3e6e87?w=300&h=500&fit=crop&q=80',
+};
+
+
+export default async function Home() {
+  const hasApiKey = !!process.env.GOOGLE_API_KEY;
+
+  const flavorImages = await Promise.all(
+    flavors.map(async (flavor) => {
+      let imageUrl = fallbackImages[flavor.name];
+      if (hasApiKey) {
+        try {
+          imageUrl = await generateFlavorImage({ flavorName: flavor.name });
+        } catch (error) {
+          console.error(`Failed to generate image for ${flavor.name}, using fallback. Error:`, error);
+          // imageUrl is already set to the fallback, so no action needed.
+        }
+      }
+      return { ...flavor, imageUrl };
+    })
+  );
+
   return (
     <main className="relative w-full overflow-x-hidden bg-background text-foreground">
       <div className="absolute inset-0 z-0">
@@ -91,7 +122,7 @@ export default function Home() {
             className="w-full max-w-sm md:max-w-2xl lg:max-w-4xl"
           >
             <CarouselContent>
-              {flavors.map((flavor, index) => (
+              {flavorImages.map((flavor, index) => (
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-1">
                     <Card className="overflow-hidden rounded-lg border-border bg-card shadow-sm transition-shadow hover:shadow-lg">
