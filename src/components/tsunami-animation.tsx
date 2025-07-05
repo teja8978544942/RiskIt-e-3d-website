@@ -176,7 +176,7 @@ interface TsunamiAnimationProps {
   onClose: () => void;
 }
 
-export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps) {
+export function TsunamiAnimation({ flavorColor = '#88c9d2', onClose }: TsunamiAnimationProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -188,10 +188,12 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     const currentMount = mountRef.current;
     
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x00102a, 0.03); // Deep blue fog for underwater effect
+    const flavorThemeColor = new THREE.Color(flavorColor);
+
+    scene.fog = new THREE.FogExp2(flavorThemeColor.clone().multiplyScalar(0.2), 0.03);
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 3, 10); // Start camera further back
+    camera.position.set(0, 3, 10);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -207,17 +209,14 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
       fragmentShader,
       uniforms: {
         uTime: { value: 0 },
-        // Big Waves
         uBigWavesElevation: { value: 0.6 },
         uBigWavesFrequency: { value: new THREE.Vector2(0.6, 0.2) },
         uBigWavesSpeed: { value: 0.3 },
-        // Small Waves
         uSmallWavesElevation: { value: 0.25 },
         uSmallWavesFrequency: { value: 2.0 },
         uSmallWavesSpeed: { value: 1.0 },
-        // Colors & Lighting
-        uDepthColor: { value: new THREE.Color('#00102a') },
-        uSurfaceColor: { value: new THREE.Color('#88c9d2') },
+        uDepthColor: { value: flavorThemeColor.clone().multiplyScalar(0.5) },
+        uSurfaceColor: { value: flavorThemeColor.clone().lerp(new THREE.Color(0xffffff), 0.5) },
         uFoamColor: { value: new THREE.Color('#ffffff') },
         uColorOffset: { value: 0.1 },
         uColorMultiplier: { value: 3.0 },
@@ -236,9 +235,9 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     const bubblePositions = new Float32Array(bubbleCount * 3);
 
     for (let i = 0; i < bubbleCount; i++) {
-        bubblePositions[i * 3 + 0] = (Math.random() - 0.5) * 60; // x
-        bubblePositions[i * 3 + 1] = (Math.random() - 1.5) * 40; // y start below
-        bubblePositions[i * 3 + 2] = (Math.random() - 0.5) * 60; // z
+        bubblePositions[i * 3 + 0] = (Math.random() - 0.5) * 60;
+        bubblePositions[i * 3 + 1] = (Math.random() - 1.5) * 40;
+        bubblePositions[i * 3 + 2] = (Math.random() - 0.5) * 60;
     }
     bubbleGeometry.setAttribute('position', new THREE.BufferAttribute(bubblePositions, 3));
     
@@ -339,7 +338,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
                 className="absolute inset-0 flex items-center justify-center pointer-events-none"
             >
                 <h1 className="font-headline text-white text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
-                    Diving through the thirst
+                    Unleash the Flavor
                 </h1>
             </div>
         )}

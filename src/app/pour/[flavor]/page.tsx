@@ -63,17 +63,18 @@ function createParticles(color: string) {
 }
 
 function createLiquid(color: string) {
-    // The liquid mesh is now created at its full height.
-    // It will be revealed by an animated clipping plane.
     const geometry = new THREE.CylinderGeometry(0.84, 0.65, 3, 32);
-    const material = new THREE.MeshStandardMaterial({
-        color: color,
+    const material = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(color),
+        metalness: 0,
+        roughness: 0.1,
+        transmission: 0.9,
+        ior: 1.33,
+        thickness: 1.2,
         transparent: true,
         opacity: 0.9,
-        metalness: 0,
-        roughness: 0.2,
-        emissive: color,
-        emissiveIntensity: 0.2,
+        emissive: new THREE.Color(color),
+        emissiveIntensity: 0.1,
     });
     const liquid = new THREE.Mesh(geometry, material);
     liquid.visible = false;
@@ -289,6 +290,10 @@ export default function PourPage() {
                         const pourDuration = 2000;
                         const pourProgress = Math.min((performance.now() - state.pourStartTime) / pourDuration, 1);
 
+                        // Dolly zoom effect
+                        camera.fov = THREE.MathUtils.lerp(75, 65, pourProgress);
+                        camera.updateProjectionMatrix();
+
                         if (pourProgress >= 1) {
                            if (state.stage === 'pouring') {
                                 state.stage = 'idle';
@@ -304,12 +309,24 @@ export default function PourPage() {
                            liquidClipPlane.constant = liquidSurfaceY;
                         }
 
-                        if (foam) {
-                            const foamHeight = Math.max(0.1, 0.4 - (pourProgress * 0.3));
+                        if (foam && (foam.material as THREE.MeshStandardMaterial).map) {
+                            const foamMaterial = foam.material as THREE.MeshStandardMaterial;
+                            const map = foamMaterial.map as THREE.Texture;
+
+                            const swell = Math.sin(pourProgress * Math.PI * 0.5);
+                            const dissipate = 1 - pourProgress;
+                            const foamHeight = 0.05 + swell * 0.5 * dissipate;
                             foam.scale.y = foamHeight;
-                            foam.scale.x = foam.scale.z = 1 + Math.sin(time * 50) * 0.03 + Math.sin(time * 30) * 0.02;
-                            foam.position.y = liquidSurfaceY + (foamHeight / 2);
-                            foam.position.y += (Math.sin(time * 80) * 0.015) + (Math.sin(time * 55) * 0.02) + (Math.sin(time * 25) * 0.01);
+
+                            foam.scale.x = foam.scale.z = 1 + Math.sin(time * 20) * 0.02 + Math.sin(time * 33) * 0.03;
+                            foam.position.y = liquidSurfaceY + (foamHeight / 2) - 0.05;
+                            foam.position.y += Math.sin(time * 50) * 0.01;
+                            
+                            map.offset.y = -time * 0.2;
+                            map.offset.x = Math.sin(time * 10) * 0.05;
+                            
+                            foamMaterial.opacity = Math.max(0, 0.9 * dissipate);
+                            
                             foam.position.x = glass.position.x;
                             foam.position.z = glass.position.z;
                         }
@@ -465,6 +482,7 @@ export default function PourPage() {
         )}>
             {animationStage === 'tsunami' && (
                 <TsunamiAnimation
+                    flavorColor={flavor.color}
                     onClose={() => setAnimationStage('pouring')}
                 />
             )}
