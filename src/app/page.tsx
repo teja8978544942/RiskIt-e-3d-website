@@ -1,4 +1,3 @@
-import { generateFlavorImage } from '@/ai/flows/generate-flavor-image-flow';
 import { Scene } from '@/components/scene';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,8 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ArrowDown, Terminal } from 'lucide-react';
+import { ArrowDown } from 'lucide-react';
 import Image from 'next/image';
 
 const flavors = [
@@ -25,34 +23,10 @@ const flavors = [
 ];
 
 export default async function Home() {
-  let flavorsWithImages;
-  let areImagesGenerated = false;
-
-  try {
-    // This will only succeed if the GOOGLE_API_KEY is set.
-    const imagePromises = flavors.map(flavor =>
-      generateFlavorImage({
-        flavorName: flavor.name,
-        fruitDescription: flavor.fruitDescription,
-      })
-    );
-    const generatedImages = await Promise.all(imagePromises);
-  
-    flavorsWithImages = flavors.map((flavor, index) => ({
-      ...flavor,
-      imageUrl: generatedImages[index].imageUrl,
-      isGenerated: true,
-    }));
-    areImagesGenerated = true;
-
-  } catch (error) {
-    console.error("Image generation failed. Falling back to placeholders.", error);
-    flavorsWithImages = flavors.map((flavor) => ({
-      ...flavor,
-      imageUrl: `https://placehold.co/300x500/${flavor.color}/FFFFFF.png`,
-      isGenerated: false,
-    }));
-  }
+  const flavorsWithImages = flavors.map((flavor) => ({
+    ...flavor,
+    imageUrl: `https://placehold.co/300x500/${flavor.color}/FFFFFF.png`,
+  }));
   
   return (
     <main className="relative w-full overflow-x-hidden bg-background text-foreground">
@@ -109,15 +83,6 @@ export default async function Home() {
           id="flavors"
           className="container mx-auto flex h-screen flex-col items-center justify-center p-4"
         >
-          {!areImagesGenerated && (
-            <Alert className="mb-8 max-w-2xl">
-              <Terminal className="h-4 w-4" />
-              <AlertTitle>Image Generation Disabled</AlertTitle>
-              <AlertDescription>
-                To enable AI-powered image generation, please add your Google AI API key to an environment variable named <code>GOOGLE_API_KEY</code> in the <code>.env</code> file. The images below are placeholders.
-              </AlertDescription>
-            </Alert>
-          )}
           <h2 className="mb-12 text-center font-headline text-4xl font-bold md:text-6xl">
             8 Bold Flavors
           </h2>
@@ -142,7 +107,6 @@ export default async function Home() {
                             height={500}
                             className="h-full w-full object-cover transition-transform duration-300 hover:scale-110"
                             data-ai-hint={flavor.hint}
-                            unoptimized={flavor.isGenerated}
                           />
                         </div>
                         <div className="w-full p-4 bg-background/50">
