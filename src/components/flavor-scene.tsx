@@ -58,10 +58,10 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     
     const metalMaterial = new THREE.MeshStandardMaterial({
         color: new THREE.Color(0xcccccc),
-        metalness: 0.9,
-        roughness: 0.2,
+        metalness: 0.95,
+        roughness: 0.15,
         bumpMap: bumpTexture,
-        bumpScale: 0.02,
+        bumpScale: 0.01,
     });
 
     const canGroup = new THREE.Group();
@@ -72,25 +72,56 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     const canBody = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius, bodyHeight, segments), canBodyMaterial);
     canGroup.add(canBody);
     
-    const topTaperHeight = 0.1;
-    const canTopTaper = new THREE.Mesh(new THREE.CylinderGeometry(canRadius * 0.9, canRadius, topTaperHeight, segments), metalMaterial);
-    canTopTaper.position.y = bodyHeight / 2 + topTaperHeight / 2;
-    canGroup.add(canTopTaper);
-    
-    const lidHeight = 0.025;
-    const canTopLid = new THREE.Mesh(new THREE.CylinderGeometry(canRadius * 0.9, canRadius * 0.88, lidHeight, segments), metalMaterial);
-    canTopLid.position.y = canTopTaper.position.y + topTaperHeight / 2;
-    canGroup.add(canTopLid);
-
+    // Can Bottom
     const bottomTaperHeight = 0.1;
     const canBottomTaper = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius * 0.9, bottomTaperHeight, segments), metalMaterial);
     canBottomTaper.position.y = -bodyHeight / 2 - bottomTaperHeight / 2;
     canGroup.add(canBottomTaper);
-    
+
     const bottomRimHeight = 0.05;
     const canBottomRim = new THREE.Mesh(new THREE.CylinderGeometry(canRadius * 0.9, canRadius * 0.9, bottomRimHeight, segments), metalMaterial);
     canBottomRim.position.y = canBottomTaper.position.y - bottomTaperHeight / 2;
     canGroup.add(canBottomRim);
+
+    // Can Top (Lid)
+    const topGroup = new THREE.Group();
+    topGroup.position.y = bodyHeight / 2;
+
+    const topSurface = new THREE.Mesh(
+        new THREE.CylinderGeometry(canRadius * 0.88, canRadius * 0.92, 0.05, segments),
+        metalMaterial
+    );
+    topSurface.position.y = -0.025;
+    topGroup.add(topSurface);
+
+    const topRim = new THREE.Mesh(
+        new THREE.TorusGeometry(canRadius * 0.96, 0.02, 16, segments),
+        metalMaterial
+    );
+    topRim.rotation.x = Math.PI / 2;
+    topGroup.add(topRim);
+
+    // Pull Tab
+    const pullTab = new THREE.Group();
+    const tabRing = new THREE.Mesh(
+        new THREE.TorusGeometry(0.09, 0.025, 12, 24),
+        metalMaterial
+    );
+    tabRing.rotation.x = Math.PI / 2;
+
+    const tabLever = new THREE.Mesh(
+        new THREE.BoxGeometry(0.2, 0.0075, 0.1),
+        metalMaterial
+    );
+    tabLever.position.x = -0.125;
+    
+    pullTab.add(tabRing, tabLever);
+    pullTab.position.set(0.1, 0.015, 0);
+    pullTab.rotation.z = Math.PI / 16;
+    pullTab.rotation.y = -Math.PI / 9;
+    
+    topGroup.add(pullTab);
+    canGroup.add(topGroup);
 
     canGroup.scale.set(1.8, 1.8, 1.8);
     canGroup.position.x = 0;
@@ -125,14 +156,15 @@ export function FlavorScene({ flavorName, flavorColor }: FlavorSceneProps) {
     currentMount.innerHTML = ''; 
     currentMount.appendChild(renderer.domElement);
     
-    const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1.5);
-    scene.add(hemisphereLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 4.0);
-    directionalLight.position.set(3, 5, 4);
-    directionalLight.castShadow = true;
-    scene.add(directionalLight);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambientLight);
 
-    const fillLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 4.0);
+    keyLight.position.set(3, 5, 4);
+    keyLight.castShadow = true;
+    scene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0xffffff, 1.5);
     fillLight.position.set(-5, 2, -5);
     scene.add(fillLight);
 
