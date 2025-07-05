@@ -76,7 +76,6 @@ export function Scene() {
           allCans.push(can);
           scene.add(can);
       }
-      onScroll();
     }
     initCans();
 
@@ -95,15 +94,6 @@ export function Scene() {
 
     const onScroll = () => {
         scrollY = window.scrollY;
-        
-        if (mainCan) {
-          const scrollFraction = Math.min(scrollY / animationDistance, 1);
-          const easedFraction = 1 - Math.pow(1 - scrollFraction, 3);
-          mainCan.position.y = THREE.MathUtils.lerp(0, -5, easedFraction);
-          const scale = THREE.MathUtils.lerp(1.0, 1.8, easedFraction);
-          mainCan.scale.set(scale, scale, scale);
-          mainCan.rotation.y = THREE.MathUtils.lerp(0, Math.PI * 2, easedFraction);
-        }
     };
     window.addEventListener('scroll', onScroll, { passive: true });
 
@@ -141,6 +131,22 @@ export function Scene() {
     let animationFrameId: number;
 
     const tick = () => {
+        animationFrameId = window.requestAnimationFrame(tick);
+        
+        if (mainCan) {
+          const scrollFraction = Math.min(scrollY / animationDistance, 1);
+          const easedFraction = 1 - Math.pow(1 - scrollFraction, 3);
+          
+          const targetY = THREE.MathUtils.lerp(0, -5, easedFraction);
+          mainCan.position.y = THREE.MathUtils.lerp(mainCan.position.y, targetY, 0.05);
+
+          const targetScale = THREE.MathUtils.lerp(1.0, 1.8, easedFraction);
+          mainCan.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.05);
+
+          const targetRotationY = THREE.MathUtils.lerp(0, Math.PI * 2, easedFraction);
+          mainCan.rotation.y = THREE.MathUtils.lerp(mainCan.rotation.y, targetRotationY, 0.05);
+        }
+
         // Default Camera Behavior
         cameraLookAtTarget.position.x = mouse.x * 0.2;
         cameraLookAtTarget.position.y = -mouse.y * 0.2;
@@ -150,7 +156,6 @@ export function Scene() {
         camera.lookAt(cameraLookAtTarget.position);
         
         renderer.render(scene, camera);
-        animationFrameId = window.requestAnimationFrame(tick);
     };
     tick();
 

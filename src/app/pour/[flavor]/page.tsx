@@ -165,8 +165,8 @@ export default function PourPage() {
                 can.getWorldPosition(worldPosition);
 
                 const focusPoint = worldPosition.clone().add(new THREE.Vector3(0, 1, 4));
-                camera.position.lerp(focusPoint, 0.05);
-                cameraLookAtTarget.position.lerp(worldPosition, 0.05);
+                camera.position.lerp(focusPoint, 0.04);
+                cameraLookAtTarget.position.lerp(worldPosition, 0.04);
                 camera.lookAt(cameraLookAtTarget.position);
 
                 switch(state.stage) {
@@ -184,7 +184,7 @@ export default function PourPage() {
                         if(pullTab) pullTab.rotation.x = THREE.MathUtils.damp(pullTab.rotation.x, targetRotX, 8, delta);
                         if (pullTab && Math.abs(pullTab.rotation.x - targetRotX) < 0.1) {
                             if (state.stage === 'opening') {
-                                popSound?.play().catch(e => console.error("Error playing pop sound:", e));
+                                popSound?.play().catch(e => console.error("Audio play failed:", e));
                                 state.stage = 'tilting';
                                 state.startTime = performance.now();
                             }
@@ -215,7 +215,7 @@ export default function PourPage() {
                             if (state.stage === 'tilting') {
                                 state.stage = 'pouring';
                                 state.pourStartTime = performance.now();
-                                pourSound?.play().catch(e => console.error("Error playing pour sound:", e));
+                                pourSound?.play().catch(e => console.error("Audio play failed:", e));
                             }
                         }
                         break;
@@ -252,10 +252,10 @@ export default function PourPage() {
                               }
                               
                               if (!isDead) {
-                                  velocities[i+1] -= 0.005; // Gravity
-                                  positions[i] += velocities[i];
-                                  positions[i+1] += velocities[i+1];
-                                  positions[i+2] += velocities[i+2];
+                                  velocities[i+1] -= 0.3 * delta; // Framerate-independent gravity
+                                  positions[i] += velocities[i] * delta * 60;
+                                  positions[i+1] += velocities[i+1] * delta * 60;
+                                  positions[i+2] += velocities[i+2] * delta * 60;
 
                                   const particlePos = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]);
                                   const glassPos = glass.position;
@@ -272,19 +272,19 @@ export default function PourPage() {
                         break;
                     }
                     case 'resetting': {
-                        can.position.x = THREE.MathUtils.damp(can.position.x, state.originalPosition.x, 4, delta);
-                        can.position.y = THREE.MathUtils.damp(can.position.y, state.originalPosition.y, 4, delta);
-                        can.position.z = THREE.MathUtils.damp(can.position.z, state.originalPosition.z, 4, delta);
+                        can.position.x = THREE.MathUtils.damp(can.position.x, state.originalPosition.x, 2, delta);
+                        can.position.y = THREE.MathUtils.damp(can.position.y, state.originalPosition.y, 2, delta);
+                        can.position.z = THREE.MathUtils.damp(can.position.z, state.originalPosition.z, 2, delta);
                         
-                        can.rotation.x = THREE.MathUtils.damp(can.rotation.x, state.originalRotation.x, 4, delta);
-                        can.rotation.y = THREE.MathUtils.damp(can.rotation.y, state.originalRotation.y, 4, delta);
-                        can.rotation.z = THREE.MathUtils.damp(can.rotation.z, state.originalRotation.z, 4, delta);
+                        can.rotation.x = THREE.MathUtils.damp(can.rotation.x, state.originalRotation.x, 2, delta);
+                        can.rotation.y = THREE.MathUtils.damp(can.rotation.y, state.originalRotation.y, 2, delta);
+                        can.rotation.z = THREE.MathUtils.damp(can.rotation.z, state.originalRotation.z, 2, delta);
                         
-                        if(glass) glass.scale.x = THREE.MathUtils.damp(glass.scale.x, 0, 8, delta);
-                        if(glass) glass.scale.y = THREE.MathUtils.damp(glass.scale.y, 0, 8, delta);
-                        if(glass) glass.scale.z = THREE.MathUtils.damp(glass.scale.z, 0, 8, delta);
+                        if(glass) glass.scale.x = THREE.MathUtils.damp(glass.scale.x, 0, 4, delta);
+                        if(glass) glass.scale.y = THREE.MathUtils.damp(glass.scale.y, 0, 4, delta);
+                        if(glass) glass.scale.z = THREE.MathUtils.damp(glass.scale.z, 0, 4, delta);
                         
-                        if(pullTab) pullTab.rotation.x = THREE.MathUtils.damp(pullTab.rotation.x, 0, 4, delta);
+                        if(pullTab) pullTab.rotation.x = THREE.MathUtils.damp(pullTab.rotation.x, 0, 2, delta);
 
                         if (can.position.distanceTo(state.originalPosition) < 0.01) {
                              if (state.stage === 'resetting') {
