@@ -5,11 +5,9 @@ import * as THREE from 'three';
 import { useEffect, useRef } from 'react';
 import { flavors } from '@/lib/flavors';
 import { createCanMesh } from '@/components/can-model';
-import { useRouter } from 'next/navigation';
 
-export function Scene() {
+export function Scene({ onCanClick }: { onCanClick: (flavor: {name: string, color: string}) => void }) {
   const mountRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
     if (!mountRef.current || typeof window === 'undefined') return;
@@ -118,8 +116,8 @@ export function Scene() {
                 clickedObject = clickedObject.parent;
             }
             const can = clickedObject as THREE.Group;
-            if (can.userData.flavorName) {
-                router.push(`/pour/${encodeURIComponent(can.userData.flavorName)}`);
+            if (can.userData.flavorName && can.userData.flavorColor) {
+                onCanClick({ name: can.userData.flavorName, color: can.userData.flavorColor });
             }
         }
     };
@@ -195,7 +193,7 @@ export function Scene() {
         texturesToDispose.forEach(texture => texture.dispose());
         renderer.dispose();
     };
-  }, [router]);
+  }, [onCanClick]);
 
   return <div ref={mountRef} className="fixed top-0 left-0 -z-10 h-full w-full" />;
 }

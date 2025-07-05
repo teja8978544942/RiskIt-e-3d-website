@@ -1,3 +1,4 @@
+'use client';
 
 import { Scene } from '@/components/scene';
 import { Button } from '@/components/ui/button';
@@ -11,17 +12,31 @@ import {
 } from '@/components/ui/carousel';
 import Link from 'next/link';
 import { FlavorScene } from '@/components/flavor-scene';
-import Image from 'next/image';
 import { flavors } from '@/lib/flavors';
 import { Header } from '@/components/header';
+import { useState } from 'react';
+import { TsunamiAnimation } from '@/components/tsunami-animation';
 
 
 export default function Home() {
+  const [tsunamiActive, setTsunamiActive] = useState(false);
+  const [selectedFlavor, setSelectedFlavor] = useState<{name: string, color: string} | null>(null);
+
+  const handleCanClick = (flavor: {name: string, color: string}) => {
+    setSelectedFlavor(flavor);
+    setTsunamiActive(true);
+  };
+
+  const handleTsunamiClose = () => {
+    setTsunamiActive(false);
+    setSelectedFlavor(null);
+  }
+
   return (
     <main className="relative w-full overflow-x-hidden bg-background text-foreground">
       <Header />
       <div className="absolute inset-0 z-0">
-        <Scene />
+        <Scene onCanClick={handleCanClick} />
       </div>
 
       <div className="relative z-10">
@@ -129,6 +144,13 @@ export default function Home() {
             <p>&copy; {new Date().getFullYear()} RiskIt. All rights reserved.</p>
         </footer>
       </div>
+
+      {tsunamiActive && selectedFlavor && (
+        <TsunamiAnimation 
+          flavorColor={selectedFlavor.color} 
+          onClose={handleTsunamiClose} 
+        />
+      )}
     </main>
   );
 }
