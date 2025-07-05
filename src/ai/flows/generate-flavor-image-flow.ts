@@ -51,7 +51,7 @@ const generateFlavorImageFlow = ai.defineFlow(
   async input => {
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: `Generate a photorealistic, dramatic, and exciting product shot of a "RiskIt" brand soda can for the flavor '${input.flavorName}'. The can should be sleek, modern, and condensation-covered. It should be surrounded by dynamic splashes of liquid and fresh, glistening ${input.fruitDescription}. The background should be dark and moody to make the can and fruits pop. The can should prominently feature the "RiskIt" logo and the flavor name "${input.flavorName}".`,
+      prompt: `A commercial product photograph of a "RiskIt" brand beverage can. The flavor is '${input.flavorName}'. The can should look premium and be covered in fine condensation. Arrange it artfully with its key ingredients: ${input.fruitDescription}, which should look fresh and delicious. The scene should be set against a dark, dramatic background with dynamic, colorful liquid splashes that match the flavor profile. The lighting should be professional and highlight the textures of the can and the fruit. The can must clearly display the "RiskIt" logo and the flavor name "${input.flavorName}".`,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
       },

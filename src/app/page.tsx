@@ -29,6 +29,7 @@ export default async function Home() {
   let areImagesGenerated = false;
 
   try {
+    // This will only succeed if the GOOGLE_API_KEY is set.
     const imagePromises = flavors.map(flavor =>
       generateFlavorImage({
         flavorName: flavor.name,
@@ -45,7 +46,7 @@ export default async function Home() {
     areImagesGenerated = true;
 
   } catch (error) {
-    console.error(error); // Log the error for debugging
+    console.error("Image generation failed. Falling back to placeholders.", error);
     flavorsWithImages = flavors.map((flavor) => ({
       ...flavor,
       imageUrl: `https://placehold.co/300x500/${flavor.color}/FFFFFF.png`,
