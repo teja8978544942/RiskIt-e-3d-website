@@ -102,6 +102,7 @@ export function Scene() {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     scene.add(camera);
+    camera.position.z = 12; // Moved camera closer to make cans appear larger
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -171,15 +172,6 @@ export function Scene() {
     shadowPlane.position.y = -2.2;
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
-
-    const scrollPoints = [
-        // Zoom out to see all cans side-by-side
-        { cameraPos: new THREE.Vector3(0, 0, 15), canRotation: new THREE.Euler(0, 0, 0) }, 
-        { cameraPos: new THREE.Vector3(-1.5, 0, 4), canRotation: new THREE.Euler(0.1, -Math.PI * 0.3, -0.1) },
-        { cameraPos: new THREE.Vector3(1.5, 0, 4), canRotation: new THREE.Euler(-0.1, Math.PI * 0.3, 0.1) },
-        { cameraPos: new THREE.Vector3(0, -0.5, 4.5), canRotation: new THREE.Euler(0, Math.PI, 0) },
-        { cameraPos: new THREE.Vector3(0, 0, 5), canRotation: new THREE.Euler(0, Math.PI * 2, 0) },
-    ];
     
     let scrollY = window.scrollY;
     const pageHeight = document.body.scrollHeight - window.innerHeight;
@@ -187,18 +179,13 @@ export function Scene() {
     const onScroll = () => {
         scrollY = window.scrollY;
         
-        const scrollFraction = scrollY / pageHeight;
-        const keyframeIndex = Math.min(scrollPoints.length - 2, Math.floor(scrollFraction * (scrollPoints.length - 1)));
-        const sectionFraction = (scrollFraction * (scrollPoints.length - 1)) - keyframeIndex;
+        if (mainCan) {
+          const scrollFraction = scrollY / pageHeight;
 
-        const start = scrollPoints[keyframeIndex];
-        const end = scrollPoints[keyframeIndex + 1];
-
-        if (start && end && mainCan) {
-            camera.position.lerpVectors(start.cameraPos, end.cameraPos, sectionFraction);
-            mainCan.rotation.x = THREE.MathUtils.lerp(start.canRotation.x, end.canRotation.x, sectionFraction);
-            mainCan.rotation.y = THREE.MathUtils.lerp(start.canRotation.y, end.canRotation.y, sectionFraction);
-            mainCan.rotation.z = THREE.MathUtils.lerp(start.canRotation.z, end.canRotation.z, sectionFraction);
+          // Animate main can's position and rotation based on scroll
+          mainCan.position.y = THREE.MathUtils.lerp(3, -3, scrollFraction);
+          mainCan.rotation.y = THREE.MathUtils.lerp(0, Math.PI * 2, scrollFraction);
+          mainCan.rotation.x = THREE.MathUtils.lerp(0.2, -0.2, scrollFraction);
         }
     };
     window.addEventListener('scroll', onScroll, { passive: true });
