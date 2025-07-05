@@ -147,10 +147,10 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     >
         <div ref={mountRef} className="absolute inset-0" />
         <div 
-            className="absolute inset-0 flex items-start justify-center pointer-events-none pt-20"
+            className="absolute inset-0 flex items-start justify-center pointer-events-none pt-10"
         >
             <h1 className="font-headline text-black text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
-                Let's dive through thirst
+                Let's dive through your thirst
             </h1>
         </div>
     </div>
