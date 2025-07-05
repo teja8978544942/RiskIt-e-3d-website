@@ -222,9 +222,9 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
 
     const animate = () => {
       const elapsedTime = clock.getElapsedTime();
-      material.uniforms.uTime.value = elapsedTime;
+      material.uniforms.uTime.value = elapsedTime * 0.5; // Slower time
 
-      const progress = Math.min((elapsedTime - startTime) / 4.0, 1.0);
+      const progress = Math.min((elapsedTime - startTime) / 8.0, 1.0); // Slower progress
       const easeOutQuad = (x: number): number => x * (2 - x);
       const easedProgress = easeOutQuad(progress);
 
@@ -252,7 +252,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     
     const closeTimeout = setTimeout(() => {
       onCloseRef.current();
-    }, 4500);
+    }, 8500); // Increased timeout to match slower animation
 
     const handleClick = () => {
         onCloseRef.current();
@@ -277,7 +277,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
 
   return (
     <div 
-        className="fixed inset-0 z-[60] bg-black/50 animate-in fade-in-0 duration-500"
+        className="fixed inset-0 z-[60]"
     >
         <div ref={mountRef} className="absolute inset-0" />
         <div 
