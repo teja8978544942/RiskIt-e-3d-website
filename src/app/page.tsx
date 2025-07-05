@@ -1,5 +1,4 @@
 
-import Image from 'next/image';
 import { Scene } from '@/components/scene';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,16 +10,17 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import Link from 'next/link';
+import { FlavorScene } from '@/components/flavor-scene';
 
 const flavors = [
-  { name: 'Orange Burst', imageUrl: 'https://i.postimg.cc/jSgPGBnS/1.png', hint: 'soda can orange' },
-  { name: 'Lime Zing', imageUrl: 'https://i.postimg.cc/HksbvTxN/2.png', hint: 'soda can lime' },
-  { name: 'Grape Blast', imageUrl: 'https://i.postimg.cc/wTkhk16J/3.png', hint: 'soda can grape' },
-  { name: 'Blueberry Wave', imageUrl: 'https://i.postimg.cc/sDzYSYRs/5.png', hint: 'soda can blueberry' },
-  { name: 'Mango Tango', imageUrl: 'https://i.postimg.cc/wM8hwJy5/6.png', hint: 'soda can mango' },
-  { name: 'Raspberry Rush', imageUrl: 'https://i.postimg.cc/sxY5qX7k/7.png', hint: 'soda can raspberry' },
-  { name: 'Pearadise', imageUrl: 'https://i.postimg.cc/9XZPrxKL/8.png', hint: 'soda can pear' },
-  { name: 'Strawberry Bliss', imageUrl: 'https://i.postimg.cc/TwWVjQwY/10.png', hint: 'soda can strawberry' },
+  { name: 'Orange Burst', color: '#E87722' },
+  { name: 'Lime Zing', color: '#99C23A' },
+  { name: 'Grape Blast', color: '#5B3A74' },
+  { name: 'Blueberry Wave', color: '#2C5A9A' },
+  { name: 'Mango Tango', color: '#F8A51B' },
+  { name: 'Raspberry Rush', color: '#D91D5C' },
+  { name: 'Pearadise', color: '#D1E231' },
+  { name: 'Strawberry Bliss', color: '#FC5A8D' },
 ];
 
 
@@ -93,15 +93,8 @@ export default function Home() {
                   <div className="p-1">
                     <Card className="overflow-hidden rounded-lg border-border bg-card shadow-sm transition-shadow hover:shadow-lg">
                       <CardContent className="flex flex-col items-center justify-center p-0">
-                        <div className="aspect-[3/5] w-full overflow-hidden bg-secondary">
-                          <Image
-                            src={flavor.imageUrl}
-                            alt={flavor.name}
-                            width={300}
-                            height={500}
-                            className="h-full w-full object-cover transition-transform duration-300 hover:scale-110"
-                            data-ai-hint={flavor.hint}
-                          />
+                        <div className="w-full overflow-hidden bg-secondary">
+                          <FlavorScene flavorName={flavor.name} flavorColor={flavor.color} />
                         </div>
                         <div className="w-full p-4 bg-background/50">
                           <h3 className="text-center font-headline text-xl font-bold">
