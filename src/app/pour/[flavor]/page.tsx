@@ -35,7 +35,7 @@ function createGlass() {
 }
 
 function createParticles(color: string) {
-    const particleCount = 8000;
+    const particleCount = 10000;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const velocities = new Float32Array(particleCount * 3);
@@ -50,7 +50,7 @@ function createParticles(color: string) {
     
     const material = new THREE.PointsMaterial({
         color: new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.2),
-        size: 0.04,
+        size: 0.035,
         transparent: true,
         opacity: 0.7,
         blending: THREE.AdditiveBlending,
@@ -71,7 +71,7 @@ function createLiquid(color: string) {
         metalness: 0,
         roughness: 0.2,
         emissive: color,
-        emissiveIntensity: 0.15,
+        emissiveIntensity: 0.2,
     });
     const liquid = new THREE.Mesh(geometry, material);
     liquid.visible = false;
@@ -188,12 +188,17 @@ export default function PourPage() {
                 const liquid = state.liquid;
                 const foam = state.foam;
                 
-                const worldPosition = new THREE.Vector3();
-                can.getWorldPosition(worldPosition);
+                // Dynamic camera logic
+                let cameraTargetPos = new THREE.Vector3(0.5, 0, 8);
+                let cameraLookAtPos = new THREE.Vector3(0.5, 0, 0);
 
-                const focusPoint = new THREE.Vector3(0.5, 0, 4);
-                camera.position.lerp(focusPoint, 0.04);
-                cameraLookAtTarget.position.lerp(new THREE.Vector3(0.5, 0, 0), 0.04);
+                if (state.stage === 'pouring' && glass) {
+                    cameraTargetPos = new THREE.Vector3(glass.position.x, glass.position.y + 1, glass.position.z + 4);
+                    cameraLookAtPos = new THREE.Vector3(glass.position.x, glass.position.y, glass.position.z);
+                }
+
+                camera.position.lerp(cameraTargetPos, 0.04);
+                cameraLookAtTarget.position.lerp(cameraLookAtPos, 0.04);
                 camera.lookAt(cameraLookAtTarget.position);
 
                 switch(state.stage) {
@@ -218,7 +223,7 @@ export default function PourPage() {
                         break;
                     }
                     case 'tilting': {
-                        const targetPos = new THREE.Vector3(1.0, 2.0, 2.5);
+                        const targetPos = new THREE.Vector3(1.2, 2.2, 2.5); // Adjusted for better alignment
                         can.position.x = THREE.MathUtils.damp(can.position.x, targetPos.x, 4, delta);
                         can.position.y = THREE.MathUtils.damp(can.position.y, targetPos.y, 4, delta);
                         can.position.z = THREE.MathUtils.damp(can.position.z, targetPos.z, 4, delta);
@@ -267,7 +272,7 @@ export default function PourPage() {
                             const foamHeight = Math.max(0.1, 0.4 - (pourProgress * 0.3));
                             foam.scale.y = foamHeight;
                             foam.position.y = liquid.position.y + (currentLiquidHeight / 2) + (foamHeight / 2);
-                            foam.position.y += Math.sin(time * 50) * 0.01 + Math.sin(time * 35) * 0.015;
+                            foam.position.y += Math.sin(time * 60) * 0.02 + Math.sin(time * 45) * 0.025; // More vigorous bubbling
                         }
 
                         state.liquidLevel = THREE.MathUtils.lerp(-1.5, 0.8, pourProgress);
@@ -283,18 +288,18 @@ export default function PourPage() {
                             for (let i = 0; i < positions.length; i += 3) {
                               const isDead = velocities[i+1] === 0 && velocities[i] === 0;
 
-                              if (isDead && Math.random() < 0.3) { // Respawn
-                                  positions[i] = pourWorldOrigin.x + (Math.random() - 0.5) * 0.08;
+                              if (isDead && Math.random() < 0.4) { // Respawn more particles
+                                  positions[i] = pourWorldOrigin.x + (Math.random() - 0.5) * 0.05; // Tighter stream
                                   positions[i+1] = pourWorldOrigin.y;
-                                  positions[i+2] = pourWorldOrigin.z + (Math.random() - 0.5) * 0.08;
+                                  positions[i+2] = pourWorldOrigin.z + (Math.random() - 0.5) * 0.05;
 
                                   velocities[i] = (Math.random() - 0.5) * 0.05;
-                                  velocities[i+1] = -0.15 - (Math.random() * 0.1);
+                                  velocities[i+1] = -0.2 - (Math.random() * 0.1); // More forceful
                                   velocities[i+2] = (Math.random() - 0.5) * 0.05;
                               }
                               
                               if (!isDead) {
-                                  velocities[i+1] -= 0.5 * delta; 
+                                  velocities[i+1] -= 0.6 * delta; 
                                   positions[i] += velocities[i] * delta * 60;
                                   positions[i+1] += velocities[i+1] * delta * 60;
                                   positions[i+2] += velocities[i+2] * delta * 60;
