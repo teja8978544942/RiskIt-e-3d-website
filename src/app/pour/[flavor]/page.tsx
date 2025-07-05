@@ -283,8 +283,12 @@ export default function PourPage() {
         
         const initScene = async () => {
             const can = await createCanMesh(flavor.name, flavor.color);
-            can.castShadow = true;
-            can.traverse(function(child) { if ((child as THREE.Mesh).isMesh) { child.castShadow = true; } });
+            can.traverse(function(child) {
+              if ((child as THREE.Mesh).isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+              }
+            });
             scene.add(can);
 
             state.isAnimating = true;

@@ -281,8 +281,12 @@ export function PourAnimation({ flavorName, flavorColor, onComplete }: PourAnima
         
         const initScene = async () => {
             const can = await createCanMesh(flavorName, flavorColor);
-            can.castShadow = true;
-            can.traverse(function(child) { if ((child as THREE.Mesh).isMesh) { child.castShadow = true; } });
+            can.traverse(function (child) {
+              if ((child as THREE.Mesh).isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+              }
+            });
             scene.add(can);
 
             animationState.current.isAnimating = true;
