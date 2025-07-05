@@ -11,6 +11,7 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { ArrowDown } from 'lucide-react';
+import Link from 'next/link';
 
 const flavors = [
   { name: 'Orange Burst', imageUrl: 'https://i.postimg.cc/jSgPGBnS/1.png', hint: 'soda can orange' },
@@ -135,9 +136,11 @@ export default function Home() {
               Ready to take a risk? Experience the thrill of flavor and order
               your pack today.
             </p>
-            <Button size="lg" className="mt-8 px-10 py-6 font-bold">
-              Buy Now
-            </Button>
+            <Link href="/checkout">
+                <Button size="lg" className="mt-8 px-10 py-6 font-bold">
+                  Buy Now
+                </Button>
+            </Link>
           </div>
         </section>
         
