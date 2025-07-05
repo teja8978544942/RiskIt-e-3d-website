@@ -2,7 +2,15 @@
 
 import * as THREE from 'three';
 
-export function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
+export async function createCanMesh(flavorName: string, flavorColor: string): Promise<THREE.Group> {
+    const logoImg = new Image();
+    logoImg.crossOrigin = 'Anonymous';
+    logoImg.src = 'https://i.postimg.cc/8C5YV9V1/riskit-logo.png';
+    await new Promise((resolve, reject) => {
+        logoImg.onload = resolve;
+        logoImg.onerror = reject;
+    });
+
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
     canvas.height = 1024;
@@ -12,14 +20,18 @@ export function createCanMesh(flavorName: string, flavorColor: string): THREE.Gr
       context.fillStyle = flavorColor;
       context.fillRect(0, 0, canvas.width, canvas.height);
       
+      const logoHeight = 180;
+      const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
+      context.drawImage(logoImg, canvas.width / 2 - logoWidth / 2, 200, logoWidth, logoHeight);
+
       context.font = 'bold 150px "Playfair Display"';
       context.fillStyle = 'white';
       context.textAlign = 'center';
       context.textBaseline = 'middle';
-      context.fillText('RiskIt', canvas.width / 2, canvas.height / 2 - 60);
+      context.fillText('RiskIt', canvas.width / 2, canvas.height / 2 + 60);
 
       context.font = 'bold 70px "PT Sans"';
-      context.fillText(flavorName.toUpperCase(), canvas.width / 2, canvas.height / 2 + 70);
+      context.fillText(flavorName.toUpperCase(), canvas.width / 2, canvas.height / 2 + 160);
     }
     const texture = new THREE.CanvasTexture(canvas);
     texture.anisotropy = 16;

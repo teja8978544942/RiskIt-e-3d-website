@@ -132,11 +132,6 @@ export default function PourPage() {
         backLight.position.set(0, 8, -10);
         scene.add(backLight);
 
-        const can = createCanMesh(flavor.name, flavor.color);
-        can.castShadow = true;
-        can.traverse(function(child) { if ((child as THREE.Mesh).isMesh) { child.castShadow = true; } });
-        scene.add(can);
-
         const shadowPlane = new THREE.Mesh(
             new THREE.PlaneGeometry(30, 20),
             new THREE.ShadowMaterial({ opacity: 0.2 })
@@ -147,19 +142,6 @@ export default function PourPage() {
         scene.add(shadowPlane);
 
         const state = animationState.current;
-        state.isAnimating = true;
-        state.can = can;
-        state.originalPosition.copy(can.position);
-        state.originalRotation.copy(can.rotation);
-        state.stage = 'lifting';
-        state.startTime = performance.now();
-        state.liquidLevel = -1.5;
-
-        state.glass = createGlass();
-        scene.add(state.glass);
-
-        state.particles = createParticles(flavor.color);
-        scene.add(state.particles);
 
         const clock = new THREE.Clock();
         const cameraLookAtTarget = new THREE.Object3D();
@@ -314,7 +296,31 @@ export default function PourPage() {
             }
             renderer.render(scene, camera);
         };
-        tick();
+        
+        const initScene = async () => {
+            const can = await createCanMesh(flavor.name, flavor.color);
+            can.castShadow = true;
+            can.traverse(function(child) { if ((child as THREE.Mesh).isMesh) { child.castShadow = true; } });
+            scene.add(can);
+
+            state.isAnimating = true;
+            state.can = can;
+            state.originalPosition.copy(can.position);
+            state.originalRotation.copy(can.rotation);
+            state.stage = 'lifting';
+            state.startTime = performance.now();
+            state.liquidLevel = -1.5;
+
+            state.glass = createGlass();
+            scene.add(state.glass);
+
+            state.particles = createParticles(flavor.color);
+            scene.add(state.particles);
+
+            tick();
+        };
+
+        initScene();
 
         const onResize = () => {
             if (currentMount) {

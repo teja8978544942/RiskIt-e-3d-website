@@ -61,20 +61,25 @@ export function Scene() {
         reorderedFlavors.splice(Math.floor(totalCans / 2) -1, 0, mainCanFlavor);
     }
     
-    reorderedFlavors.forEach((flavor, index) => {
-        const can = createCanMesh(flavor.name, flavor.color);
-        const position = (index - (totalCans - 1) / 2) * spacing;
-        can.position.x = position;
-        
-        can.castShadow = true;
-        can.traverse(function(child) { if ((child as THREE.Mesh).isMesh) { child.castShadow = true; } });
+    const initCans = async () => {
+      for (const [index, flavor] of reorderedFlavors.entries()) {
+          const can = await createCanMesh(flavor.name, flavor.color);
+          const position = (index - (totalCans - 1) / 2) * spacing;
+          can.position.x = position;
+          
+          can.castShadow = true;
+          can.traverse(function(child) { if ((child as THREE.Mesh).isMesh) { child.castShadow = true; } });
 
-        if (flavor.name === 'Orange Burst') {
-            mainCan = can;
-        }
-        allCans.push(can);
-        scene.add(can);
-    });
+          if (flavor.name === 'Orange Burst') {
+              mainCan = can;
+          }
+          allCans.push(can);
+          scene.add(can);
+      }
+      onScroll();
+    }
+    initCans();
+
 
     const shadowPlane = new THREE.Mesh(
         new THREE.PlaneGeometry(30, 20),
@@ -101,7 +106,6 @@ export function Scene() {
         }
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
 
     const mouse = new THREE.Vector2();
     const onMouseMove = (event: MouseEvent) => {
