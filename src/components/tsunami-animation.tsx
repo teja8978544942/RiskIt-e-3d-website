@@ -338,7 +338,7 @@ export function TsunamiAnimation({ flavorColor = '#88c9d2', onClose }: TsunamiAn
                 className="absolute inset-0 flex items-center justify-center pointer-events-none"
             >
                 <h1 className="font-headline text-white text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
-                    Unleash the Flavor
+                    Dive through your
                 </h1>
             </div>
         )}
