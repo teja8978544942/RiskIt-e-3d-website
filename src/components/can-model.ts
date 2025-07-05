@@ -67,16 +67,24 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
     const segments = 128;
     
     // The main can body now uses multiple materials: one for the textured sides, and one for the metallic top and bottom.
-    const canBodyGeom = new THREE.CylinderGeometry(canRadius, canRadius, bodyHeight, segments);
+    // To prevent z-fighting, the canBody is made slightly shorter and moved up
+    // so it sits perfectly on top of the bottomTaper.
+    const bottomTaperHeight = 0.05;
+    const mainCylinderHeight = bodyHeight - bottomTaperHeight;
+
+    const canBodyGeom = new THREE.CylinderGeometry(canRadius, canRadius, mainCylinderHeight, segments);
     const canBody = new THREE.Mesh(canBodyGeom, [
         canBodyMaterial, // Material for the sides
         metalMaterial,   // Material for the top cap
         metalMaterial    // Material for the bottom cap
     ]);
+     // Move the body up by half the height of the bottom taper to make room
+    canBody.position.y = bottomTaperHeight / 2;
     canGroup.add(canBody);
     
     const topGroup = new THREE.Group();
-    topGroup.position.y = bodyHeight / 2;
+     // Position top group at the top of the now-shifted canBody
+    topGroup.position.y = (mainCylinderHeight / 2) + (bottomTaperHeight / 2);
 
     const topRecessY = -0.06;
 
@@ -162,15 +170,17 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
     topGroup.add(pullTab);
     canGroup.add(topGroup);
 
-    const bottomTaperGeom = new THREE.CylinderGeometry(canRadius * 0.98, canRadius, 0.05, segments);
+    const bottomTaperGeom = new THREE.CylinderGeometry(canRadius * 0.98, canRadius, bottomTaperHeight, segments);
     const bottomTaper = new THREE.Mesh(bottomTaperGeom, metalMaterial);
-    bottomTaper.position.y = -bodyHeight / 2 - 0.025;
+    // Position the bottom taper at the very bottom of the main cylinder
+    bottomTaper.position.y = -mainCylinderHeight / 2;
     canGroup.add(bottomTaper);
 
     const bottomBaseGeom = new THREE.TorusGeometry(canRadius * 0.9, 0.1, 16, segments);
     const bottomBase = new THREE.Mesh(bottomBaseGeom, metalMaterial);
     bottomBase.rotation.x = Math.PI/2;
-    bottomBase.position.y = -bodyHeight / 2 - 0.05;
+    // Position bottom base relative to the bottom taper's center
+    bottomBase.position.y = -mainCylinderHeight / 2 - (bottomTaperHeight / 2);
     canGroup.add(bottomBase);
 
     canGroup.scale.set(0.9, 0.9, 0.9);
