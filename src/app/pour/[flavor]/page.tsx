@@ -78,9 +78,6 @@ export default function PourPage() {
       cameraInitialPosition: new THREE.Vector3(),
       cameraInitialLookAt: new THREE.Vector3(),
   });
-  
-  const popSound = useRef<HTMLAudioElement | null>(null);
-  const pourSound = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
         if (!mountRef.current || typeof window === 'undefined') return;
@@ -92,9 +89,9 @@ export default function PourPage() {
             return;
         }
 
-        popSound.current = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_19b1683932.mp3');
-        pourSound.current = new Audio('https://cdn.pixabay.com/audio/2022/09/20/audio_5514f6b289.mp3');
-        if (pourSound.current) pourSound.current.loop = true;
+        const popSound = document.getElementById('pop-sound') as HTMLAudioElement | null;
+        const pourSound = document.getElementById('pour-sound') as HTMLAudioElement | null;
+        if (pourSound) pourSound.loop = true;
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -194,7 +191,7 @@ export default function PourPage() {
                         if(pullTab) pullTab.rotation.x = THREE.MathUtils.damp(pullTab.rotation.x, targetRotX, 8, delta);
                         if (pullTab && Math.abs(pullTab.rotation.x - targetRotX) < 0.1) {
                             if (state.stage === 'opening') {
-                                popSound.current?.play();
+                                popSound?.play();
                                 state.stage = 'tilting';
                                 state.startTime = performance.now();
                             }
@@ -224,7 +221,7 @@ export default function PourPage() {
                         if (Math.abs(can.rotation.x - targetRotX) < 0.1) {
                             state.stage = 'pouring';
                             state.pourStartTime = performance.now();
-                            pourSound.current?.play();
+                            pourSound?.play();
                         }
                         break;
                     }
@@ -233,8 +230,8 @@ export default function PourPage() {
                         if (performance.now() - state.pourStartTime > pourDuration) {
                             state.stage = 'resetting';
                             state.startTime = performance.now();
-                            pourSound.current?.pause();
-                            if (pourSound.current) pourSound.current.currentTime = 0;
+                            pourSound?.pause();
+                            if (pourSound) pourSound.currentTime = 0;
                         }
 
                         if (particles && glass && can) {
@@ -320,6 +317,16 @@ export default function PourPage() {
         return () => {
             window.removeEventListener('resize', onResize);
             cancelAnimationFrame(animationFrameId);
+
+            if (popSound) {
+                popSound.pause();
+                popSound.currentTime = 0;
+            }
+            if (pourSound) {
+                pourSound.pause();
+                pourSound.currentTime = 0;
+            }
+            
             if (currentMount && renderer.domElement.parentElement === currentMount) {
                 currentMount.removeChild(renderer.domElement);
             }
@@ -341,6 +348,8 @@ export default function PourPage() {
     return (
         <main className="fixed inset-0 z-50 bg-background">
             <div ref={mountRef} className="h-full w-full" />
+            <audio id="pop-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_19b1683932.mp3" preload="auto"></audio>
+            <audio id="pour-sound" src="https://cdn.pixabay.com/audio/2022/09/20/audio_5514f6b289.mp3" preload="auto"></audio>
         </main>
     );
 }
