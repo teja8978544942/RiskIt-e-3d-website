@@ -213,8 +213,10 @@ export default function PourPage() {
                     case 'pouring': {
                         const pourDuration = 3000;
                         if (performance.now() - state.pourStartTime > pourDuration) {
-                            state.stage = 'resetting';
-                            state.startTime = performance.now();
+                           if (state.stage === 'pouring') {
+                                state.stage = 'idle'; // Prevent re-triggering
+                                router.push('/');
+                            }
                         }
 
                         if (particles && glass && can) {
@@ -277,7 +279,6 @@ export default function PourPage() {
                         if (can.position.distanceTo(state.originalPosition) < 0.01) {
                              if (state.stage === 'resetting') {
                                 state.stage = 'idle'; // Prevent re-triggering
-                                router.push('/');
                             }
                         }
                         break;
