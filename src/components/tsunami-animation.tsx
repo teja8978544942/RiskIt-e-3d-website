@@ -189,7 +189,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     
     const clock = new THREE.Clock();
 
-    const geometry = new THREE.PlaneGeometry(100, 100, 256, 256);
+    const geometry = new THREE.PlaneGeometry(500, 500, 256, 256);
     const material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
@@ -228,8 +228,8 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
       const progress = Math.min((elapsedTime - startTime) / 6.0, 1.0);
       const easedProgress = 1 - Math.pow(1 - progress, 2);
 
-      // Animate the water level rising up to fill the screen
-      wavePlane.position.y = THREE.MathUtils.lerp(-10, 2, easedProgress);
+      // Animate the water level rising up past the camera to fill the screen
+      wavePlane.position.y = THREE.MathUtils.lerp(-10, 4, easedProgress);
       
       renderer.render(scene, camera);
       animationFrameId = requestAnimationFrame(animate);
