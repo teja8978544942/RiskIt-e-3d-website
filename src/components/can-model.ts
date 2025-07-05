@@ -7,8 +7,8 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
     logoImg.crossOrigin = 'Anonymous';
     logoImg.src = 'https://i.postimg.cc/8C5YV9V1/riskit-logo.png';
     await new Promise((resolve, reject) => {
-        logoImg.onload = resolve;
-        logoImg.onerror = reject;
+        logoImg.onload = () => resolve(null);
+        logoImg.onerror = () => reject(new Error('Failed to load logo image for can texture.'));
     });
 
     const canvas = document.createElement('canvas');
