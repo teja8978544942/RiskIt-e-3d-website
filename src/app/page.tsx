@@ -11,23 +11,18 @@ import {
 import { ArrowDown } from 'lucide-react';
 import Image from 'next/image';
 
-const flavors = [
-  { name: 'Midnight Chocolate', hint: 'soda can chocolate', fruitDescription: 'rich dark chocolate chunks and cocoa beans', color: '5A3A22' },
-  { name: 'Citrus Surge', hint: 'soda can citrus', fruitDescription: 'lemons limes and oranges', color: 'F2C94C' },
-  { name: 'Berry Blitz', hint: 'soda can berry', fruitDescription: 'mixed berries like strawberries and blueberries', color: 'D64A6B' },
-  { name: 'Tropical Fusion', hint: 'soda can tropical', fruitDescription: 'pineapple mango and passionfruit', color: 'F2994A' },
-  { name: 'Arctic Mint', hint: 'soda can mint', fruitDescription: 'fresh mint leaves with a cool icy effect', color: '56CCF2' },
-  { name: 'Spiced Apple', hint: 'soda can apple', fruitDescription: 'red apples and cinnamon sticks', color: 'EB5757' },
-  { name: 'Cherry Bomb', hint: 'soda can cherry', fruitDescription: 'ripe dark cherries', color: '9B2C2C' },
-  { name: 'Grape Escape', hint: 'soda can grape', fruitDescription: 'purple and green grapes', color: 'BB6BD9' },
+const flavorsWithImages = [
+    { name: 'Midnight Chocolate', hint: 'soda can chocolate', imageUrl: 'https://images.unsplash.com/photo-1572492398242-2d8c0f2d1e5d?w=300&h=500&fit=crop&q=80' },
+    { name: 'Citrus Surge', hint: 'soda can citrus', imageUrl: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=300&h=500&fit=crop&q=80' },
+    { name: 'Berry Blitz', hint: 'soda can berry', imageUrl: 'https://images.unsplash.com/photo-1628295987711-2d744252d6a5?w=300&h=500&fit=crop&q=80' },
+    { name: 'Tropical Fusion', hint: 'soda can tropical', imageUrl: 'https://images.unsplash.com/photo-1542289948-83e07f5941b3?w=300&h=500&fit=crop&q=80' },
+    { name: 'Arctic Mint', hint: 'soda can mint', imageUrl: 'https://images.unsplash.com/photo-1599602138162-fa5a5664367f?w=300&h=500&fit=crop&q=80' },
+    { name: 'Spiced Apple', hint: 'soda can apple', imageUrl: 'https://images.unsplash.com/photo-1619546813926-a78fa6332cd2?w=300&h=500&fit=crop&q=80' },
+    { name: 'Cherry Bomb', hint: 'soda can cherry', imageUrl: 'https://images.unsplash.com/photo-1597873839242-3536b694c3c3?w=300&h=500&fit=crop&q=80' },
+    { name: 'Grape Escape', hint: 'soda can grape', imageUrl: 'https://images.unsplash.com/photo-1587322838329-a417578705b1?w=300&h=500&fit=crop&q=80' },
 ];
 
-export default async function Home() {
-  const flavorsWithImages = flavors.map((flavor) => ({
-    ...flavor,
-    imageUrl: `https://placehold.co/300x500/${flavor.color}/FFFFFF.png`,
-  }));
-  
+export default function Home() {
   return (
     <main className="relative w-full overflow-x-hidden bg-background text-foreground">
       <div className="absolute inset-0 z-0">
