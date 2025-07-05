@@ -139,7 +139,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     
     const clock = new THREE.Clock();
 
-    const geometry = new THREE.PlaneGeometry(40, 40, 128, 128);
+    const geometry = new THREE.PlaneGeometry(60, 60, 128, 128);
     const material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
@@ -178,8 +178,25 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
       const easeOutQuad = (x: number): number => x * (2 - x);
       const easedProgress = easeOutQuad(progress);
 
+      // Animate wave properties to make it more dramatic
+      material.uniforms.uBigWavesElevation.value = THREE.MathUtils.lerp(0.2, 0.8, easedProgress);
+      material.uniforms.uSmallWavesElevation.value = THREE.MathUtils.lerp(0.1, 0.25, easedProgress);
+      material.uniforms.uColorMultiplier.value = THREE.MathUtils.lerp(2.5, 4.0, easedProgress);
+
       wavePlane.position.y = THREE.MathUtils.lerp(-4, 0, easedProgress);
       wavePlane.position.z = THREE.MathUtils.lerp(-2, 1, easedProgress);
+      
+      // Add a slight camera shake effect as the wave peaks
+      if (progress > 0.5) {
+        const shakeProgress = (progress - 0.5) * 2; // Normalize to 0-1 range
+        const shakeIntensity = Math.pow(shakeProgress, 2) * 0.1;
+        camera.position.x = (Math.random() - 0.5) * shakeIntensity;
+        camera.position.y = (Math.random() - 0.5) * shakeIntensity;
+      } else {
+        camera.position.x = 0;
+        camera.position.y = 0;
+      }
+      
       camera.position.z = THREE.MathUtils.lerp(2.5, 3.5, easedProgress);
       
       renderer.render(scene, camera);
