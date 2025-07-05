@@ -25,6 +25,7 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
       context.fillText(flavorName.toUpperCase(), canvas.width / 2, canvas.height / 2 + 70);
     }
     const texture = new THREE.CanvasTexture(canvas);
+    texture.anisotropy = 8;
 
     const bumpCanvas = document.createElement('canvas');
     bumpCanvas.width = 128;
@@ -64,23 +65,12 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     const canGroup = new THREE.Group();
     const canRadius = 1.0;
     const bodyHeight = 2.8;
-    const segments = 64;
+    const segments = 128;
     
     const canBody = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius, bodyHeight, segments), canBodyMaterial);
     canGroup.add(canBody);
     
-    // Can Bottom
-    const bottomTaperHeight = 0.2;
-    const canBottomTaper = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius * 0.9, bottomTaperHeight, segments), metalMaterial);
-    canBottomTaper.position.y = -bodyHeight / 2 - bottomTaperHeight / 2;
-    canGroup.add(canBottomTaper);
-    
-    const bottomRimHeight = 0.1;
-    const canBottomRim = new THREE.Mesh(new THREE.CylinderGeometry(canRadius * 0.9, canRadius * 0.9, bottomRimHeight, segments), metalMaterial);
-    canBottomRim.position.y = canBottomTaper.position.y - bottomTaperHeight / 2;
-    canGroup.add(canBottomRim);
-
-    // Can Top (Lid)
+    // Can Top
     const topGroup = new THREE.Group();
     topGroup.position.y = bodyHeight / 2;
 
@@ -100,25 +90,47 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
 
     // Pull Tab
     const pullTab = new THREE.Group();
-    const tabRing = new THREE.Mesh(
-        new THREE.TorusGeometry(0.18, 0.05, 12, 24),
-        metalMaterial
-    );
-    tabRing.rotation.x = Math.PI / 2;
+    const tabShape = new THREE.Shape();
+    const arcRadius = 0.18;
+    const holeRadius = 0.1;
+    const leverWidth = 0.1;
+    tabShape.moveTo(-leverWidth / 2, -0.4);
+    tabShape.lineTo(leverWidth / 2, -0.4);
+    tabShape.absarc(0, -arcRadius, arcRadius, Math.PI * 1.35, Math.PI * -0.35, false);
+    tabShape.lineTo(leverWidth / 2, -0.4);
 
-    const tabLever = new THREE.Mesh(
-        new THREE.BoxGeometry(0.4, 0.015, 0.2),
-        metalMaterial
-    );
-    tabLever.position.x = -0.25;
+    const tabHole = new THREE.Path();
+    tabHole.absarc(0, 0, holeRadius, 0, Math.PI * 2, true);
+    tabShape.holes.push(tabHole);
+
+    const extrudeSettings = { depth: 0.04, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.01, bevelThickness: 0.01 };
+    const tabGeom = new THREE.ExtrudeGeometry(tabShape, extrudeSettings);
+    const tabMesh = new THREE.Mesh(tabGeom, metalMaterial);
+    tabMesh.rotation.x = Math.PI / 2;
+
+    const rivetGeom = new THREE.CylinderGeometry(0.05, 0.06, 0.04, 16);
+    const rivet = new THREE.Mesh(rivetGeom, metalMaterial);
+    rivet.rotation.x = Math.PI / 2;
     
-    pullTab.add(tabRing, tabLever);
+    pullTab.add(tabMesh);
     pullTab.position.set(0.2, 0.03, 0);
     pullTab.rotation.z = Math.PI / 16;
     pullTab.rotation.y = -Math.PI / 9;
     
-    topGroup.add(pullTab);
+    topGroup.add(pullTab, rivet);
     canGroup.add(topGroup);
+
+    // Can Bottom
+    const bottomTaperGeom = new THREE.CylinderGeometry(canRadius * 0.98, canRadius, 0.05, segments);
+    const bottomTaper = new THREE.Mesh(bottomTaperGeom, metalMaterial);
+    bottomTaper.position.y = -bodyHeight / 2 - 0.025;
+    canGroup.add(bottomTaper);
+
+    const bottomBaseGeom = new THREE.TorusGeometry(canRadius * 0.9, 0.1, 16, segments);
+    const bottomBase = new THREE.Mesh(bottomBaseGeom, metalMaterial);
+    bottomBase.rotation.x = Math.PI/2;
+    bottomBase.position.y = -bodyHeight / 2 - 0.05;
+    canGroup.add(bottomBase);
 
     return canGroup;
 }
@@ -142,23 +154,23 @@ export function Scene() {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mountRef.current.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 4.0);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 3.0);
     keyLight.position.set(5, 5, 5);
     keyLight.castShadow = true;
-    keyLight.shadow.mapSize.width = 1024;
-    keyLight.shadow.mapSize.height = 1024;
+    keyLight.shadow.mapSize.width = 2048;
+    keyLight.shadow.mapSize.height = 2048;
     keyLight.shadow.camera.near = 0.5;
     keyLight.shadow.camera.far = 20;
     scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 1.0);
     fillLight.position.set(-5, 2, 5);
     scene.add(fillLight);
     
-    const backLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    const backLight = new THREE.DirectionalLight(0xffffff, 3.0);
     backLight.position.set(0, 8, -10);
     scene.add(backLight);
 
@@ -244,7 +256,8 @@ export function Scene() {
     window.addEventListener('mousemove', onMouseMove, { passive: true });
     
     const tick = () => {
-        const targetLookAt = new THREE.Vector3(mouse.x * 0.2, -mouse.y * 0.2, -1);
+        const targetLookAt = new THREE.Vector3(mouse.x * 0.2, -mouse.y * 0.2, 0);
+        camera.position.x += (mouse.x * 0.5 - camera.position.x) * 0.05;
         camera.lookAt(targetLookAt);
         
         renderer.render(scene, camera);
