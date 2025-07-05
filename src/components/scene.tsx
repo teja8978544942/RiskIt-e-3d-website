@@ -169,21 +169,31 @@ export function Scene() {
         new THREE.ShadowMaterial({ opacity: 0.2 })
     );
     shadowPlane.rotation.x = -Math.PI / 2;
-    shadowPlane.position.y = -2.2;
+    shadowPlane.position.y = -1.7; // Positioned right under the cans
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
     
     let scrollY = window.scrollY;
-    const pageHeight = document.body.scrollHeight - window.innerHeight;
+    // Animate over the first 3 screen heights for a more controlled effect.
+    const animationDistance = window.innerHeight * 3;
 
     const onScroll = () => {
         scrollY = window.scrollY;
         
         if (mainCan) {
-          const scrollFraction = scrollY / pageHeight;
+          // Calculate scroll fraction, but clamp it to our desired animation distance.
+          const scrollFraction = Math.min(scrollY / animationDistance, 1);
 
-          // Animate main can's position and rotation based on scroll
-          mainCan.position.y = THREE.MathUtils.lerp(3, -3, scrollFraction);
+          // Animate main can's position, scale, and rotation based on scroll.
+          // It starts at y=0 with the others and moves down.
+          mainCan.position.y = THREE.MathUtils.lerp(0, -5, scrollFraction);
+          
+          // It starts at the same size as others and enlarges.
+          const minScale = 1.0;
+          const maxScale = 1.8;
+          const scale = THREE.MathUtils.lerp(minScale, maxScale, scrollFraction);
+          mainCan.scale.set(scale, scale, scale);
+          
           mainCan.rotation.y = THREE.MathUtils.lerp(0, Math.PI * 2, scrollFraction);
           mainCan.rotation.x = THREE.MathUtils.lerp(0.2, -0.2, scrollFraction);
         }
