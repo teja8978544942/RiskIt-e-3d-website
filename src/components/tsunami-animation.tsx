@@ -6,13 +6,18 @@ import { useEffect, useRef } from 'react';
 
 const vertexShader = `
 uniform float uTime;
+// Big Waves
 uniform float uBigWavesElevation;
-uniform float uBigWavesFrequency;
+uniform vec2 uBigWavesFrequency;
+uniform float uBigWavesSpeed;
+// Small Waves
 uniform float uSmallWavesElevation;
 uniform float uSmallWavesFrequency;
 uniform float uSmallWavesSpeed;
 
+
 varying float vElevation;
+varying vec3 vNormal;
 
 // Simplex 3D Noise by Stefan Gustavson
 // https://github.com/ashima/webgl-noise
@@ -75,19 +80,45 @@ float snoise(vec3 v) {
                                 dot(p2,x2), dot(p3,x3) ) );
 }
 
-void main() {
-  vec4 modelPosition = modelMatrix * vec4(position, 1.0);
-  
-  // Big, rolling waves
-  float elevation = snoise(vec3(modelPosition.x * uBigWavesFrequency, modelPosition.y * uBigWavesFrequency, uTime * 0.4)) * uBigWavesElevation;
-  
-  // Smaller, faster ripples on top
-  elevation += snoise(vec3(modelPosition.xy * uSmallWavesFrequency, uTime * uSmallWavesSpeed)) * uSmallWavesElevation;
+float getWaterElevation(vec2 p) {
+    float elevation = 0.0;
+    
+    // Main large waves
+    elevation += snoise(vec3(p.x * uBigWavesFrequency.x, p.y * uBigWavesFrequency.y, uTime * uBigWavesSpeed)) * uBigWavesElevation;
 
-  modelPosition.z += elevation;
-  vElevation = elevation;
-  
-  gl_Position = projectionMatrix * viewMatrix * modelPosition;
+    // Smaller, detailed waves (fractal noise)
+    float freq = uSmallWavesFrequency;
+    float amp = uSmallWavesElevation;
+    for(int i = 0; i < 4; i++) {
+        elevation += snoise(vec3(p.x * freq, p.y * freq, uTime * uSmallWavesSpeed)) * amp;
+        freq *= 2.0;
+        amp *= 0.5;
+    }
+    return elevation;
+}
+
+
+void main() {
+    // Calculations in object space before modelMatrix is applied
+    vec4 pos = vec4(position, 1.0);
+
+    float elevation = getWaterElevation(pos.xy);
+    pos.z = elevation;
+    
+    // Calculate normals for lighting/foam
+    float epsilon = 0.01;
+    float elev_x = getWaterElevation(pos.xy + vec2(epsilon, 0.0));
+    float elev_y = getWaterElevation(pos.xy + vec2(0.0, epsilon));
+
+    // Using the displaced points to find the normal
+    vec3 p_x = vec3(epsilon, 0.0, elev_x - elevation);
+    vec3 p_y = vec3(0.0, epsilon, elev_y - elevation);
+    vec3 calculatedNormal = normalize(cross(p_y, p_x));
+
+    vElevation = elevation;
+    vNormal = normalize(normalMatrix * calculatedNormal);
+
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * pos;
 }
 `;
 
@@ -99,13 +130,31 @@ uniform float uColorOffset;
 uniform float uColorMultiplier;
 
 varying float vElevation;
+varying vec3 vNormal;
 
 void main() {
+    // Basic directional light from above and to the side
+    vec3 lightDirection = normalize(vec3(0.8, 1.0, 0.5));
+    float diffuse = max(0.0, dot(vNormal, lightDirection));
+
+    // Base color mix from deep to surface water
     float mixStrength = (vElevation + uColorOffset) * uColorMultiplier;
     vec3 color = mix(uDepthColor, uSurfaceColor, mixStrength);
+    
+    // Apply lighting, but keep it subtle so water doesn't get too dark
+    color = color * (diffuse * 0.6 + 0.4);
 
-    // Foam on wave crests
-    float foamStrength = smoothstep(0.4, 0.7, vElevation);
+    // Foam on crests
+    float foamCrests = smoothstep(0.4, 0.7, vElevation);
+    
+    // Add some foam based on steepness of the wave from the normal
+    // A more upright normal (in view space) means flatter water.
+    // So we want foam when the y-component of the normal is low.
+    float steepness = 1.0 - vNormal.y;
+    float foamSteepness = smoothstep(0.3, 0.7, steepness);
+
+    float foamStrength = foamCrests + foamSteepness * 0.5;
+
     color = mix(color, uFoamColor, foamStrength);
 
     gl_FragColor = vec4(color, 1.0);
@@ -139,7 +188,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     
     const clock = new THREE.Clock();
 
-    const geometry = new THREE.PlaneGeometry(60, 60, 128, 128);
+    const geometry = new THREE.PlaneGeometry(80, 80, 256, 256);
     const material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
@@ -147,7 +196,8 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
         uTime: { value: 0 },
         // Big Waves
         uBigWavesElevation: { value: 0.3 },
-        uBigWavesFrequency: { value: 0.8 },
+        uBigWavesFrequency: { value: new THREE.Vector2(0.6, 0.2) },
+        uBigWavesSpeed: { value: 0.4 },
         // Small Waves
         uSmallWavesElevation: { value: 0.15 },
         uSmallWavesFrequency: { value: 2.0 },
@@ -182,6 +232,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
       material.uniforms.uBigWavesElevation.value = THREE.MathUtils.lerp(0.2, 0.8, easedProgress);
       material.uniforms.uSmallWavesElevation.value = THREE.MathUtils.lerp(0.1, 0.25, easedProgress);
       material.uniforms.uColorMultiplier.value = THREE.MathUtils.lerp(2.5, 4.0, easedProgress);
+      material.uniforms.uBigWavesSpeed.value = THREE.MathUtils.lerp(0.4, 1.0, easedProgress);
 
       wavePlane.position.y = THREE.MathUtils.lerp(-4, 0, easedProgress);
       wavePlane.position.z = THREE.MathUtils.lerp(-2, 1, easedProgress);
@@ -242,7 +293,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     >
         <div ref={mountRef} className="absolute inset-0" />
         <div 
-            className="absolute inset-0 flex items-start justify-center pointer-events-none pt-10"
+            className="absolute inset-0 flex items-start justify-center pointer-events-none pt-20"
         >
             <h1 className="font-headline text-black text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
                 Let's dive through your thirst
