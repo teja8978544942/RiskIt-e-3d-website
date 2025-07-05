@@ -65,8 +65,8 @@ export default function PourPage() {
     const params = useParams();
     const flavorName = decodeURIComponent(params.flavor as string);
     
-    const popSoundRef = useRef<HTMLAudioElement>();
-    const pourSoundRef = useRef<HTMLAudioElement>();
+    const popSoundRef = useRef<HTMLAudioElement>(null);
+    const pourSoundRef = useRef<HTMLAudioElement>(null);
 
     const animationState = useRef({
       isAnimating: false,
@@ -86,14 +86,6 @@ export default function PourPage() {
     useEffect(() => {
         if (!mountRef.current || typeof window === 'undefined') return;
 
-        if (!popSoundRef.current) {
-            popSoundRef.current = new Audio('https://assets.codepen.io/217233/can-open.mp3');
-        }
-        if (!pourSoundRef.current) {
-            pourSoundRef.current = new Audio('https://assets.codepen.io/217233/soda-pour.mp3');
-            pourSoundRef.current.loop = true;
-        }
-        
         const popSound = popSoundRef.current;
         const pourSound = pourSoundRef.current;
 
@@ -226,8 +218,10 @@ export default function PourPage() {
                         if (performance.now() - state.pourStartTime > pourDuration) {
                             state.stage = 'resetting';
                             state.startTime = performance.now();
-                            pourSound?.pause();
-                            if (pourSound) pourSound.currentTime = 0;
+                            if(pourSound) {
+                                pourSound.pause();
+                                pourSound.currentTime = 0;
+                            }
                         }
 
                         if (particles && glass && can) {
@@ -367,6 +361,8 @@ export default function PourPage() {
 
     return (
         <main className="fixed inset-0 z-50 bg-background">
+            <audio ref={popSoundRef} src="https://assets.codepen.io/217233/can-open.mp3" preload="auto" />
+            <audio ref={pourSoundRef} src="https://assets.codepen.io/217233/soda-pour.mp3" preload="auto" loop />
             <div ref={mountRef} className="h-full w-full" />
         </main>
     );
