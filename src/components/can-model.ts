@@ -6,7 +6,9 @@ import * as THREE from 'three';
 export async function createCanMesh(flavorName: string, flavorColor: string): Promise<THREE.Group> {
     const logoImg = new Image();
     logoImg.crossOrigin = 'Anonymous';
-    logoImg.src = 'https://i.postimg.cc/8P4n1dZq/riskit-logo.png';
+    // Use an embedded SVG data URI to eliminate network failures.
+    logoImg.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIgLz48L3N2Zz4=';
+
     await new Promise((resolve, reject) => {
         logoImg.onload = () => resolve(null);
         logoImg.onerror = () => reject(new Error('Failed to load logo image for can texture.'));
@@ -21,7 +23,7 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
       context.fillStyle = flavorColor;
       context.fillRect(0, 0, canvas.width, canvas.height);
       
-      const logoHeight = 180;
+      const logoHeight = 150;
       const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
       context.drawImage(logoImg, canvas.width / 2 - logoWidth / 2, 200, logoWidth, logoHeight);
 
