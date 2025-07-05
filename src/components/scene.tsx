@@ -25,7 +25,7 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
       context.fillText(flavorName.toUpperCase(), canvas.width / 2, canvas.height / 2 + 70);
     }
     const texture = new THREE.CanvasTexture(canvas);
-    texture.anisotropy = 8;
+    texture.anisotropy = 16;
 
     const bumpCanvas = document.createElement('canvas');
     bumpCanvas.width = 128;
@@ -70,23 +70,33 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     const canBody = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius, bodyHeight, segments), canBodyMaterial);
     canGroup.add(canBody);
     
-    // Can Top
+    // Can Top - Reworked for more realism
     const topGroup = new THREE.Group();
     topGroup.position.y = bodyHeight / 2;
 
-    const topSurface = new THREE.Mesh(
-        new THREE.CylinderGeometry(canRadius * 0.88, canRadius * 0.92, 0.1, segments),
+    // The recessed center panel
+    const centerPanel = new THREE.Mesh(
+        new THREE.CylinderGeometry(canRadius * 0.8, canRadius * 0.8, 0.02, segments),
         metalMaterial
     );
-    topSurface.position.y = -0.05;
-    topGroup.add(topSurface);
-
-    const topRim = new THREE.Mesh(
-        new THREE.TorusGeometry(canRadius * 0.96, 0.04, 16, segments),
+    centerPanel.position.y = -0.04;
+    topGroup.add(centerPanel);
+    
+    // The sloped panel connecting the center to the rim
+    const slopedPanel = new THREE.Mesh(
+        new THREE.CylinderGeometry(canRadius * 0.98, canRadius * 0.8, 0.04, segments),
         metalMaterial
     );
-    topRim.rotation.x = Math.PI / 2;
-    topGroup.add(topRim);
+    slopedPanel.position.y = -0.02;
+    topGroup.add(slopedPanel);
+    
+    // The outer seamed rim
+    const rim = new THREE.Mesh(
+        new THREE.TorusGeometry(canRadius, 0.03, 16, segments),
+        metalMaterial
+    );
+    rim.rotation.x = Math.PI / 2;
+    topGroup.add(rim);
 
     // Pull Tab
     const pullTab = new THREE.Group();
@@ -111,9 +121,10 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     const rivetGeom = new THREE.CylinderGeometry(0.05, 0.06, 0.04, 16);
     const rivet = new THREE.Mesh(rivetGeom, metalMaterial);
     rivet.rotation.x = Math.PI / 2;
+    rivet.position.y = -0.03;
     
     pullTab.add(tabMesh);
-    pullTab.position.set(0.2, 0.03, 0);
+    pullTab.position.set(0.2, 0, 0);
     pullTab.rotation.z = Math.PI / 16;
     pullTab.rotation.y = -Math.PI / 9;
     

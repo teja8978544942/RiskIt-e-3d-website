@@ -28,7 +28,7 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     }
 
     const texture = new THREE.CanvasTexture(canvas);
-    texture.anisotropy = 8;
+    texture.anisotropy = 16;
 
     const bumpCanvas = document.createElement('canvas');
     bumpCanvas.width = 128;
@@ -73,23 +73,33 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     const canBody = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius, bodyHeight, segments), canBodyMaterial);
     canGroup.add(canBody);
     
-    // Can Top
+    // Can Top - Reworked for more realism
     const topGroup = new THREE.Group();
     topGroup.position.y = bodyHeight / 2;
 
-    const topSurface = new THREE.Mesh(
-        new THREE.CylinderGeometry(canRadius * 0.88, canRadius * 0.92, 0.05, segments),
+    // The recessed center panel
+    const centerPanel = new THREE.Mesh(
+        new THREE.CylinderGeometry(canRadius * 0.8, canRadius * 0.8, 0.01, segments),
         metalMaterial
     );
-    topSurface.position.y = -0.025;
-    topGroup.add(topSurface);
-
-    const topRim = new THREE.Mesh(
-        new THREE.TorusGeometry(canRadius * 0.96, 0.02, 16, segments),
+    centerPanel.position.y = -0.02; // Sits lowest
+    topGroup.add(centerPanel);
+    
+    // The sloped panel connecting the center to the rim
+    const slopedPanel = new THREE.Mesh(
+        new THREE.CylinderGeometry(canRadius * 0.98, canRadius * 0.8, 0.02, segments),
         metalMaterial
     );
-    topRim.rotation.x = Math.PI / 2;
-    topGroup.add(topRim);
+    slopedPanel.position.y = -0.01; // Sits on top of center panel, slopes up
+    topGroup.add(slopedPanel);
+    
+    // The outer seamed rim
+    const rim = new THREE.Mesh(
+        new THREE.TorusGeometry(canRadius, 0.015, 16, segments),
+        metalMaterial
+    );
+    rim.rotation.x = Math.PI / 2; // Sits at y=0
+    topGroup.add(rim);
 
     // Pull Tab
     const pullTab = new THREE.Group();
@@ -114,9 +124,10 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     const rivetGeom = new THREE.CylinderGeometry(0.025, 0.03, 0.02, 16);
     const rivet = new THREE.Mesh(rivetGeom, metalMaterial);
     rivet.rotation.x = Math.PI / 2;
+    rivet.position.y = -0.015; // Lower the rivet onto the recessed panel.
     
     pullTab.add(tabMesh);
-    pullTab.position.set(0.1, 0.015, 0);
+    pullTab.position.set(0.1, 0, 0); // Lowered from 0.015 to sit correctly
     pullTab.rotation.z = Math.PI / 16;
     pullTab.rotation.y = -Math.PI / 9;
     
