@@ -19,10 +19,11 @@ export function Scene() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mountRef.current.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
+    // More realistic lighting setup
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 3.5);
-    directionalLight.position.set(3, 5, 4);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 4.5);
+    directionalLight.position.set(5, 5, 5);
     directionalLight.castShadow = true;
     scene.add(directionalLight);
 
@@ -55,18 +56,42 @@ export function Scene() {
 
     const texture = new THREE.CanvasTexture(canvas);
 
-    // Material for the can body with the label
+    // Create a procedural noise texture for surface imperfections
+    const bumpCanvas = document.createElement('canvas');
+    bumpCanvas.width = 128;
+    bumpCanvas.height = 128;
+    const bumpContext = bumpCanvas.getContext('2d');
+    if (bumpContext) {
+        const imageData = bumpContext.createImageData(128, 128);
+        for (let i = 0; i < imageData.data.length; i += 4) {
+            const value = Math.random() * 255;
+            imageData.data[i] = value;
+            imageData.data[i + 1] = value;
+            imageData.data[i + 2] = value;
+            imageData.data[i + 3] = 255;
+        }
+        bumpContext.putImageData(imageData, 0, 0);
+    }
+    const bumpTexture = new THREE.CanvasTexture(bumpCanvas);
+    bumpTexture.wrapS = THREE.RepeatWrapping;
+    bumpTexture.wrapT = THREE.RepeatWrapping;
+
+    // Material for the can body with the label - less metallic, more rough
     const canBodyMaterial = new THREE.MeshStandardMaterial({
         map: texture,
-        metalness: 0.5,
-        roughness: 0.5,
+        metalness: 0.4,
+        roughness: 0.6,
+        bumpMap: bumpTexture,
+        bumpScale: 0.005,
     });
     
-    // Material for the shiny metal top and bottom of the can
+    // Material for the shiny metal top and bottom - slightly more rough for brushed look
     const metalMaterial = new THREE.MeshStandardMaterial({
         color: new THREE.Color(0xcccccc), // Shiny silver/aluminum
         metalness: 0.9,
-        roughness: 0.2,
+        roughness: 0.3,
+        bumpMap: bumpTexture,
+        bumpScale: 0.02,
     });
 
     const canGroup = new THREE.Group();
@@ -184,6 +209,8 @@ export function Scene() {
                 }
             }
         });
+        texture.dispose();
+        bumpTexture.dispose();
         renderer.dispose();
     };
   }, []);
