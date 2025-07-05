@@ -5,7 +5,7 @@ import * as THREE from 'three';
 export async function createCanMesh(flavorName: string, flavorColor: string): Promise<THREE.Group> {
     const logoImg = new Image();
     logoImg.crossOrigin = 'Anonymous';
-    logoImg.src = 'https://i.postimg.cc/8C5YV9V1/riskit-logo.png';
+    logoImg.src = 'https://i.postimg.cc/T1QdYg2p/riskit-logo.png';
     await new Promise((resolve, reject) => {
         logoImg.onload = () => resolve(null);
         logoImg.onerror = () => reject(new Error('Failed to load logo image for can texture.'));
