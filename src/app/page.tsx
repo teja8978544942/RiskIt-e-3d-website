@@ -150,7 +150,7 @@ export default function Home() {
         </footer>
       </div>
 
-      {animationState.stage === 'tsunami' && animationState.flavor && (
+      {(animationState.stage === 'tsunami' || animationState.stage === 'pouring') && animationState.flavor && (
         <TsunamiAnimation 
           flavorColor={animationState.flavor.color} 
           onClose={handleTsunamiComplete} 

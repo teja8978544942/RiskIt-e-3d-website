@@ -341,12 +341,12 @@ export function PourAnimation({ flavorName, flavorColor, onComplete }: PourAnima
     }, [flavorName, flavorColor]);
 
     return (
-        <div className="fixed inset-0 z-50 bg-background">
+        <div className="fixed inset-0 z-[60]">
             <div ref={mountRef} className="h-full w-full" />
             <div 
                 className="absolute inset-0 flex items-start justify-center pointer-events-none pt-10"
             >
-                <h1 className="font-headline text-black text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
+                <h1 className="font-headline text-white text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
                     Then choose your flavour
                 </h1>
             </div>

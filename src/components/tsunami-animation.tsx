@@ -222,22 +222,24 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     let isClosed = false;
 
     const animate = () => {
+      animationFrameId = requestAnimationFrame(animate);
       const elapsedTime = clock.getElapsedTime();
       material.uniforms.uTime.value = elapsedTime * 0.4;
 
-      const progress = Math.min((elapsedTime - startTime) / 6.0, 1.0);
-      const easedProgress = 1 - Math.pow(1 - progress, 2);
-
-      // Animate the water level rising up past the camera to fill the screen
-      wavePlane.position.y = THREE.MathUtils.lerp(-10, 4, easedProgress);
+      if (!isClosed) {
+        const progress = Math.min((elapsedTime - startTime) / 6.0, 1.0);
+        const easedProgress = 1 - Math.pow(1 - progress, 2);
+  
+        // Animate the water level rising up past the camera to fill the screen
+        wavePlane.position.y = THREE.MathUtils.lerp(-10, 4, easedProgress);
+        
+        if (progress >= 1.0) {
+            isClosed = true;
+            onCloseRef.current();
+        }
+      }
       
       renderer.render(scene, camera);
-      animationFrameId = requestAnimationFrame(animate);
-
-      if (progress >= 1.0 && !isClosed) {
-          isClosed = true;
-          onCloseRef.current();
-      }
     };
     animate();
 
@@ -262,7 +264,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
 
   return (
     <div 
-        className="fixed inset-0 z-[60]"
+        className="fixed inset-0 z-50"
     >
         <div ref={mountRef} className="absolute inset-0" />
     </div>
