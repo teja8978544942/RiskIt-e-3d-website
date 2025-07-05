@@ -125,15 +125,33 @@ export function Scene() {
     let mainCan: THREE.Group | null = null;
     const otherCans: THREE.Group[] = [];
 
-    const otherFlavors = flavors.filter(f => f.name !== 'Orange Burst');
+    // Create and position the main can (Orange Burst) at the origin
+    const orangeBurstFlavor = flavors.find(f => f.name === 'Orange Burst');
+    if (orangeBurstFlavor) {
+        mainCan = createCanMesh(orangeBurstFlavor.name, orangeBurstFlavor.color);
+        mainCan.position.set(0, 0, 0); // Center can for scrolling animation
+        mainCan.castShadow = true;
+        mainCan.traverse(function(child) {
+            if ((child as THREE.Mesh).isMesh) {
+                child.castShadow = true;
+            }
+        });
+        allCans.push(mainCan);
+        scene.add(mainCan);
+    }
 
+    const otherFlavors = flavors.filter(f => f.name !== 'Orange Burst');
+    const spacing = 2.5;
+
+    // Arrange other cans to the left and right of the main can
     otherFlavors.forEach((flavor, index) => {
         const can = createCanMesh(flavor.name, flavor.color);
-        const angle = (index / (otherFlavors.length - 1)) * Math.PI * 1.4 - (Math.PI * 1.4 / 2);
-        const radius = 6;
-        can.position.x = Math.sin(angle) * radius;
-        can.position.z = -Math.cos(angle) * radius * 0.5 - 3.5;
-        can.rotation.y = -angle;
+        
+        // Alternate placing cans left and right of the center
+        const side = (index % 2 === 0) ? 1 : -1;
+        const step = Math.ceil((index + 1) / 2);
+        can.position.x = side * step * spacing;
+
         can.castShadow = true;
         can.traverse(function(child) {
             if ((child as THREE.Mesh).isMesh) {
@@ -145,21 +163,8 @@ export function Scene() {
         scene.add(can);
     });
 
-    const orangeBurstFlavor = flavors.find(f => f.name === 'Orange Burst');
-    if (orangeBurstFlavor) {
-        mainCan = createCanMesh(orangeBurstFlavor.name, orangeBurstFlavor.color);
-        mainCan.castShadow = true;
-        mainCan.traverse(function(child) {
-            if ((child as THREE.Mesh).isMesh) {
-                child.castShadow = true;
-            }
-        });
-        allCans.push(mainCan);
-        scene.add(mainCan);
-    }
-
     const shadowPlane = new THREE.Mesh(
-        new THREE.PlaneGeometry(20, 20),
+        new THREE.PlaneGeometry(30, 20), // Widen the shadow plane for all cans
         new THREE.ShadowMaterial({ opacity: 0.2 })
     );
     shadowPlane.rotation.x = -Math.PI / 2;
@@ -168,7 +173,8 @@ export function Scene() {
     scene.add(shadowPlane);
 
     const scrollPoints = [
-        { cameraPos: new THREE.Vector3(0, 0, 5), canRotation: new THREE.Euler(0, 0, 0) },
+        // Zoom out to see all cans side-by-side
+        { cameraPos: new THREE.Vector3(0, 0, 15), canRotation: new THREE.Euler(0, 0, 0) }, 
         { cameraPos: new THREE.Vector3(-1.5, 0, 4), canRotation: new THREE.Euler(0.1, -Math.PI * 0.3, -0.1) },
         { cameraPos: new THREE.Vector3(1.5, 0, 4), canRotation: new THREE.Euler(-0.1, Math.PI * 0.3, 0.1) },
         { cameraPos: new THREE.Vector3(0, -0.5, 4.5), canRotation: new THREE.Euler(0, Math.PI, 0) },
@@ -209,9 +215,7 @@ export function Scene() {
         const targetLookAt = new THREE.Vector3(mouse.x * 0.1, -mouse.y * 0.1, -1);
         camera.lookAt(targetLookAt);
         
-        otherCans.forEach(can => {
-            can.rotation.y += 0.003;
-        });
+        // Other cans are now stationary
         
         renderer.render(scene, camera);
         window.requestAnimationFrame(tick);
