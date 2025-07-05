@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as THREE from 'three';
@@ -211,7 +212,7 @@ export default function PourPage() {
                         break;
                     }
                     case 'pouring': {
-                        const pourDuration = 3000;
+                        const pourDuration = 2000;
                         if (performance.now() - state.pourStartTime > pourDuration) {
                            if (state.stage === 'pouring') {
                                 state.stage = 'idle'; // Prevent re-triggering
@@ -353,18 +354,25 @@ export default function PourPage() {
     }
 
     return (
-        <main className={cn(
-            "fixed inset-0",
-            animationStage === 'tsunami' ? 'bg-black' : 'bg-background'
-        )}>
+        <main className="fixed inset-0 bg-black">
             {animationStage === 'tsunami' && (
                 <TsunamiAnimation
                     flavorColor={flavor.color}
                     onClose={() => setAnimationStage('pouring')}
                 />
             )}
+            <div ref={mountRef} className={cn(
+                "h-full w-full transition-opacity duration-500",
+                animationStage === 'pouring' ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            )} />
             {animationStage === 'pouring' && (
-                <div ref={mountRef} className="h-full w-full" />
+                <div 
+                    className="absolute inset-0 flex items-start justify-center pointer-events-none pt-10"
+                >
+                    <h1 className="font-headline text-white text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
+                        Then choose your flavour
+                    </h1>
+                </div>
             )}
         </main>
     );
