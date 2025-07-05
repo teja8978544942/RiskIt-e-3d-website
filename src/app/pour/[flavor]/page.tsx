@@ -414,19 +414,19 @@ export default function PourPage() {
                     onClose={() => setAnimationStage('pouring')}
                 />
             )}
-            <div ref={mountRef} className={cn(
-                "h-full w-full transition-opacity duration-500",
-                animationStage === 'pouring' ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            )} />
             {animationStage === 'pouring' && (
                 <div 
-                    className="absolute inset-0 flex items-start justify-center pointer-events-none pt-10"
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
                 >
-                    <h1 className="font-headline text-foreground text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
+                    <h1 className="font-headline text-foreground/10 text-8xl md:text-9xl lg:text-[12rem] text-center select-none animate-in fade-in-0 duration-1000">
                         Then choose your flavour
                     </h1>
                 </div>
             )}
+            <div ref={mountRef} className={cn(
+                "h-full w-full transition-opacity duration-500",
+                animationStage === 'pouring' ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            )} />
         </main>
     );
 }
