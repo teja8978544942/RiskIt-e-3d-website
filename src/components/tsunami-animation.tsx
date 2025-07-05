@@ -216,8 +216,8 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
         uSmallWavesFrequency: { value: 2.0 },
         uSmallWavesSpeed: { value: 1.0 },
         // Colors & Lighting
-        uDepthColor: { value: new THREE.Color('#043936') },
-        uSurfaceColor: { value: new THREE.Color(flavorColor) },
+        uDepthColor: { value: new THREE.Color('#00102a') },
+        uSurfaceColor: { value: new THREE.Color('#88c9d2') },
         uFoamColor: { value: new THREE.Color('#ffffff') },
         uColorOffset: { value: 0.1 },
         uColorMultiplier: { value: 3.0 },
