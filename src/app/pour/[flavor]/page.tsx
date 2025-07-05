@@ -361,8 +361,8 @@ export default function PourPage() {
 
     return (
         <main className="fixed inset-0 z-50 bg-background">
-            <audio ref={popSoundRef} src="https://assets.codepen.io/217233/can-open.mp3" preload="auto" />
-            <audio ref={pourSoundRef} src="https://assets.codepen.io/217233/soda-pour.mp3" preload="auto" loop />
+            <audio ref={popSoundRef} src="https://archive.org/download/opening-a-can-of-coke/56_opening_a_can_of_coke.mp3" preload="auto" />
+            <audio ref={pourSoundRef} src="https://archive.org/download/pouring-a-glass-of-coke/55_pouring_a_glass_of_coke.mp3" preload="auto" loop />
             <div ref={mountRef} className="h-full w-full" />
         </main>
     );
