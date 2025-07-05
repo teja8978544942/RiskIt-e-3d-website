@@ -32,18 +32,25 @@ export function Scene() {
     canvas.height = 1024; // High-res for crisp text
     const context = canvas.getContext('2d');
     
-    const canColor = '#A67B5B';
+    const canColor = '#E87722'; // Orange Burst color
     const textColor = 'white';
+    const flavorName = 'Orange Burst';
     
     if (context) {
       context.fillStyle = canColor;
       context.fillRect(0, 0, canvas.width, canvas.height);
       
+      // Brand Name
       context.font = 'bold 150px "Playfair Display"';
       context.fillStyle = textColor;
       context.textAlign = 'center';
       context.textBaseline = 'middle';
-      context.fillText('RiskIt', canvas.width / 2, canvas.height / 2);
+      context.fillText('RiskIt', canvas.width / 2, canvas.height / 2 - 60);
+
+      // Flavor Name
+      context.font = 'bold 70px "PT Sans"';
+      context.fillStyle = textColor;
+      context.fillText(flavorName.toUpperCase(), canvas.width / 2, canvas.height / 2 + 70);
     }
 
     const texture = new THREE.CanvasTexture(canvas);
