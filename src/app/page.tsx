@@ -12,14 +12,14 @@ import { ArrowDown } from 'lucide-react';
 import Image from 'next/image';
 
 const flavors = [
-  { name: 'Midnight Chocolate', hint: 'soda can chocolate', imageUrl: 'https://images.unsplash.com/photo-1612230438343-cce33350371b?w=300&h=500&fit=crop&q=80' },
-  { name: 'Citrus Surge', hint: 'soda can citrus', imageUrl: 'https://images.unsplash.com/photo-1619546813926-a78fa6332cd2?w=300&h=500&fit=crop&q=80' },
-  { name: 'Berry Blitz', hint: 'soda can berry', imageUrl: 'https://images.unsplash.com/photo-1595748898950-705a6a3788a4?w=300&h=500&fit=crop&q=80' },
-  { name: 'Tropical Fusion', hint: 'soda can tropical', imageUrl: 'https://images.unsplash.com/photo-1553531384-411a247ccd78?w=300&h=500&fit=crop&q=80' },
-  { name: 'Arctic Mint', hint: 'soda can mint', imageUrl: 'https://images.unsplash.com/photo-1600205273392-38dd18c538a8?w=300&h=500&fit=crop&q=80' },
-  { name: 'Spiced Apple', hint: 'soda can apple', imageUrl: 'https://images.unsplash.com/photo-1579888131237-c1955b9a897f?w=300&h=500&fit=crop&q=80' },
-  { name: 'Cherry Bomb', hint: 'soda can cherry', imageUrl: 'https://images.unsplash.com/photo-1528755699335-422e1b4b18a1?w=300&h=500&fit=crop&q=80' },
-  { name: 'Grape Escape', hint: 'soda can grape', imageUrl: 'https://images.unsplash.com/photo-1618337130-1b33411c5862?w=300&h=500&fit=crop&q=80' },
+  { name: 'Midnight Chocolate', hint: 'soda can chocolate', imageUrl: 'https://images.unsplash.com/photo-1567103472667-6898f3a79cf2?w=300&h=500&fit=crop&q=80' },
+  { name: 'Citrus Surge', hint: 'soda can citrus', imageUrl: 'https://images.unsplash.com/photo-1581636625402-29b2a7046500?w=300&h=500&fit=crop&q=80' },
+  { name: 'Berry Blitz', hint: 'soda can berry', imageUrl: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=300&h=500&fit=crop&q=80' },
+  { name: 'Tropical Fusion', hint: 'soda can tropical', imageUrl: 'https://images.unsplash.com/photo-1541533332-850626307138?w=300&h=500&fit=crop&q=80' },
+  { name: 'Arctic Mint', hint: 'soda can mint', imageUrl: 'https://images.unsplash.com/photo-1556887596-6e4a52044816?w=300&h=500&fit=crop&q=80' },
+  { name: 'Spiced Apple', hint: 'soda can apple', imageUrl: 'https://images.unsplash.com/photo-1627878344714-ac106d4e3758?w=300&h=500&fit=crop&q=80' },
+  { name: 'Cherry Bomb', hint: 'soda can cherry', imageUrl: 'https://images.unsplash.com/photo-1558779093-61f893a7a403?w=300&h=500&fit=crop&q=80' },
+  { name: 'Grape Escape', hint: 'soda can grape', imageUrl: 'https://images.unsplash.com/photo-1600171553254-159e1dc43834?w=300&h=500&fit=crop&q=80' },
 ];
 
 export default function Home() {
