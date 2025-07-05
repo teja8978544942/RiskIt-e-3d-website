@@ -55,33 +55,53 @@ export function Scene() {
 
     const texture = new THREE.CanvasTexture(canvas);
 
-    // Material for the can body with the logo
+    // Material for the can body with the label
     const canBodyMaterial = new THREE.MeshStandardMaterial({
         map: texture,
-        metalness: 0.6,
-        roughness: 0.4,
+        metalness: 0.5,
+        roughness: 0.5,
     });
     
-    // Material for the top and bottom of the can
-    const canTopBottomMaterial = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(canColor),
-        metalness: 0.6,
-        roughness: 0.4,
+    // Material for the shiny metal top and bottom of the can
+    const metalMaterial = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(0xcccccc), // Shiny silver/aluminum
+        metalness: 0.9,
+        roughness: 0.2,
     });
 
     const canGroup = new THREE.Group();
+    const canRadius = 1.0;
     
-    const canBody = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 2.8, 64), canBodyMaterial);
+    // Main body of the can
+    const bodyHeight = 2.8;
+    const canBody = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius, bodyHeight, 64), canBodyMaterial);
     canBody.position.y = 0;
     canGroup.add(canBody);
     
-    const canTop = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 1, 0.15, 64), canTopBottomMaterial);
-    canTop.position.y = 1.475;
-    canGroup.add(canTop);
+    // Top tapered section
+    const topTaperHeight = 0.2;
+    const canTopTaper = new THREE.Mesh(new THREE.CylinderGeometry(canRadius * 0.9, canRadius, topTaperHeight, 64), metalMaterial);
+    canTopTaper.position.y = bodyHeight / 2 + topTaperHeight / 2;
+    canGroup.add(canTopTaper);
     
-    const canBottom = new THREE.Mesh(new THREE.CylinderGeometry(1, 0.95, 0.15, 64), canTopBottomMaterial);
-    canBottom.position.y = -1.475;
-    canGroup.add(canBottom);
+    // Top lid
+    const lidHeight = 0.05;
+    const canTopLid = new THREE.Mesh(new THREE.CylinderGeometry(canRadius * 0.9, canRadius * 0.88, lidHeight, 64), metalMaterial);
+    canTopLid.position.y = canTopTaper.position.y + topTaperHeight / 2;
+    canGroup.add(canTopLid);
+
+    // Bottom tapered section
+    const bottomTaperHeight = 0.2;
+    const canBottomTaper = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius * 0.9, bottomTaperHeight, 64), metalMaterial);
+    canBottomTaper.position.y = -bodyHeight / 2 - bottomTaperHeight / 2;
+    canGroup.add(canBottomTaper);
+    
+    // Bottom rim
+    const bottomRimHeight = 0.1;
+    const canBottomRim = new THREE.Mesh(new THREE.CylinderGeometry(canRadius * 0.9, canRadius * 0.9, bottomRimHeight, 64), metalMaterial);
+    canBottomRim.position.y = canBottomTaper.position.y - bottomTaperHeight / 2;
+    canGroup.add(canBottomRim);
+
 
     scene.add(canGroup);
 
