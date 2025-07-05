@@ -92,12 +92,10 @@ export default function Home() {
               {flavors.map((flavor, index) => (
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-1">
-                    <Card className="overflow-hidden rounded-lg border-border bg-card/80 backdrop-blur-sm shadow-sm transition-shadow hover:shadow-lg">
+                    <Card className="overflow-hidden rounded-lg bg-transparent border-0 shadow-none">
                       <CardContent className="p-0">
                         <div className="relative w-full aspect-square">
-                          <div className="absolute inset-0 flex items-center justify-center">
-                              <FlavorScene flavorName={flavor.name} flavorColor={flavor.color} />
-                          </div>
+                          <FlavorScene flavorName={flavor.name} flavorColor={flavor.color} />
                         </div>
                         <div className="w-full p-4">
                           <h3 className="text-center font-headline text-xl font-bold">
