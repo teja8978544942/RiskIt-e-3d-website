@@ -11,49 +11,20 @@ import {
 } from '@/components/ui/carousel';
 import { ArrowDown } from 'lucide-react';
 import Image from 'next/image';
-import { generateFlavorImage } from '@/ai/flows/generate-flavor-image-flow';
-
 
 const flavors = [
-  { name: 'Midnight Chocolate', hint: 'soda bottle chocolate' },
-  { name: 'Citrus Surge', hint: 'soda bottle citrus' },
-  { name: 'Berry Blitz', hint: 'soda bottle berry' },
-  { name: 'Tropical Fusion', hint: 'soda bottle tropical' },
-  { name: 'Arctic Mint', hint: 'soda bottle mint' },
-  { name: 'Spiced Apple', hint: 'soda bottle apple' },
-  { name: 'Cherry Bomb', hint: 'soda bottle cherry' },
-  { name: 'Grape Escape', hint: 'soda bottle grape' },
+  { name: 'Orange Burst', imageUrl: '/4e5483d4-b78f-4316-92f7-7299a4c14c5c.png', hint: 'soda can orange' },
+  { name: 'Lime Zing', imageUrl: '/52655883-7c3e-436f-b2f5-b663e80064e4.png', hint: 'soda can lime' },
+  { name: 'Grape Blast', imageUrl: '/66a84c8a-a827-463d-82c1-d41933c0cf9a.png', hint: 'soda can grape' },
+  { name: 'Blueberry Wave', imageUrl: '/1aa3d42e-152e-4b77-802c-7b78996b5a03.png', hint: 'soda can blueberry' },
+  { name: 'Mango Tango', imageUrl: '/1f6b8c9d-1579-4503-ac8b-d5a2d64f0ca2.png', hint: 'soda can mango' },
+  { name: 'Raspberry Rush', imageUrl: '/4260f774-4b53-488b-a359-245ed7e7931f.png', hint: 'soda can raspberry' },
+  { name: 'Pearadise', imageUrl: '/d54e4c3a-2a4c-473d-8152-da0536c4b9d0.png', hint: 'soda can pear' },
+  { name: 'Strawberry Bliss', imageUrl: '/99e11500-1c05-4c6e-8120-04359483c65c.png', hint: 'soda can strawberry' },
 ];
 
-const fallbackImages: Record<string, string> = {
-  'Midnight Chocolate': 'https://images.unsplash.com/photo-1554848419-86f1e723654a?w=300&h=500&fit=crop&q=80',
-  'Citrus Surge': 'https://images.unsplash.com/photo-1603409996130-2a6d4e515e1a?w=300&h=500&fit=crop&q=80',
-  'Berry Blitz': 'https://images.unsplash.com/photo-1595789233849-21c67e8a93cb?w=300&h=500&fit=crop&q=80',
-  'Tropical Fusion': 'https://images.unsplash.com/photo-1578358893475-6f96aa120a4a?w=300&h=500&fit=crop&q=80',
-  'Arctic Mint': 'https://images.unsplash.com/photo-1542312579-99a5135a0342?w=300&h=500&fit=crop&q=80',
-  'Spiced Apple': 'https://images.unsplash.com/photo-1615887023516-9b6aade9597f?w=300&h=500&fit=crop&q=80',
-  'Cherry Bomb': 'https://images.unsplash.com/photo-1619546813926-a78fa6332cd2?w=300&h=500&fit=crop&q=80',
-  'Grape Escape': 'https://images.unsplash.com/photo-1600783323552-39088ac4f068?w=300&h=500&fit=crop&q=80',
-};
 
-
-export default async function Home() {
-  const hasApiKey = !!process.env.GOOGLE_API_KEY;
-
-  const flavorImages = [];
-  for (const flavor of flavors) {
-    let imageUrl = fallbackImages[flavor.name];
-    if (hasApiKey) {
-      try {
-        imageUrl = await generateFlavorImage({ flavorName: flavor.name });
-      } catch (error) {
-        console.error(`Failed to generate image for ${flavor.name}, using fallback. Error:`, error);
-        // imageUrl is already set to the fallback
-      }
-    }
-    flavorImages.push({ ...flavor, imageUrl });
-  }
-
+export default function Home() {
   return (
     <main className="relative w-full overflow-x-hidden bg-background text-foreground">
       <div className="absolute inset-0 z-0">
@@ -121,7 +92,7 @@ export default async function Home() {
             className="w-full max-w-sm md:max-w-2xl lg:max-w-4xl"
           >
             <CarouselContent>
-              {flavorImages.map((flavor, index) => (
+              {flavors.map((flavor, index) => (
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-1">
                     <Card className="overflow-hidden rounded-lg border-border bg-card shadow-sm transition-shadow hover:shadow-lg">
