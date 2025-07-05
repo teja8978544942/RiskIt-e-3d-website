@@ -26,14 +26,14 @@ const flavors = [
 ];
 
 const fallbackImages: Record<string, string> = {
-  'Midnight Chocolate': 'https://images.unsplash.com/photo-1627063045431-729905106043?w=300&h=500&fit=crop&q=80',
-  'Citrus Surge': 'https://images.unsplash.com/photo-1613588241615-3746653913f4?w=300&h=500&fit=crop&q=80',
-  'Berry Blitz': 'https://images.unsplash.com/photo-1627751929388-3d856b3e6e87?w=300&h=500&fit=crop&q=80',
-  'Tropical Fusion': 'https://images.unsplash.com/photo-1588675646184-f5b0b3b142de?w=300&h=500&fit=crop&q=80',
-  'Arctic Mint': 'https://images.unsplash.com/photo-1575389648583-58e1ceb56653?w=300&h=500&fit=crop&q=80',
-  'Spiced Apple': 'https://images.unsplash.com/photo-1598434316938-1a525e982142?w=300&h=500&fit=crop&q=80',
-  'Cherry Bomb': 'https://images.unsplash.com/photo-1594458350343-46c5a098b6a3?w=300&h=500&fit=crop&q=80',
-  'Grape Escape': 'https://images.unsplash.com/photo-1627751929388-3d856b3e6e87?w=300&h=500&fit=crop&q=80',
+  'Midnight Chocolate': 'https://images.unsplash.com/photo-1581298455923-29a3a9a14786?w=300&h=500&fit=crop&q=80',
+  'Citrus Surge': 'https://images.unsplash.com/photo-1625740922093-7842a03e6b76?w=300&h=500&fit=crop&q=80',
+  'Berry Blitz': 'https://images.unsplash.com/photo-1601055909242-9955375f3434?w=300&h=500&fit=crop&q=80',
+  'Tropical Fusion': 'https://images.unsplash.com/photo-1541169234851-4144e138317a?w=300&h=500&fit=crop&q=80',
+  'Arctic Mint': 'https://images.unsplash.com/photo-1617958219663-88488b39344f?w=300&h=500&fit=crop&q=80',
+  'Spiced Apple': 'https://images.unsplash.com/photo-1622543934999-a3a86a6f6f3e?w=300&h=500&fit=crop&q=80',
+  'Cherry Bomb': 'https://images.unsplash.com/photo-1567103472667-6898f3a79cf2?w=300&h=500&fit=crop&q=80',
+  'Grape Escape': 'https://images.unsplash.com/photo-1621939523214-411a57f78816?w=300&h=500&fit=crop&q=80',
 };
 
 
