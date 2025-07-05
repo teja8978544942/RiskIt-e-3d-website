@@ -26,22 +26,53 @@ export function Scene() {
     directionalLight.castShadow = true;
     scene.add(directionalLight);
 
-    const canGroup = new THREE.Group();
-    const canMaterial = new THREE.MeshStandardMaterial({
-        color: new THREE.Color('#A67B5B'),
+    // Create a canvas texture for the can label
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024; // High-res for crisp text
+    const context = canvas.getContext('2d');
+    
+    const canColor = '#A67B5B';
+    const textColor = 'white';
+    
+    if (context) {
+      context.fillStyle = canColor;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      
+      context.font = 'bold 150px "Playfair Display"';
+      context.fillStyle = textColor;
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.fillText('RiskIt', canvas.width / 2, canvas.height / 2);
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+
+    // Material for the can body with the logo
+    const canBodyMaterial = new THREE.MeshStandardMaterial({
+        map: texture,
         metalness: 0.6,
         roughness: 0.4,
     });
     
-    const canBody = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 2.8, 64), canMaterial);
+    // Material for the top and bottom of the can
+    const canTopBottomMaterial = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(canColor),
+        metalness: 0.6,
+        roughness: 0.4,
+    });
+
+    const canGroup = new THREE.Group();
+    
+    const canBody = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 2.8, 64), canBodyMaterial);
     canBody.position.y = 0;
     canGroup.add(canBody);
     
-    const canTop = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 1, 0.15, 64), canMaterial);
+    const canTop = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 1, 0.15, 64), canTopBottomMaterial);
     canTop.position.y = 1.475;
     canGroup.add(canTop);
     
-    const canBottom = new THREE.Mesh(new THREE.CylinderGeometry(1, 0.95, 0.15, 64), canMaterial);
+    const canBottom = new THREE.Mesh(new THREE.CylinderGeometry(1, 0.95, 0.15, 64), canTopBottomMaterial);
     canBottom.position.y = -1.475;
     canGroup.add(canBottom);
 
