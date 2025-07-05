@@ -339,10 +339,10 @@ export function PourAnimation({ flavorName, flavorColor, onComplete }: PourAnima
         <div className="fixed inset-0 z-50 bg-background">
             <div ref={mountRef} className="h-full w-full" />
             <div 
-                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                className="absolute inset-0 flex items-start justify-center pointer-events-none pt-20"
             >
                 <h1 className="font-headline text-black text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
-                    Let's dive your thirst
+                    Let's dive through thirst
                 </h1>
             </div>
         </div>
