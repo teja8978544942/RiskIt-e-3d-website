@@ -93,22 +93,20 @@ export default function Home() {
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-1">
                     <Card className="overflow-hidden rounded-lg border-border bg-card shadow-sm transition-shadow hover:shadow-lg">
-                      <CardContent className="flex flex-col items-center justify-center p-0">
-                         <div className="grid grid-cols-2 items-center justify-items-center w-full bg-secondary">
-                          <div className="w-full h-full flex items-center justify-center">
+                      <CardContent className="p-0">
+                        <div className="relative w-full aspect-square">
+                          <Image
+                              src={flavor.imageUrl}
+                              alt={flavor.name}
+                              fill
+                              className="object-cover"
+                              data-ai-hint={flavor.hint}
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center">
                               <FlavorScene flavorName={flavor.name} flavorColor={flavor.color} />
                           </div>
-                          <div className="w-full aspect-square relative">
-                              <Image
-                                  src={flavor.imageUrl}
-                                  alt={flavor.name}
-                                  fill
-                                  className="object-cover"
-                                  data-ai-hint={flavor.hint}
-                              />
-                          </div>
                         </div>
-                        <div className="w-full p-4 bg-background/50">
+                        <div className="w-full p-4 bg-background/50 backdrop-blur-sm">
                           <h3 className="text-center font-headline text-xl font-bold">
                             {flavor.name}
                           </h3>
