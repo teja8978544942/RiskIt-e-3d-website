@@ -1,3 +1,4 @@
+import { generateFlavorImage } from '@/ai/flows/generate-flavor-image-flow';
 import { Scene } from '@/components/scene';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,21 +9,50 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
-import { ArrowDown } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ArrowDown, Terminal } from 'lucide-react';
 import Image from 'next/image';
 
 const flavors = [
-  { name: 'Original Bold', hint: 'soda can', color: 'A67B5B' },
-  { name: 'Citrus Surge', hint: 'soda can', color: 'F59E0B' },
-  { name: 'Berry Blitz', hint: 'soda can', color: '7C3AED' },
-  { name: 'Tropical Fusion', hint: 'soda can', color: '10B981' },
-  { name: 'Arctic Mint', hint: 'soda can', color: '3B82F6' },
-  { name: 'Spiced Apple', hint: 'soda can', color: 'EF4444' },
-  { name: 'Cherry Bomb', hint: 'soda can', color: 'D946EF' },
-  { name: 'Grape Escape', hint: 'soda can', color: '8B5CF6' },
+  { name: 'Original Bold', hint: 'soda can', fruitDescription: 'dark berries and a hint of spice', color: '5A3A22' },
+  { name: 'Citrus Surge', hint: 'soda can', fruitDescription: 'lemons limes and oranges', color: 'F2C94C' },
+  { name: 'Berry Blitz', hint: 'soda can', fruitDescription: 'mixed berries like strawberries and blueberries', color: 'D64A6B' },
+  { name: 'Tropical Fusion', hint: 'soda can', fruitDescription: 'pineapple mango and passionfruit', color: 'F2994A' },
+  { name: 'Arctic Mint', hint: 'soda can', fruitDescription: 'fresh mint leaves with a cool icy effect', color: '56CCF2' },
+  { name: 'Spiced Apple', hint: 'soda can', fruitDescription: 'red apples and cinnamon sticks', color: 'EB5757' },
+  { name: 'Cherry Bomb', hint: 'soda can', fruitDescription: 'ripe dark cherries', color: '9B2C2C' },
+  { name: 'Grape Escape', hint: 'soda can', fruitDescription: 'purple and green grapes', color: 'BB6BD9' },
 ];
 
-export default function Home() {
+export default async function Home() {
+  let flavorsWithImages;
+  let areImagesGenerated = false;
+
+  try {
+    const imagePromises = flavors.map(flavor =>
+      generateFlavorImage({
+        flavorName: flavor.name,
+        fruitDescription: flavor.fruitDescription,
+      })
+    );
+    const generatedImages = await Promise.all(imagePromises);
+  
+    flavorsWithImages = flavors.map((flavor, index) => ({
+      ...flavor,
+      imageUrl: generatedImages[index].imageUrl,
+      isGenerated: true,
+    }));
+    areImagesGenerated = true;
+
+  } catch (error) {
+    console.error(error); // Log the error for debugging
+    flavorsWithImages = flavors.map((flavor) => ({
+      ...flavor,
+      imageUrl: `https://placehold.co/300x500/${flavor.color}/FFFFFF.png`,
+      isGenerated: false,
+    }));
+  }
+  
   return (
     <main className="relative w-full overflow-x-hidden bg-background text-foreground">
       <div className="absolute inset-0 z-0">
@@ -78,6 +108,15 @@ export default function Home() {
           id="flavors"
           className="container mx-auto flex h-screen flex-col items-center justify-center p-4"
         >
+          {!areImagesGenerated && (
+            <Alert className="mb-8 max-w-2xl">
+              <Terminal className="h-4 w-4" />
+              <AlertTitle>Image Generation Disabled</AlertTitle>
+              <AlertDescription>
+                To enable AI-powered image generation, please add your Google AI API key to an environment variable named <code>GOOGLE_API_KEY</code> in the <code>.env</code> file. The images below are placeholders.
+              </AlertDescription>
+            </Alert>
+          )}
           <h2 className="mb-12 text-center font-headline text-4xl font-bold md:text-6xl">
             8 Bold Flavors
           </h2>
@@ -89,19 +128,20 @@ export default function Home() {
             className="w-full max-w-sm md:max-w-2xl lg:max-w-4xl"
           >
             <CarouselContent>
-              {flavors.map((flavor, index) => (
+              {flavorsWithImages.map((flavor, index) => (
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-1">
                     <Card className="overflow-hidden rounded-lg border-border bg-card shadow-sm transition-shadow hover:shadow-lg">
                       <CardContent className="flex flex-col items-center justify-center p-0">
                         <div className="aspect-[3/5] w-full overflow-hidden">
                           <Image
-                            src={`https://placehold.co/300x500/${flavor.color}/FFFFFF.png`}
+                            src={flavor.imageUrl}
                             alt={flavor.name}
                             width={300}
                             height={500}
                             className="h-full w-full object-cover transition-transform duration-300 hover:scale-110"
                             data-ai-hint={flavor.hint}
+                            unoptimized={flavor.isGenerated}
                           />
                         </div>
                         <div className="w-full p-4 bg-background/50">
