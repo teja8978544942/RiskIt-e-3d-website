@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as THREE from 'three';
@@ -17,6 +18,8 @@ export function Scene() {
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
     mountRef.current.appendChild(renderer.domElement);
 
     // More realistic lighting setup
@@ -25,6 +28,11 @@ export function Scene() {
     const directionalLight = new THREE.DirectionalLight(0xffffff, 4.5);
     directionalLight.position.set(5, 5, 5);
     directionalLight.castShadow = true;
+    // Configure shadow properties for quality
+    directionalLight.shadow.mapSize.width = 1024;
+    directionalLight.shadow.mapSize.height = 1024;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 20;
     scene.add(directionalLight);
 
     // Create a canvas texture for the can label
@@ -127,8 +135,25 @@ export function Scene() {
     canBottomRim.position.y = canBottomTaper.position.y - bottomTaperHeight / 2;
     canGroup.add(canBottomRim);
 
-
+    // Make the can and all its parts cast shadows
+    canGroup.castShadow = true;
+    canGroup.traverse(function(child) {
+        if ((child as THREE.Mesh).isMesh) {
+            child.castShadow = true;
+        }
+    });
     scene.add(canGroup);
+
+    // Add an invisible ground plane to receive shadows
+    const shadowPlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(10, 10),
+        new THREE.ShadowMaterial({ opacity: 0.3 })
+    );
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.position.y = -2.2; // Position it below the can
+    shadowPlane.receiveShadow = true;
+    scene.add(shadowPlane);
+
 
     const scrollPoints = [
         { cameraPos: new THREE.Vector3(0, 0, 5), canRotation: new THREE.Euler(0, 0, 0) },
@@ -167,14 +192,8 @@ export function Scene() {
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     };
     window.addEventListener('mousemove', onMouseMove, { passive: true });
-
-    const clock = new THREE.Clock();
     
     const tick = () => {
-        const elapsedTime = clock.getElapsedTime();
-        
-        canGroup.position.y = Math.sin(elapsedTime * 0.8) * 0.05;
-
         const targetLookAt = new THREE.Vector3(mouse.x * 0.1, -mouse.y * 0.1, -1);
         camera.lookAt(targetLookAt);
         
