@@ -143,6 +143,7 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     bottomBase.position.y = -bodyHeight / 2 - 0.05;
     canGroup.add(bottomBase);
 
+    canGroup.scale.set(0.9, 0.9, 0.9);
     return canGroup;
 }
 
@@ -156,7 +157,7 @@ export function Scene() {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     scene.add(camera);
-    camera.position.z = 8; 
+    camera.position.z = 9.5; 
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -204,7 +205,7 @@ export function Scene() {
     }
 
     const otherFlavors = flavors.filter(f => f.name !== 'Orange Burst');
-    const spacing = 2.5;
+    const spacing = 2.0;
 
     otherFlavors.forEach((flavor, index) => {
         const can = createCanMesh(flavor.name, flavor.color);
@@ -242,9 +243,7 @@ export function Scene() {
         if (mainCan) {
           const scrollFraction = Math.min(scrollY / animationDistance, 1);
           
-          const easedFraction = scrollFraction < 0.5 
-            ? 4 * scrollFraction * scrollFraction * scrollFraction 
-            : 1 - Math.pow(-2 * scrollFraction + 2, 3) / 2;
+          const easedFraction = 1 - Math.pow(1 - scrollFraction, 3);
 
           mainCan.position.y = THREE.MathUtils.lerp(0, -5, easedFraction);
           
