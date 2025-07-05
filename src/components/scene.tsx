@@ -145,6 +145,7 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     canGroup.add(bottomBase);
 
     canGroup.scale.set(0.9, 0.9, 0.9);
+    canGroup.userData = { flavorName, flavorColor };
     return canGroup;
 }
 
@@ -347,22 +348,25 @@ export function Scene() {
                 clickedObject = clickedObject.parent;
             }
             const can = clickedObject as THREE.Group;
-            const flavor = flavors.find(f => f.name.toUpperCase() === (can.children[0] as any).material.map.image.getContext('2d').__font.split("'")[3].toUpperCase());
+            
+            if (can.userData.flavorName) {
+                const flavor = flavors.find(f => f.name === can.userData.flavorName);
 
-            if (can && flavor) {
-                const state = animationState.current;
-                state.isAnimating = true;
-                state.can = can;
-                state.originalPosition.copy(can.position);
-                state.originalRotation.copy(can.rotation);
-                state.stage = 'lifting';
-                state.startTime = performance.now();
-                
-                state.glass = createGlass();
-                scene.add(state.glass);
+                if (can && flavor) {
+                    const state = animationState.current;
+                    state.isAnimating = true;
+                    state.can = can;
+                    state.originalPosition.copy(can.position);
+                    state.originalRotation.copy(can.rotation);
+                    state.stage = 'lifting';
+                    state.startTime = performance.now();
+                    
+                    state.glass = createGlass();
+                    scene.add(state.glass);
 
-                state.particles = createParticles(flavor.color);
-                scene.add(state.particles);
+                    state.particles = createParticles(flavor.color);
+                    scene.add(state.particles);
+                }
             }
         }
     };
@@ -424,27 +428,27 @@ export function Scene() {
                     if (particles && glass && can) {
                         particles.visible = true;
                         const pourDuration = 3000;
-                        if(performance.now() - state.pourStartTime > pourDuration) {
+                        if (performance.now() - state.pourStartTime > pourDuration) {
                             state.stage = 'resetting';
                             state.startTime = performance.now();
                             pourSound.current?.pause();
-                            if(pourSound.current) pourSound.current.currentTime = 0;
+                            if (pourSound.current) pourSound.current.currentTime = 0;
                         }
 
                         const positions = particles.geometry.attributes.position.array as Float32Array;
                         const velocities = particles.geometry.attributes.velocity.array as Float32Array;
-                        const pourOrigin = new THREE.Vector3(0, 1.4, 0);
-                        can.localToWorld(pourOrigin);
-                        particles.position.copy(pourOrigin).negate();
+                        const pourLocalOrigin = new THREE.Vector3(0, 1.4, 0);
+                        const pourWorldOrigin = pourLocalOrigin.clone().applyMatrix4(can.matrixWorld);
 
                         for (let i = 0; i < positions.length; i += 3) {
-                           if(velocities[i+1] === 0) { // is particle 'dead'?
+                           if (velocities[i + 1] === 0) { // is particle 'dead'?
+                                positions[i] = pourWorldOrigin.x + (Math.random() - 0.5) * 0.05;
+                                positions[i + 1] = pourWorldOrigin.y;
+                                positions[i + 2] = pourWorldOrigin.z + (Math.random() - 0.5) * 0.05;
+
                                 velocities[i] = (Math.random() - 0.5) * 0.1;
-                                velocities[i+1] = Math.random() * 0.1;
-                                velocities[i+2] = (Math.random() - 0.5) * 0.1;
-                                positions[i] = pourOrigin.x;
-                                positions[i+1] = pourOrigin.y;
-                                positions[i+2] = pourOrigin.z;
+                                velocities[i + 1] = -0.05 - (Math.random() * 0.05);
+                                velocities[i + 2] = (Math.random() - 0.5) * 0.1;
                            }
                            
                            velocities[i+1] -= 0.005; // gravity
@@ -452,9 +456,8 @@ export function Scene() {
                            positions[i+1] += velocities[i+1];
                            positions[i+2] += velocities[i+2];
 
-                           const worldParticlePos = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).add(pourOrigin);
-                           if(worldParticlePos.y < glass.position.y - 1.5) {
-                               velocities[i+1] = 0;
+                           if (positions[i + 1] < glass.position.y - 1.5) {
+                               velocities[i + 1] = 0;
                            }
                         }
                         particles.geometry.attributes.position.needsUpdate = true;
