@@ -30,11 +30,12 @@ function createGlass() {
     });
     const glass = new THREE.Mesh(geometry, material);
     glass.visible = false;
+    glass.castShadow = true;
     return glass;
 }
 
 function createParticles(color: string) {
-    const particleCount = 5000;
+    const particleCount = 8000;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const velocities = new Float32Array(particleCount * 3);
@@ -49,9 +50,9 @@ function createParticles(color: string) {
     
     const material = new THREE.PointsMaterial({
         color: new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.2),
-        size: 0.05,
+        size: 0.04,
         transparent: true,
-        opacity: 0.6,
+        opacity: 0.7,
         blending: THREE.AdditiveBlending,
         sizeAttenuation: true
     });
@@ -69,6 +70,8 @@ function createLiquid(color: string) {
         opacity: 0.85,
         metalness: 0,
         roughness: 0.2,
+        emissive: color,
+        emissiveIntensity: 0.15,
     });
     const liquid = new THREE.Mesh(geometry, material);
     liquid.visible = false;
@@ -188,9 +191,9 @@ export default function PourPage() {
                 const worldPosition = new THREE.Vector3();
                 can.getWorldPosition(worldPosition);
 
-                const focusPoint = worldPosition.clone().add(new THREE.Vector3(0, 1, 4));
+                const focusPoint = new THREE.Vector3(0.5, 0, 4);
                 camera.position.lerp(focusPoint, 0.04);
-                cameraLookAtTarget.position.lerp(worldPosition, 0.04);
+                cameraLookAtTarget.position.lerp(new THREE.Vector3(0.5, 0, 0), 0.04);
                 camera.lookAt(cameraLookAtTarget.position);
 
                 switch(state.stage) {
@@ -215,7 +218,7 @@ export default function PourPage() {
                         break;
                     }
                     case 'tilting': {
-                        const targetPos = new THREE.Vector3(state.originalPosition.x, state.originalPosition.y + 1, 2.5);
+                        const targetPos = new THREE.Vector3(1.0, 2.0, 2.5);
                         can.position.x = THREE.MathUtils.damp(can.position.x, targetPos.x, 4, delta);
                         can.position.y = THREE.MathUtils.damp(can.position.y, targetPos.y, 4, delta);
                         can.position.z = THREE.MathUtils.damp(can.position.z, targetPos.z, 4, delta);
@@ -225,12 +228,7 @@ export default function PourPage() {
 
                         if (glass) {
                             glass.visible = true;
-                            
-                            const pourLocalOrigin = new THREE.Vector3(0, 1.4, 0);
-                            const pourWorldOrigin = pourLocalOrigin.clone().applyMatrix4(can.matrixWorld);
-                            glass.position.set(pourWorldOrigin.x, pourWorldOrigin.y - 2.8, pourWorldOrigin.z);
-                            
-                            const progress = Math.min((performance.now() - state.startTime) / 500, 1);
+                            const progress = Math.min((performance.now() - state.startTime) / 800, 1);
                             glass.scale.set(progress, progress, progress);
                         }
 
@@ -266,10 +264,10 @@ export default function PourPage() {
                             liquid.scale.y = currentLiquidHeight;
                             liquid.position.y = glass.position.y - 1.5 + (currentLiquidHeight / 2);
 
-                            const foamHeight = Math.max(0.1, 0.3 - (pourProgress * 0.2));
+                            const foamHeight = Math.max(0.1, 0.4 - (pourProgress * 0.3));
                             foam.scale.y = foamHeight;
                             foam.position.y = liquid.position.y + (currentLiquidHeight / 2) + (foamHeight / 2);
-                            foam.position.y += Math.sin(time * 30) * 0.01;
+                            foam.position.y += Math.sin(time * 50) * 0.01 + Math.sin(time * 35) * 0.015;
                         }
 
                         state.liquidLevel = THREE.MathUtils.lerp(-1.5, 0.8, pourProgress);
@@ -279,16 +277,16 @@ export default function PourPage() {
 
                             const positions = particles.geometry.attributes.position.array as Float32Array;
                             const velocities = particles.geometry.attributes.velocity.array as Float32Array;
-                            const pourLocalOrigin = new THREE.Vector3(0, 1.4, 0);
+                            const pourLocalOrigin = new THREE.Vector3(0.35, 1.4, 0);
                             const pourWorldOrigin = pourLocalOrigin.clone().applyMatrix4(can.matrixWorld);
 
                             for (let i = 0; i < positions.length; i += 3) {
                               const isDead = velocities[i+1] === 0 && velocities[i] === 0;
 
-                              if (isDead && Math.random() < 0.2) { // Respawn
-                                  positions[i] = pourWorldOrigin.x + (Math.random() - 0.5) * 0.1;
+                              if (isDead && Math.random() < 0.3) { // Respawn
+                                  positions[i] = pourWorldOrigin.x + (Math.random() - 0.5) * 0.08;
                                   positions[i+1] = pourWorldOrigin.y;
-                                  positions[i+2] = pourWorldOrigin.z + (Math.random() - 0.5) * 0.1;
+                                  positions[i+2] = pourWorldOrigin.z + (Math.random() - 0.5) * 0.08;
 
                                   velocities[i] = (Math.random() - 0.5) * 0.05;
                                   velocities[i+1] = -0.15 - (Math.random() * 0.1);
@@ -296,17 +294,24 @@ export default function PourPage() {
                               }
                               
                               if (!isDead) {
-                                  velocities[i+1] -= 0.4 * delta; 
+                                  velocities[i+1] -= 0.5 * delta; 
                                   positions[i] += velocities[i] * delta * 60;
                                   positions[i+1] += velocities[i+1] * delta * 60;
                                   positions[i+2] += velocities[i+2] * delta * 60;
 
                                   const liquidSurfaceY = glass.position.y + state.liquidLevel;
-                                  
-                                  if (positions[i+1] < liquidSurfaceY) {
+                                  const particleYinGlass = positions[i+1] < liquidSurfaceY;
+                                  const particleXZ = new THREE.Vector2(positions[i] - glass.position.x, positions[i+2] - glass.position.z);
+                                  const glassRadius = 0.85;
+
+                                  if (particleYinGlass && particleXZ.length() < glassRadius) {
                                       velocities[i] = 0;
                                       velocities[i+1] = 0;
                                       velocities[i+2] = 0;
+                                  } else if (positions[i+1] < glass.position.y - 1.5) {
+                                     velocities[i] = 0;
+                                     velocities[i+1] = 0;
+                                     velocities[i+2] = 0;
                                   }
                               }
                             }
@@ -342,6 +347,7 @@ export default function PourPage() {
             state.liquidLevel = -1.5;
 
             state.glass = createGlass();
+            state.glass.position.set(1.2, -1.7 + 1.5, 2.5);
             scene.add(state.glass);
 
             state.particles = createParticles(flavor.color);
