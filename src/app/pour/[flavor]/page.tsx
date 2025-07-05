@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as THREE from 'three';
@@ -86,10 +87,10 @@ export default function PourPage() {
         if (!mountRef.current || typeof window === 'undefined') return;
 
         if (!popSoundRef.current) {
-            popSoundRef.current = new Audio('https://cdn.freesound.org/previews/253/253886_4469695-lq.mp3');
+            popSoundRef.current = new Audio('https://actions.google.com/sounds/v1/household/can_opening.ogg');
         }
         if (!pourSoundRef.current) {
-            pourSoundRef.current = new Audio('https://cdn.freesound.org/previews/235/235954_4169605-lq.mp3');
+            pourSoundRef.current = new Audio('https://actions.google.com/sounds/v1/water/water_pouring_into_a_glass.ogg');
             pourSoundRef.current.loop = true;
         }
         
