@@ -4,15 +4,6 @@
 import * as THREE from 'three';
 
 export async function createCanMesh(flavorName: string, flavorColor: string): Promise<THREE.Group> {
-    const logoImg = new Image();
-    logoImg.crossOrigin = 'Anonymous';
-    // Use an embedded SVG data URI to eliminate network failures.
-    logoImg.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIgLz48L3N2Zz4=';
-
-    await new Promise((resolve, reject) => {
-        logoImg.onload = () => resolve(null);
-        logoImg.onerror = () => reject(new Error('Failed to load logo image for can texture.'));
-    });
 
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
@@ -23,18 +14,14 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
       context.fillStyle = flavorColor;
       context.fillRect(0, 0, canvas.width, canvas.height);
       
-      const logoHeight = 150;
-      const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
-      context.drawImage(logoImg, canvas.width / 2 - logoWidth / 2, 200, logoWidth, logoHeight);
-
       context.font = 'bold 150px "Playfair Display"';
       context.fillStyle = 'white';
       context.textAlign = 'center';
       context.textBaseline = 'middle';
-      context.fillText('RiskIt', canvas.width / 2, canvas.height / 2 + 60);
+      context.fillText('RiskIt', canvas.width / 2, canvas.height / 2 - 20);
 
       context.font = 'bold 70px "PT Sans"';
-      context.fillText(flavorName.toUpperCase(), canvas.width / 2, canvas.height / 2 + 160);
+      context.fillText(flavorName.toUpperCase(), canvas.width / 2, canvas.height / 2 + 80);
     }
     const texture = new THREE.CanvasTexture(canvas);
     texture.anisotropy = 16;
@@ -89,12 +76,10 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
         new THREE.CylinderGeometry(canRadius * 0.8, canRadius * 0.8, 0.02, segments),
         metalMaterial
     );
-    // Make the panel more recessed for a deeper look
     centerPanel.position.y = -0.05;
     topGroup.add(centerPanel);
     
     const slopedPanel = new THREE.Mesh(
-        // Adjust height to match new recessed panel
         new THREE.CylinderGeometry(canRadius * 0.98, canRadius * 0.8, 0.06, segments),
         metalMaterial
     );
@@ -102,17 +87,37 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
     topGroup.add(slopedPanel);
     
     const rim = new THREE.Mesh(
-        // Use a thicker torus for a softer, more realistic rim
         new THREE.TorusGeometry(canRadius, 0.04, 16, segments),
         metalMaterial
     );
     rim.rotation.x = Math.PI / 2;
     topGroup.add(rim);
 
+    // Add indented can opening for realism
+    const mouthShape = new THREE.Shape();
+    const mouthWidth = 0.2;
+    const mouthHeight = 0.4;
+    const mouthRadius = 0.1;
+    mouthShape.absellipse(0, 0, mouthWidth, mouthHeight, 0, Math.PI * 2, false, 0);
+
+    const mouthExtrudeSettings = {
+        steps: 1,
+        depth: 0.02,
+        bevelEnabled: true,
+        bevelThickness: 0.01,
+        bevelSize: 0.01,
+        bevelSegments: 1,
+    };
+    const mouthGeom = new THREE.ExtrudeGeometry(mouthShape, mouthExtrudeSettings);
+    const mouthIndent = new THREE.Mesh(mouthGeom, metalMaterial);
+    // Position the mouth indent on the can top
+    mouthIndent.position.set(-0.35, -0.06, 0);
+    mouthIndent.rotation.x = -Math.PI / 2;
+    topGroup.add(mouthIndent);
+
     const pullTab = new THREE.Group();
     pullTab.name = "pullTab";
 
-    // A more refined pull tab shape
     const tabShape = new THREE.Shape();
     const arcRadius = 0.22;
     const holeRadius = 0.1;

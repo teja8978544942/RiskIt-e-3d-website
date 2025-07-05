@@ -184,7 +184,7 @@ export default function PourPage() {
                         if(pullTab) pullTab.rotation.x = THREE.MathUtils.damp(pullTab.rotation.x, targetRotX, 8, delta);
                         if (pullTab && Math.abs(pullTab.rotation.x - targetRotX) < 0.1) {
                             if (state.stage === 'opening') {
-                                popSound?.play();
+                                popSound?.play().catch(e => console.error("Error playing pop sound:", e));
                                 state.stage = 'tilting';
                                 state.startTime = performance.now();
                             }
@@ -212,9 +212,11 @@ export default function PourPage() {
                         }
 
                         if (Math.abs(can.rotation.x - targetRotX) < 0.1) {
-                            state.stage = 'pouring';
-                            state.pourStartTime = performance.now();
-                            pourSound?.play();
+                            if (state.stage === 'tilting') {
+                                state.stage = 'pouring';
+                                state.pourStartTime = performance.now();
+                                pourSound?.play().catch(e => console.error("Error playing pour sound:", e));
+                            }
                         }
                         break;
                     }
