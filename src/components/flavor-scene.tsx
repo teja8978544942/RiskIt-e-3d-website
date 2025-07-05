@@ -93,108 +93,9 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     canGroup.add(canBottomRim);
 
     canGroup.scale.set(1.8, 1.8, 1.8);
-    canGroup.position.x = -0.8;
+    canGroup.position.x = 0;
 
     return canGroup;
-}
-
-function createFruitMesh(flavorName: string): THREE.Group {
-    const fruitGroup = new THREE.Group();
-    const material = new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.1 });
-    let geometry;
-
-    const createCluster = (color: THREE.Color, count: number, baseRadius: number) => {
-        material.color = color;
-        for (let i = 0; i < count; i++) {
-            const radius = baseRadius * (Math.random() * 0.4 + 0.8);
-            geometry = new THREE.SphereGeometry(radius, 24, 24);
-            const sphere = new THREE.Mesh(geometry, material);
-            sphere.position.set(
-                (Math.random() - 0.5) * 0.6,
-                (Math.random() - 0.5) * 0.6,
-                (Math.random() - 0.5) * 0.6
-            );
-            fruitGroup.add(sphere);
-        }
-    }
-
-    switch (flavorName) {
-        case 'Orange Burst': {
-            geometry = new THREE.SphereGeometry(0.4, 32, 32);
-            material.color.set('#FFA500');
-            fruitGroup.add(new THREE.Mesh(geometry, material));
-            break;
-        }
-        case 'Lime Zing': {
-            geometry = new THREE.SphereGeometry(0.35, 32, 32);
-            material.color.set('#32CD32');
-            fruitGroup.add(new THREE.Mesh(geometry, material));
-            break;
-        }
-        case 'Grape Blast': {
-            createCluster(new THREE.Color('#6F2DA8'), 20, 0.15);
-            break;
-        }
-        case 'Blueberry Wave': {
-            createCluster(new THREE.Color('#4682B4'), 25, 0.1);
-            break;
-        }
-        case 'Mango Tango': {
-             geometry = new THREE.SphereGeometry(0.35, 32, 32);
-             (geometry as THREE.SphereGeometry).scale(1.2, 1.6, 1);
-            material.color.set('#FFBF00');
-            fruitGroup.add(new THREE.Mesh(geometry, material));
-            break;
-        }
-        case 'Raspberry Rush': {
-             createCluster(new THREE.Color('#E30B5D'), 25, 0.1);
-            break;
-        }
-        case 'Pearadise': {
-            const pearGroup = new THREE.Group();
-            material.color.set('#D1E231');
-            geometry = new THREE.SphereGeometry(0.3, 32, 32);
-            (geometry as THREE.SphereGeometry).scale(1, 1.5, 1);
-            const pearBody = new THREE.Mesh(geometry, material);
-            pearBody.position.y = 0.15;
-            pearGroup.add(pearBody);
-
-            const stemGeometry = new THREE.CylinderGeometry(0.02, 0.03, 0.15, 8);
-            const stemMaterial = new THREE.MeshStandardMaterial({color: '#5C4033'});
-            const stem = new THREE.Mesh(stemGeometry, stemMaterial);
-            stem.position.y = 0.5;
-            stem.rotation.z = 0.3;
-            pearGroup.add(stem);
-
-            fruitGroup.add(pearGroup);
-            break;
-        }
-        case 'Strawberry Bliss': {
-            const strawberryGroup = new THREE.Group();
-            material.color.set('#FC5A8D');
-            geometry = new THREE.ConeGeometry(0.3, 0.5, 32);
-            const strawberryBody = new THREE.Mesh(geometry, material)
-            strawberryGroup.add(strawberryBody);
-            
-            const calyxGeometry = new THREE.ConeGeometry(0.2, 0.1, 6);
-            const calyxMaterial = new THREE.MeshStandardMaterial({color: '#228B22'});
-            const calyx = new THREE.Mesh(calyxGeometry, calyxMaterial);
-            calyx.position.y = 0.25;
-            strawberryGroup.add(calyx);
-
-            strawberryGroup.rotation.x = -0.2;
-            fruitGroup.add(strawberryGroup);
-            break;
-        }
-        default: {
-             geometry = new THREE.SphereGeometry(0.4, 32, 32);
-             material.color.set('#FFFFFF');
-             fruitGroup.add(new THREE.Mesh(geometry, material));
-        }
-    }
-
-    fruitGroup.position.x = 1.2;
-    return fruitGroup;
 }
 
 
@@ -214,7 +115,7 @@ export function FlavorScene({ flavorName, flavorColor }: FlavorSceneProps) {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(50, currentMount.clientWidth / currentMount.clientHeight, 0.1, 100);
-    camera.position.z = 7;
+    camera.position.z = 5;
 
     renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -243,21 +144,11 @@ export function FlavorScene({ flavorName, flavorColor }: FlavorSceneProps) {
         }
     });
     scene.add(can);
-
-    const fruit = createFruitMesh(flavorName);
-    fruit.traverse(function(child) {
-        if ((child as THREE.Mesh).isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-        }
-    });
-    scene.add(fruit);
     
     let animationFrameId: number;
 
     const animate = () => {
       can.rotation.y += 0.005;
-      fruit.rotation.y -= 0.007;
       renderer.render(scene, camera);
       animationFrameId = requestAnimationFrame(animate);
     };

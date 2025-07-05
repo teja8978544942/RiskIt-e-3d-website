@@ -11,16 +11,17 @@ import {
 } from '@/components/ui/carousel';
 import Link from 'next/link';
 import { FlavorScene } from '@/components/flavor-scene';
+import Image from 'next/image';
 
 const flavors = [
-  { name: 'Orange Burst', color: '#E87722' },
-  { name: 'Lime Zing', color: '#99C23A' },
-  { name: 'Grape Blast', color: '#5B3A74' },
-  { name: 'Blueberry Wave', color: '#2C5A9A' },
-  { name: 'Mango Tango', color: '#F8A51B' },
-  { name: 'Raspberry Rush', color: '#D91D5C' },
-  { name: 'Pearadise', color: '#D1E231' },
-  { name: 'Strawberry Bliss', color: '#FC5A8D' },
+  { name: 'Orange Burst', color: '#E87722', imageUrl: 'https://placehold.co/400x400.png', hint: 'orange fruit' },
+  { name: 'Lime Zing', color: '#99C23A', imageUrl: 'https://placehold.co/400x400.png', hint: 'lime fruit' },
+  { name: 'Grape Blast', color: '#5B3A74', imageUrl: 'https://placehold.co/400x400.png', hint: 'grapes' },
+  { name: 'Blueberry Wave', color: '#2C5A9A', imageUrl: 'https://placehold.co/400x400.png', hint: 'blueberries' },
+  { name: 'Mango Tango', color: '#F8A51B', imageUrl: 'https://placehold.co/400x400.png', hint: 'mango' },
+  { name: 'Raspberry Rush', color: '#D91D5C', imageUrl: 'https://placehold.co/400x400.png', hint: 'raspberries' },
+  { name: 'Pearadise', color: '#D1E231', imageUrl: 'https://placehold.co/400x400.png', hint: 'pear' },
+  { name: 'Strawberry Bliss', color: '#FC5A8D', imageUrl: 'https://placehold.co/400x400.png', hint: 'strawberry' },
 ];
 
 
@@ -93,8 +94,19 @@ export default function Home() {
                   <div className="p-1">
                     <Card className="overflow-hidden rounded-lg border-border bg-card shadow-sm transition-shadow hover:shadow-lg">
                       <CardContent className="flex flex-col items-center justify-center p-0">
-                        <div className="w-full overflow-hidden bg-secondary">
-                          <FlavorScene flavorName={flavor.name} flavorColor={flavor.color} />
+                         <div className="grid grid-cols-2 items-center justify-items-center w-full bg-secondary">
+                          <div className="w-full h-full flex items-center justify-center">
+                              <FlavorScene flavorName={flavor.name} flavorColor={flavor.color} />
+                          </div>
+                          <div className="w-full aspect-square relative">
+                              <Image
+                                  src={flavor.imageUrl}
+                                  alt={flavor.name}
+                                  fill
+                                  className="object-contain p-4"
+                                  data-ai-hint={flavor.hint}
+                              />
+                          </div>
                         </div>
                         <div className="w-full p-4 bg-background/50">
                           <h3 className="text-center font-headline text-xl font-bold">
