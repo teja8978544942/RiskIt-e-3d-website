@@ -14,14 +14,14 @@ import { FlavorScene } from '@/components/flavor-scene';
 import Image from 'next/image';
 
 const flavors = [
-  { name: 'Orange Burst', color: '#E87722', imageUrl: 'https://placehold.co/400x400.png', hint: 'orange fruit' },
-  { name: 'Lime Zing', color: '#99C23A', imageUrl: 'https://placehold.co/400x400.png', hint: 'lime fruit' },
-  { name: 'Grape Blast', color: '#5B3A74', imageUrl: 'https://placehold.co/400x400.png', hint: 'grapes' },
-  { name: 'Blueberry Wave', color: '#2C5A9A', imageUrl: 'https://placehold.co/400x400.png', hint: 'blueberries' },
-  { name: 'Mango Tango', color: '#F8A51B', imageUrl: 'https://placehold.co/400x400.png', hint: 'mango' },
-  { name: 'Raspberry Rush', color: '#D91D5C', imageUrl: 'https://placehold.co/400x400.png', hint: 'raspberries' },
-  { name: 'Pearadise', color: '#D1E231', imageUrl: 'https://placehold.co/400x400.png', hint: 'pear' },
-  { name: 'Strawberry Bliss', color: '#FC5A8D', imageUrl: 'https://placehold.co/400x400.png', hint: 'strawberry' },
+  { name: 'Orange Burst', color: '#E87722', imageUrl: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?q=80&w=400', hint: 'orange fruit' },
+  { name: 'Lime Zing', color: '#99C23A', imageUrl: 'https://images.unsplash.com/photo-1602492138249-65231d55163a?q=80&w=400', hint: 'lime fruit' },
+  { name: 'Grape Blast', color: '#5B3A74', imageUrl: 'https://images.unsplash.com/photo-1596394659353-84024a52c720?q=80&w=400', hint: 'grapes' },
+  { name: 'Blueberry Wave', color: '#2C5A9A', imageUrl: 'https://images.unsplash.com/photo-1498557850523-233611029352?q=80&w=400', hint: 'blueberries' },
+  { name: 'Mango Tango', color: '#F8A51B', imageUrl: 'https://images.unsplash.com/photo-1591073137096-9f0a8a3c5d6c?q=80&w=400', hint: 'mango' },
+  { name: 'Raspberry Rush', color: '#D91D5C', imageUrl: 'https://images.unsplash.com/photo-1521302200723-6441b439e7a9?q=80&w=400', hint: 'raspberries' },
+  { name: 'Pearadise', color: '#D1E231', imageUrl: 'https://images.unsplash.com/photo-1604929388364-9f8546a36f45?q=80&w=400', hint: 'pear' },
+  { name: 'Strawberry Bliss', color: '#FC5A8D', imageUrl: 'https://images.unsplash.com/photo-1587393855524-087f83d95c9f?q=80&w=400', hint: 'strawberry' },
 ];
 
 
@@ -103,7 +103,7 @@ export default function Home() {
                                   src={flavor.imageUrl}
                                   alt={flavor.name}
                                   fill
-                                  className="object-contain p-4"
+                                  className="object-cover"
                                   data-ai-hint={flavor.hint}
                               />
                           </div>
