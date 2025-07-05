@@ -51,8 +51,8 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
 
     const canBodyMaterial = new THREE.MeshStandardMaterial({
         map: texture,
-        metalness: 0.5,
-        roughness: 0.5,
+        metalness: 0.7,
+        roughness: 0.4,
         bumpMap: bumpTexture,
         bumpScale: 0.005,
     });
@@ -66,8 +66,8 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     });
 
     const canGroup = new THREE.Group();
-    const canRadius = 0.5;
-    const bodyHeight = 1.4;
+    const canRadius = 1.0;
+    const bodyHeight = 2.8;
     const segments = 128;
     
     const canBody = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius, bodyHeight, segments), canBodyMaterial);
@@ -79,55 +79,55 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
 
     // The recessed center panel
     const centerPanel = new THREE.Mesh(
-        new THREE.CylinderGeometry(canRadius * 0.8, canRadius * 0.8, 0.01, segments),
+        new THREE.CylinderGeometry(canRadius * 0.8, canRadius * 0.8, 0.02, segments),
         metalMaterial
     );
-    centerPanel.position.y = -0.02; // Sits lowest
+    centerPanel.position.y = -0.04;
     topGroup.add(centerPanel);
     
     // The sloped panel connecting the center to the rim
     const slopedPanel = new THREE.Mesh(
-        new THREE.CylinderGeometry(canRadius * 0.98, canRadius * 0.8, 0.02, segments),
+        new THREE.CylinderGeometry(canRadius * 0.98, canRadius * 0.8, 0.04, segments),
         metalMaterial
     );
-    slopedPanel.position.y = -0.01; // Sits on top of center panel, slopes up
+    slopedPanel.position.y = -0.02;
     topGroup.add(slopedPanel);
     
     // The outer seamed rim
     const rim = new THREE.Mesh(
-        new THREE.TorusGeometry(canRadius, 0.015, 16, segments),
+        new THREE.TorusGeometry(canRadius, 0.03, 16, segments),
         metalMaterial
     );
-    rim.rotation.x = Math.PI / 2; // Sits at y=0
+    rim.rotation.x = Math.PI / 2;
     topGroup.add(rim);
 
     // Pull Tab
     const pullTab = new THREE.Group();
     const tabShape = new THREE.Shape();
-    const arcRadius = 0.09;
-    const holeRadius = 0.05;
-    const leverWidth = 0.05;
-    tabShape.moveTo(-leverWidth / 2, -0.2);
-    tabShape.lineTo(leverWidth / 2, -0.2);
+    const arcRadius = 0.18;
+    const holeRadius = 0.1;
+    const leverWidth = 0.1;
+    tabShape.moveTo(-leverWidth / 2, -0.4);
+    tabShape.lineTo(leverWidth / 2, -0.4);
     tabShape.absarc(0, -arcRadius, arcRadius, Math.PI * 1.35, Math.PI * -0.35, false);
-    tabShape.lineTo(leverWidth / 2, -0.2);
+    tabShape.lineTo(leverWidth / 2, -0.4);
 
     const tabHole = new THREE.Path();
     tabHole.absarc(0, 0, holeRadius, 0, Math.PI * 2, true);
     tabShape.holes.push(tabHole);
 
-    const extrudeSettings = { depth: 0.02, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.005, bevelThickness: 0.005 };
+    const extrudeSettings = { depth: 0.04, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.01, bevelThickness: 0.01 };
     const tabGeom = new THREE.ExtrudeGeometry(tabShape, extrudeSettings);
     const tabMesh = new THREE.Mesh(tabGeom, metalMaterial);
     tabMesh.rotation.x = Math.PI / 2;
 
-    const rivetGeom = new THREE.CylinderGeometry(0.025, 0.03, 0.02, 16);
+    const rivetGeom = new THREE.CylinderGeometry(0.05, 0.06, 0.04, 16);
     const rivet = new THREE.Mesh(rivetGeom, metalMaterial);
     rivet.rotation.x = Math.PI / 2;
-    rivet.position.y = -0.015; // Lower the rivet onto the recessed panel.
+    rivet.position.y = -0.03;
     
     pullTab.add(tabMesh);
-    pullTab.position.set(0.1, 0, 0); // Lowered from 0.015 to sit correctly
+    pullTab.position.set(0.2, 0, 0);
     pullTab.rotation.z = Math.PI / 16;
     pullTab.rotation.y = -Math.PI / 9;
     
@@ -135,18 +135,18 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     canGroup.add(topGroup);
 
     // Can Bottom
-    const bottomTaperGeom = new THREE.CylinderGeometry(canRadius * 0.98, canRadius, 0.025, segments);
+    const bottomTaperGeom = new THREE.CylinderGeometry(canRadius * 0.98, canRadius, 0.05, segments);
     const bottomTaper = new THREE.Mesh(bottomTaperGeom, metalMaterial);
-    bottomTaper.position.y = -bodyHeight / 2 - 0.0125;
+    bottomTaper.position.y = -bodyHeight / 2 - 0.025;
     canGroup.add(bottomTaper);
 
-    const bottomBaseGeom = new THREE.TorusGeometry(canRadius * 0.9, 0.05, 16, segments);
+    const bottomBaseGeom = new THREE.TorusGeometry(canRadius * 0.9, 0.1, 16, segments);
     const bottomBase = new THREE.Mesh(bottomBaseGeom, metalMaterial);
     bottomBase.rotation.x = Math.PI/2;
-    bottomBase.position.y = -bodyHeight / 2 - 0.025;
+    bottomBase.position.y = -bodyHeight / 2 - 0.05;
     canGroup.add(bottomBase);
 
-    canGroup.scale.set(1.8, 1.8, 1.8);
+    canGroup.scale.set(0.9, 0.9, 0.9);
     canGroup.position.x = 0;
 
     return canGroup;

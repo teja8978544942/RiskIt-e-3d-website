@@ -13,11 +13,13 @@ import Link from 'next/link';
 import { FlavorScene } from '@/components/flavor-scene';
 import Image from 'next/image';
 import { flavors } from '@/lib/flavors';
+import { Header } from '@/components/header';
 
 
 export default function Home() {
   return (
     <main className="relative w-full overflow-x-hidden bg-background text-foreground">
+      <Header />
       <div className="absolute inset-0 z-0">
         <Scene />
       </div>
