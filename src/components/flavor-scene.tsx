@@ -50,8 +50,8 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
 
     const canBodyMaterial = new THREE.MeshStandardMaterial({
         map: texture,
-        metalness: 0.4,
-        roughness: 0.6,
+        metalness: 0.5,
+        roughness: 0.5,
         bumpMap: bumpTexture,
         bumpScale: 0.005,
     });
@@ -59,7 +59,7 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     const metalMaterial = new THREE.MeshStandardMaterial({
         color: new THREE.Color(0xcccccc),
         metalness: 0.9,
-        roughness: 0.3,
+        roughness: 0.2,
         bumpMap: bumpTexture,
         bumpScale: 0.02,
     });
@@ -67,7 +67,7 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     const canGroup = new THREE.Group();
     const canRadius = 0.5;
     const bodyHeight = 1.4;
-    const segments = 64; // Increased for smoother geometry
+    const segments = 64;
     
     const canBody = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius, bodyHeight, segments), canBodyMaterial);
     canGroup.add(canBody);
@@ -107,65 +107,93 @@ function createFruitMesh(flavorName: string): THREE.Group {
         material.color = color;
         for (let i = 0; i < count; i++) {
             const radius = baseRadius * (Math.random() * 0.4 + 0.8);
-            geometry = new THREE.SphereGeometry(radius, 16, 16);
+            geometry = new THREE.SphereGeometry(radius, 24, 24);
             const sphere = new THREE.Mesh(geometry, material);
             sphere.position.set(
-                (Math.random() - 0.5) * 0.5,
-                (Math.random() - 0.5) * 0.5,
-                (Math.random() - 0.5) * 0.5
+                (Math.random() - 0.5) * 0.6,
+                (Math.random() - 0.5) * 0.6,
+                (Math.random() - 0.5) * 0.6
             );
             fruitGroup.add(sphere);
         }
     }
 
     switch (flavorName) {
-        case 'Orange Burst':
+        case 'Orange Burst': {
             geometry = new THREE.SphereGeometry(0.4, 32, 32);
             material.color.set('#FFA500');
             fruitGroup.add(new THREE.Mesh(geometry, material));
             break;
-        case 'Lime Zing':
+        }
+        case 'Lime Zing': {
             geometry = new THREE.SphereGeometry(0.35, 32, 32);
             material.color.set('#32CD32');
             fruitGroup.add(new THREE.Mesh(geometry, material));
             break;
-        case 'Grape Blast':
-            createCluster(new THREE.Color('#800080'), 15, 0.15);
+        }
+        case 'Grape Blast': {
+            createCluster(new THREE.Color('#6F2DA8'), 20, 0.15);
             break;
-        case 'Blueberry Wave':
-            createCluster(new THREE.Color('#4682B4'), 20, 0.1);
+        }
+        case 'Blueberry Wave': {
+            createCluster(new THREE.Color('#4682B4'), 25, 0.1);
             break;
-        case 'Mango Tango':
-             geometry = new THREE.SphereGeometry(0.4, 32, 32);
-             (geometry as THREE.SphereGeometry).scale(1, 1.2, 1);
+        }
+        case 'Mango Tango': {
+             geometry = new THREE.SphereGeometry(0.35, 32, 32);
+             (geometry as THREE.SphereGeometry).scale(1.2, 1.6, 1);
             material.color.set('#FFBF00');
             fruitGroup.add(new THREE.Mesh(geometry, material));
             break;
-        case 'Raspberry Rush':
-             createCluster(new THREE.Color('#E30B5D'), 20, 0.1);
+        }
+        case 'Raspberry Rush': {
+             createCluster(new THREE.Color('#E30B5D'), 25, 0.1);
             break;
-        case 'Pearadise':
-            geometry = new THREE.SphereGeometry(0.3, 32, 32);
-            (geometry as THREE.SphereGeometry).scale(1, 1.4, 1);
+        }
+        case 'Pearadise': {
+            const pearGroup = new THREE.Group();
             material.color.set('#D1E231');
-            const pear = new THREE.Mesh(geometry, material)
-            pear.position.y = 0.2;
-            fruitGroup.add(pear);
+            geometry = new THREE.SphereGeometry(0.3, 32, 32);
+            (geometry as THREE.SphereGeometry).scale(1, 1.5, 1);
+            const pearBody = new THREE.Mesh(geometry, material);
+            pearBody.position.y = 0.15;
+            pearGroup.add(pearBody);
+
+            const stemGeometry = new THREE.CylinderGeometry(0.02, 0.03, 0.15, 8);
+            const stemMaterial = new THREE.MeshStandardMaterial({color: '#5C4033'});
+            const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+            stem.position.y = 0.5;
+            stem.rotation.z = 0.3;
+            pearGroup.add(stem);
+
+            fruitGroup.add(pearGroup);
             break;
-        case 'Strawberry Bliss':
-            geometry = new THREE.ConeGeometry(0.3, 0.6, 32);
+        }
+        case 'Strawberry Bliss': {
+            const strawberryGroup = new THREE.Group();
             material.color.set('#FC5A8D');
-            const strawberry = new THREE.Mesh(geometry, material)
-            strawberry.rotation.x = -0.2;
-            fruitGroup.add(strawberry);
+            geometry = new THREE.ConeGeometry(0.3, 0.5, 32);
+            const strawberryBody = new THREE.Mesh(geometry, material)
+            strawberryGroup.add(strawberryBody);
+            
+            const calyxGeometry = new THREE.ConeGeometry(0.2, 0.1, 6);
+            const calyxMaterial = new THREE.MeshStandardMaterial({color: '#228B22'});
+            const calyx = new THREE.Mesh(calyxGeometry, calyxMaterial);
+            calyx.position.y = 0.25;
+            strawberryGroup.add(calyx);
+
+            strawberryGroup.rotation.x = -0.2;
+            fruitGroup.add(strawberryGroup);
             break;
-        default:
+        }
+        default: {
              geometry = new THREE.SphereGeometry(0.4, 32, 32);
              material.color.set('#FFFFFF');
              fruitGroup.add(new THREE.Mesh(geometry, material));
+        }
     }
 
-    fruitGroup.position.x = 1.0;
+    fruitGroup.position.x = 1.2;
     return fruitGroup;
 }
 
@@ -186,23 +214,26 @@ export function FlavorScene({ flavorName, flavorColor }: FlavorSceneProps) {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(50, currentMount.clientWidth / currentMount.clientHeight, 0.1, 100);
-    camera.position.z = 6; // Moved camera back for full visibility
+    camera.position.z = 7;
 
     renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.shadowMap.enabled = true; // Enable shadows for realism
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     currentMount.innerHTML = ''; 
     currentMount.appendChild(renderer.domElement);
     
-    // Adjusted lighting for better contrast and realism
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
-    scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 3.5);
+    const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1.5);
+    scene.add(hemisphereLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 4.0);
     directionalLight.position.set(3, 5, 4);
-    directionalLight.castShadow = true; // Light will cast shadows
+    directionalLight.castShadow = true;
     scene.add(directionalLight);
+
+    const fillLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    fillLight.position.set(-5, 2, -5);
+    scene.add(fillLight);
 
     const can = createCanMesh(flavorName, flavorColor);
     can.traverse(function(child) {
@@ -263,5 +294,5 @@ export function FlavorScene({ flavorName, flavorColor }: FlavorSceneProps) {
     };
   }, [flavorName, flavorColor]);
 
-  return <div ref={mountRef} className="aspect-[3/5] w-full" />;
+  return <div ref={mountRef} className="aspect-square w-full" />;
 }
