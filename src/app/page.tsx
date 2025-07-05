@@ -10,7 +10,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
-import { ArrowDown } from 'lucide-react';
 import Link from 'next/link';
 
 const flavors = [
@@ -40,10 +39,6 @@ export default function Home() {
           <p className="mt-4 text-lg md:text-xl">
             The bold taste of adventure.
           </p>
-          <div className="absolute bottom-10 flex flex-col items-center gap-2 text-sm text-foreground/80">
-            <p>Scroll to discover</p>
-            <ArrowDown className="h-6 w-6 animate-bounce" />
-          </div>
         </section>
 
         <section
