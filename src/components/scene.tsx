@@ -70,11 +70,9 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     const canBody = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius, bodyHeight, segments), canBodyMaterial);
     canGroup.add(canBody);
     
-    // Can Top - Reworked for more realism
     const topGroup = new THREE.Group();
     topGroup.position.y = bodyHeight / 2;
 
-    // The recessed center panel
     const centerPanel = new THREE.Mesh(
         new THREE.CylinderGeometry(canRadius * 0.8, canRadius * 0.8, 0.02, segments),
         metalMaterial
@@ -82,7 +80,6 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     centerPanel.position.y = -0.04;
     topGroup.add(centerPanel);
     
-    // The sloped panel connecting the center to the rim
     const slopedPanel = new THREE.Mesh(
         new THREE.CylinderGeometry(canRadius * 0.98, canRadius * 0.8, 0.04, segments),
         metalMaterial
@@ -90,7 +87,6 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     slopedPanel.position.y = -0.02;
     topGroup.add(slopedPanel);
     
-    // The outer seamed rim
     const rim = new THREE.Mesh(
         new THREE.TorusGeometry(canRadius, 0.03, 16, segments),
         metalMaterial
@@ -98,9 +94,8 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     rim.rotation.x = Math.PI / 2;
     topGroup.add(rim);
 
-    // Pull Tab
     const pullTab = new THREE.Group();
-    pullTab.name = "pullTab"; // Naming for animation
+    pullTab.name = "pullTab";
     const tabShape = new THREE.Shape();
     const arcRadius = 0.18;
     const holeRadius = 0.1;
@@ -132,7 +127,6 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     topGroup.add(pullTab, rivet);
     canGroup.add(topGroup);
 
-    // Can Bottom
     const bottomTaperGeom = new THREE.CylinderGeometry(canRadius * 0.98, canRadius, 0.05, segments);
     const bottomTaper = new THREE.Mesh(bottomTaperGeom, metalMaterial);
     bottomTaper.position.y = -bodyHeight / 2 - 0.025;
@@ -152,21 +146,21 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
 
 function createGlass() {
     const points = [
-        new THREE.Vector2(0.7, -1.5),
-        new THREE.Vector2(0.8, -1.45),
-        new THREE.Vector2(0.9, 1.45),
-        new THREE.Vector2(1.0, 1.5)
+        new THREE.Vector2(0.6, -1.5),
+        new THREE.Vector2(0.7, -1.45),
+        new THREE.Vector2(0.85, 1.45),
+        new THREE.Vector2(0.9, 1.5)
     ];
     const geometry = new THREE.LatheGeometry(points, 32);
     const material = new THREE.MeshPhysicalMaterial({
         color: 0xffffff,
-        metalness: 0,
-        roughness: 0.1,
+        metalness: 0.1,
+        roughness: 0.05,
         transmission: 1,
         ior: 1.5,
-        thickness: 0.2,
+        thickness: 0.3,
         transparent: true,
-        opacity: 0.3,
+        opacity: 0.5,
         side: THREE.DoubleSide
     });
     const glass = new THREE.Mesh(geometry, material);
@@ -175,7 +169,7 @@ function createGlass() {
 }
 
 function createParticles(color: string) {
-    const particleCount = 500;
+    const particleCount = 2000;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const velocities = new Float32Array(particleCount * 3);
@@ -190,9 +184,9 @@ function createParticles(color: string) {
     
     const material = new THREE.PointsMaterial({
         color: color,
-        size: 0.05,
+        size: 0.03,
         transparent: true,
-        opacity: 0.7,
+        opacity: 0.8,
         blending: THREE.AdditiveBlending,
         sizeAttenuation: true
     });
@@ -214,6 +208,9 @@ export function Scene() {
       stage: 'idle' as 'idle' | 'lifting' | 'opening' | 'tilting' | 'pouring' | 'resetting',
       startTime: 0,
       pourStartTime: 0,
+      liquidLevel: -1.5,
+      cameraInitialPosition: new THREE.Vector3(),
+      cameraInitialLookAt: new THREE.Vector3(),
   });
   
   const popSound = useRef<HTMLAudioElement | null>(null);
@@ -278,20 +275,13 @@ export function Scene() {
 
     const otherFlavors = flavors.filter(f => f.name !== 'Orange Burst');
     const spacing = 2.0;
-
     otherFlavors.forEach((flavor, index) => {
         const can = createCanMesh(flavor.name, flavor.color);
-        
         const side = (index % 2 === 0) ? 1 : -1;
         const step = Math.ceil((index + 1) / 2);
-        can.position.x = side * step * spacing;
-
+        can.position.x = side * (step + 1) * spacing;
         can.castShadow = true;
-        can.traverse(function(child) {
-            if ((child as THREE.Mesh).isMesh) {
-                child.castShadow = true;
-            }
-        });
+        can.traverse(function(child) { if ((child as THREE.Mesh).isMesh) { child.castShadow = true; } });
         otherCans.push(can);
         allCans.push(can);
         scene.add(can);
@@ -348,36 +338,41 @@ export function Scene() {
                 clickedObject = clickedObject.parent;
             }
             const can = clickedObject as THREE.Group;
-            
-            if (can.userData.flavorName) {
-                const flavor = flavors.find(f => f.name === can.userData.flavorName);
+            const flavor = flavors.find(f => f.name === can.userData.flavorName);
 
-                if (can && flavor) {
-                    const state = animationState.current;
-                    state.isAnimating = true;
-                    state.can = can;
-                    state.originalPosition.copy(can.position);
-                    state.originalRotation.copy(can.rotation);
-                    state.stage = 'lifting';
-                    state.startTime = performance.now();
-                    
-                    state.glass = createGlass();
-                    scene.add(state.glass);
+            if (can && flavor) {
+                const state = animationState.current;
+                state.isAnimating = true;
+                state.can = can;
+                state.originalPosition.copy(can.position);
+                state.originalRotation.copy(can.rotation);
+                state.stage = 'lifting';
+                state.startTime = performance.now();
+                state.liquidLevel = -1.5;
+                
+                state.cameraInitialPosition.copy(camera.position);
+                const controls = scene.getObjectByName("cameraLookAtTarget");
+                if (controls) state.cameraInitialLookAt.copy(controls.position);
+                
+                state.glass = createGlass();
+                scene.add(state.glass);
 
-                    state.particles = createParticles(flavor.color);
-                    scene.add(state.particles);
-                }
+                state.particles = createParticles(flavor.color);
+                scene.add(state.particles);
             }
         }
     };
     window.addEventListener('click', handleClick);
 
+    const clock = new THREE.Clock();
+    const cameraLookAtTarget = new THREE.Object3D();
+    cameraLookAtTarget.name = "cameraLookAtTarget";
+    scene.add(cameraLookAtTarget);
+
     const tick = () => {
-        const targetLookAt = new THREE.Vector3(mouse.x * 0.2, -mouse.y * 0.2, 0);
-        camera.position.x += (mouse.x * 0.5 - camera.position.x) * 0.05;
-        camera.lookAt(targetLookAt);
-        
+        const delta = clock.getDelta();
         const state = animationState.current;
+        
         if (state.isAnimating && state.can) {
             const can = state.can;
             const pullTab = can.getObjectByName('pullTab');
@@ -385,55 +380,69 @@ export function Scene() {
             const particles = state.particles;
             const elapsedTime = (performance.now() - state.startTime) / 1000;
             
+            // --- Camera Animation ---
+            const focusPoint = can.position.clone().add(new THREE.Vector3(0, 1, 4));
+            camera.position.lerp(focusPoint, 0.05);
+            cameraLookAtTarget.position.lerp(can.position, 0.05);
+            camera.lookAt(cameraLookAtTarget.position);
+
             switch(state.stage) {
                 case 'lifting': {
-                    const progress = Math.min(elapsedTime / 0.5, 1);
-                    can.position.y = THREE.MathUtils.lerp(state.originalPosition.y, state.originalPosition.y + 2, progress);
-                    if (progress >= 1) {
+                    const targetY = state.originalPosition.y + 2;
+                    can.position.y = THREE.MathUtils.damp(can.position.y, targetY, 4, delta);
+                    if (Math.abs(can.position.y - targetY) < 0.01) {
                         state.stage = 'opening';
                         state.startTime = performance.now();
                     }
                     break;
                 }
                 case 'opening': {
-                    const progress = Math.min(elapsedTime / 0.3, 1);
-                    if(pullTab) pullTab.rotation.x = THREE.MathUtils.lerp(0, -Math.PI / 2, progress);
-                    if (progress >= 1 && state.stage === 'opening') {
-                        popSound.current?.play();
-                        state.stage = 'tilting';
-                        state.startTime = performance.now();
+                    const targetRotX = -Math.PI / 2;
+                    if(pullTab) pullTab.rotation.x = THREE.MathUtils.damp(pullTab.rotation.x, targetRotX, 8, delta);
+                    if (Math.abs(pullTab.rotation.x - targetRotX) < 0.1) {
+                        if (state.stage === 'opening') {
+                             popSound.current?.play();
+                             state.stage = 'tilting';
+                             state.startTime = performance.now();
+                        }
                     }
                     break;
                 }
                 case 'tilting': {
-                    const progress = Math.min(elapsedTime / 1, 1);
+                    const targetPos = new THREE.Vector3(state.originalPosition.x, state.originalPosition.y + 1, 2.5);
+                    can.position.x = THREE.MathUtils.damp(can.position.x, targetPos.x, 4, delta);
+                    can.position.y = THREE.MathUtils.damp(can.position.y, targetPos.y, 4, delta);
+                    can.position.z = THREE.MathUtils.damp(can.position.z, targetPos.z, 4, delta);
+
+                    const targetRotX = -Math.PI / 2.2;
+                    can.rotation.x = THREE.MathUtils.damp(can.rotation.x, targetRotX, 4, delta);
+
                     if (glass) {
                         glass.visible = true;
-                        glass.scale.set(progress, progress, progress);
                         glass.position.set(state.originalPosition.x, state.originalPosition.y - 1.5, 3);
+                        const progress = Math.min(elapsedTime / 0.5, 1);
+                        glass.scale.set(progress, progress, progress);
                     }
-                    can.position.x = THREE.MathUtils.lerp(state.originalPosition.x, state.originalPosition.x, progress);
-                    can.position.y = THREE.MathUtils.lerp(state.originalPosition.y + 2, state.originalPosition.y + 1, progress);
-                    can.position.z = THREE.MathUtils.lerp(0, 2.5, progress);
-                    can.rotation.x = THREE.MathUtils.lerp(0, -Math.PI / 2.2, progress);
-                     if (progress >= 1) {
+
+                    if (Math.abs(can.rotation.x - targetRotX) < 0.1) {
                         state.stage = 'pouring';
-                        state.startTime = performance.now();
                         state.pourStartTime = performance.now();
                         pourSound.current?.play();
                     }
                     break;
                 }
                 case 'pouring': {
+                    const pourDuration = 3000;
+                    if (performance.now() - state.pourStartTime > pourDuration) {
+                        state.stage = 'resetting';
+                        state.startTime = performance.now();
+                        pourSound.current?.pause();
+                        if (pourSound.current) pourSound.current.currentTime = 0;
+                    }
+
                     if (particles && glass && can) {
                         particles.visible = true;
-                        const pourDuration = 3000;
-                        if (performance.now() - state.pourStartTime > pourDuration) {
-                            state.stage = 'resetting';
-                            state.startTime = performance.now();
-                            pourSound.current?.pause();
-                            if (pourSound.current) pourSound.current.currentTime = 0;
-                        }
+                        state.liquidLevel = THREE.MathUtils.lerp(-1.5, 0.8, (performance.now() - state.pourStartTime) / pourDuration);
 
                         const positions = particles.geometry.attributes.position.array as Float32Array;
                         const velocities = particles.geometry.attributes.velocity.array as Float32Array;
@@ -441,23 +450,32 @@ export function Scene() {
                         const pourWorldOrigin = pourLocalOrigin.clone().applyMatrix4(can.matrixWorld);
 
                         for (let i = 0; i < positions.length; i += 3) {
-                           if (velocities[i + 1] === 0) { // is particle 'dead'?
-                                positions[i] = pourWorldOrigin.x + (Math.random() - 0.5) * 0.05;
-                                positions[i + 1] = pourWorldOrigin.y;
-                                positions[i + 2] = pourWorldOrigin.z + (Math.random() - 0.5) * 0.05;
+                           const isDead = velocities[i+1] === 0;
+
+                           if (isDead && Math.random() < 0.1) { // Respawn
+                                positions[i] = pourWorldOrigin.x + (Math.random() - 0.5) * 0.1;
+                                positions[i+1] = pourWorldOrigin.y;
+                                positions[i+2] = pourWorldOrigin.z + (Math.random() - 0.5) * 0.1;
 
                                 velocities[i] = (Math.random() - 0.5) * 0.1;
-                                velocities[i + 1] = -0.05 - (Math.random() * 0.05);
-                                velocities[i + 2] = (Math.random() - 0.5) * 0.1;
+                                velocities[i+1] = -0.1 - (Math.random() * 0.05); // Initial downward velocity
+                                velocities[i+2] = (Math.random() - 0.5) * 0.1;
                            }
                            
-                           velocities[i+1] -= 0.005; // gravity
-                           positions[i] += velocities[i];
-                           positions[i+1] += velocities[i+1];
-                           positions[i+2] += velocities[i+2];
+                           if (!isDead) {
+                                velocities[i+1] -= 0.005; // Gravity
+                                positions[i] += velocities[i];
+                                positions[i+1] += velocities[i+1];
+                                positions[i+2] += velocities[i+2];
 
-                           if (positions[i + 1] < glass.position.y - 1.5) {
-                               velocities[i + 1] = 0;
+                                const particlePos = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]);
+                                const glassPos = glass.position;
+                                const glassRadius = 0.85;
+
+                                if (particlePos.y < glassPos.y + state.liquidLevel && 
+                                    particlePos.distanceTo(new THREE.Vector3(glassPos.x, particlePos.y, glassPos.z)) < glassRadius) {
+                                    velocities[i+1] = 0; // Kill particle
+                                }
                            }
                         }
                         particles.geometry.attributes.position.needsUpdate = true;
@@ -465,16 +483,21 @@ export function Scene() {
                     break;
                 }
                  case 'resetting': {
-                    const progress = Math.min(elapsedTime / 1.0, 1);
-                    can.position.lerp(state.originalPosition, progress);
-                    can.rotation.x = THREE.MathUtils.lerp(can.rotation.x, state.originalRotation.x, progress);
-                    can.rotation.y = THREE.MathUtils.lerp(can.rotation.y, state.originalRotation.y, progress);
-                    can.rotation.z = THREE.MathUtils.lerp(can.rotation.z, state.originalRotation.z, progress);
+                    can.position.x = THREE.MathUtils.damp(can.position.x, state.originalPosition.x, 4, delta);
+                    can.position.y = THREE.MathUtils.damp(can.position.y, state.originalPosition.y, 4, delta);
+                    can.position.z = THREE.MathUtils.damp(can.position.z, state.originalPosition.z, 4, delta);
                     
-                    if(glass) glass.scale.lerp(new THREE.Vector3(0,0,0), progress);
-                    if(pullTab) pullTab.rotation.x = THREE.MathUtils.lerp(pullTab.rotation.x, 0, progress);
+                    can.rotation.x = THREE.MathUtils.damp(can.rotation.x, state.originalRotation.x, 4, delta);
+                    can.rotation.y = THREE.MathUtils.damp(can.rotation.y, state.originalRotation.y, 4, delta);
+                    can.rotation.z = THREE.MathUtils.damp(can.rotation.z, state.originalRotation.z, 4, delta);
+                    
+                    if(glass) glass.scale.x = THREE.MathUtils.damp(glass.scale.x, 0, 8, delta);
+                    if(glass) glass.scale.y = THREE.MathUtils.damp(glass.scale.y, 0, 8, delta);
+                    if(glass) glass.scale.z = THREE.MathUtils.damp(glass.scale.z, 0, 8, delta);
+                    
+                    if(pullTab) pullTab.rotation.x = THREE.MathUtils.damp(pullTab.rotation.x, 0, 4, delta);
 
-                    if (progress >= 1) {
+                    if (can.position.distanceTo(state.originalPosition) < 0.01) {
                         if (glass) scene.remove(glass);
                         if (particles) scene.remove(particles);
                         state.isAnimating = false;
@@ -484,6 +507,14 @@ export function Scene() {
                     break;
                 }
             }
+        } else {
+             // --- Default Camera Behavior ---
+             cameraLookAtTarget.position.x = mouse.x * 0.2;
+             cameraLookAtTarget.position.y = -mouse.y * 0.2;
+             
+             const targetCamPos = new THREE.Vector3(mouse.x * 0.5, 0, 9.5);
+             camera.position.lerp(targetCamPos, 0.05);
+             camera.lookAt(cameraLookAtTarget.position);
         }
         
         renderer.render(scene, camera);
@@ -531,3 +562,4 @@ export function Scene() {
 
   return <div ref={mountRef} className="fixed top-0 left-0 -z-10 h-full w-full" />;
 }
+
