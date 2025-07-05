@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as THREE from 'three';
@@ -145,6 +146,13 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
         className="fixed inset-0 z-[60] bg-black/50 animate-in fade-in-0 duration-500"
     >
         <div ref={mountRef} className="absolute inset-0" />
+        <div 
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        >
+            <h1 className="font-headline text-white text-5xl md:text-7xl lg:text-8xl text-center p-4 drop-shadow-2xl animate-in fade-in-0 duration-1000">
+                Let's dive your thirst
+            </h1>
+        </div>
     </div>
   );
 }
