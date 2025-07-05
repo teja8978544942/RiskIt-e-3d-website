@@ -179,7 +179,9 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.z = 2.5;
+    // Position camera to look down slightly, to see the wave coming from the bottom
+    camera.position.set(0, 1.5, 6);
+    camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -195,25 +197,26 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
       uniforms: {
         uTime: { value: 0 },
         // Big Waves
-        uBigWavesElevation: { value: 0.3 },
+        uBigWavesElevation: { value: 0.6 },
         uBigWavesFrequency: { value: new THREE.Vector2(0.6, 0.2) },
         uBigWavesSpeed: { value: 0.3 },
         // Small Waves
-        uSmallWavesElevation: { value: 0.15 },
+        uSmallWavesElevation: { value: 0.25 },
         uSmallWavesFrequency: { value: 2.0 },
         uSmallWavesSpeed: { value: 1.0 },
         // Colors
-        uDepthColor: { value: new THREE.Color('#022c43') },
-        uSurfaceColor: { value: new THREE.Color('#34a8a5') },
+        uDepthColor: { value: new THREE.Color('#043936') }, // Deep teal
+        uSurfaceColor: { value: new THREE.Color('#88c0d0') }, // Sea green/blue
         uFoamColor: { value: new THREE.Color('#ffffff') },
         uColorOffset: { value: 0.1 },
-        uColorMultiplier: { value: 2.5 },
+        uColorMultiplier: { value: 3.0 },
       }
     });
     
     const wavePlane = new THREE.Mesh(geometry, material);
-    wavePlane.position.z = -2;
-    wavePlane.position.y = -4;
+    // Start wave off-screen at the bottom
+    wavePlane.position.y = -8;
+    // Keep it tilted for a 3D surface look
     wavePlane.rotation.x = -Math.PI / 4;
     scene.add(wavePlane);
     
@@ -222,21 +225,14 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
 
     const animate = () => {
       const elapsedTime = clock.getElapsedTime();
-      material.uniforms.uTime.value = elapsedTime * 0.5; // Slower time
+      material.uniforms.uTime.value = elapsedTime * 0.4; // Slower internal wave motion
 
-      const progress = Math.min((elapsedTime - startTime) / 8.0, 1.0); // Slower progress
-      const easeOutQuad = (x: number): number => x * (2 - x);
-      const easedProgress = easeOutQuad(progress);
+      // Use a slow, smooth progression for the main animation
+      const progress = Math.min((elapsedTime - startTime) / 10.0, 1.0); // 10 seconds total duration
+      const easedProgress = 1 - Math.pow(1 - progress, 3); // Ease out cubic
 
-      // Animate wave properties to make it more dramatic
-      material.uniforms.uBigWavesElevation.value = THREE.MathUtils.lerp(0.2, 0.6, easedProgress);
-      material.uniforms.uSmallWavesElevation.value = THREE.MathUtils.lerp(0.1, 0.25, easedProgress);
-      material.uniforms.uColorMultiplier.value = THREE.MathUtils.lerp(2.5, 4.0, easedProgress);
-
-      wavePlane.position.y = THREE.MathUtils.lerp(-4, 0, easedProgress);
-      wavePlane.position.z = THREE.MathUtils.lerp(-2, 1, easedProgress);
-      
-      camera.position.z = THREE.MathUtils.lerp(2.5, 3.5, easedProgress);
+      // Animate the wave plane sweeping up the screen from bottom to top
+      wavePlane.position.y = THREE.MathUtils.lerp(-8, 8, easedProgress);
       
       renderer.render(scene, camera);
       animationFrameId = requestAnimationFrame(animate);
@@ -252,7 +248,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     
     const closeTimeout = setTimeout(() => {
       onCloseRef.current();
-    }, 8500); // Increased timeout to match slower animation
+    }, 10500); // Increased timeout to match slower animation
 
     const handleClick = () => {
         onCloseRef.current();
