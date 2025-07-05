@@ -14,28 +14,15 @@ import Link from 'next/link';
 import { FlavorScene } from '@/components/flavor-scene';
 import { flavors } from '@/lib/flavors';
 import { Header } from '@/components/header';
-import { useState } from 'react';
-import { TsunamiAnimation } from '@/components/tsunami-animation';
-import { PourAnimation } from '@/components/pour-animation';
+import { useRouter } from 'next/navigation';
 
 
 export default function Home() {
-  const [animationState, setAnimationState] = useState<{
-    stage: 'idle' | 'tsunami' | 'pouring';
-    flavor: { name: string; color: string } | null;
-  }>({ stage: 'idle', flavor: null });
+  const router = useRouter();
 
   const handleCanClick = (flavor: {name: string, color: string}) => {
-    setAnimationState({ stage: 'tsunami', flavor });
+    router.push(`/pour/${encodeURIComponent(flavor.name)}`);
   };
-
-  const handleTsunamiComplete = () => {
-    setAnimationState(prevState => ({ ...prevState, stage: 'pouring' }));
-  }
-
-  const handlePourComplete = () => {
-    setAnimationState({ stage: 'idle', flavor: null });
-  }
 
   return (
     <main className="relative w-full overflow-x-hidden bg-background text-foreground">
@@ -149,21 +136,6 @@ export default function Home() {
             <p>&copy; {new Date().getFullYear()} RiskIt. All rights reserved.</p>
         </footer>
       </div>
-
-      {(animationState.stage === 'tsunami' || animationState.stage === 'pouring') && animationState.flavor && (
-        <TsunamiAnimation 
-          flavorColor={animationState.flavor.color} 
-          onClose={handleTsunamiComplete} 
-        />
-      )}
-
-      {animationState.stage === 'pouring' && animationState.flavor && (
-        <PourAnimation
-          flavorName={animationState.flavor.name}
-          flavorColor={animationState.flavor.color}
-          onComplete={handlePourComplete}
-        />
-      )}
     </main>
   );
 }

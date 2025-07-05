@@ -1,11 +1,11 @@
-
 'use client';
 
 import * as THREE from 'three';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { flavors } from '@/lib/flavors';
 import { useParams, useRouter } from 'next/navigation';
 import { createCanMesh } from '@/components/can-model';
+import { TsunamiAnimation } from '@/components/tsunami-animation';
 
 function createGlass() {
     const points = [
@@ -64,6 +64,7 @@ export default function PourPage() {
     const router = useRouter();
     const params = useParams();
     const flavorName = decodeURIComponent(params.flavor as string);
+    const [animationStage, setAnimationStage] = useState<'tsunami' | 'pouring'>('tsunami');
 
     const animationState = useRef({
       isAnimating: false,
@@ -78,18 +79,21 @@ export default function PourPage() {
       liquidLevel: -1.5,
       cameraInitialPosition: new THREE.Vector3(),
       cameraInitialLookAt: new THREE.Vector3(),
-  });
+    });
+
+    const flavor = flavors.find(f => f.name === flavorName);
 
     useEffect(() => {
-        if (!mountRef.current || typeof window === 'undefined') return;
-
-        const currentMount = mountRef.current;
-        const flavor = flavors.find(f => f.name === flavorName);
         if (!flavor) {
             router.push('/');
-            return;
         }
+    }, [flavor, router]);
 
+    useEffect(() => {
+        if (animationStage !== 'pouring' || !mountRef.current || typeof window === 'undefined' || !flavor) return;
+
+        const currentMount = mountRef.current;
+        
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.z = 8;
@@ -340,11 +344,25 @@ export default function PourPage() {
             });
             renderer.dispose();
         };
-    }, [flavorName, router]);
+    }, [flavorName, router, animationStage, flavor]);
+    
+    if (!flavor) {
+        return null;
+    }
 
     return (
-        <main className="fixed inset-0 z-50 bg-background">
-            <div ref={mountRef} className="h-full w-full" />
-        </main>
+        <>
+            {animationStage === 'tsunami' && (
+                <TsunamiAnimation
+                    flavorColor={flavor.color}
+                    onClose={() => setAnimationStage('pouring')}
+                />
+            )}
+            {animationStage === 'pouring' && (
+                <main className="fixed inset-0 z-50 bg-background">
+                    <div ref={mountRef} className="h-full w-full" />
+                </main>
+            )}
+        </>
     );
 }
