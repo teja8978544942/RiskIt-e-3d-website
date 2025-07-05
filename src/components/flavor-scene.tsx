@@ -67,27 +67,28 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     const canGroup = new THREE.Group();
     const canRadius = 0.5;
     const bodyHeight = 1.4;
+    const segments = 64; // Increased for smoother geometry
     
-    const canBody = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius, bodyHeight, 32), canBodyMaterial);
+    const canBody = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius, bodyHeight, segments), canBodyMaterial);
     canGroup.add(canBody);
     
     const topTaperHeight = 0.1;
-    const canTopTaper = new THREE.Mesh(new THREE.CylinderGeometry(canRadius * 0.9, canRadius, topTaperHeight, 32), metalMaterial);
+    const canTopTaper = new THREE.Mesh(new THREE.CylinderGeometry(canRadius * 0.9, canRadius, topTaperHeight, segments), metalMaterial);
     canTopTaper.position.y = bodyHeight / 2 + topTaperHeight / 2;
     canGroup.add(canTopTaper);
     
     const lidHeight = 0.025;
-    const canTopLid = new THREE.Mesh(new THREE.CylinderGeometry(canRadius * 0.9, canRadius * 0.88, lidHeight, 32), metalMaterial);
+    const canTopLid = new THREE.Mesh(new THREE.CylinderGeometry(canRadius * 0.9, canRadius * 0.88, lidHeight, segments), metalMaterial);
     canTopLid.position.y = canTopTaper.position.y + topTaperHeight / 2;
     canGroup.add(canTopLid);
 
     const bottomTaperHeight = 0.1;
-    const canBottomTaper = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius * 0.9, bottomTaperHeight, 32), metalMaterial);
+    const canBottomTaper = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius * 0.9, bottomTaperHeight, segments), metalMaterial);
     canBottomTaper.position.y = -bodyHeight / 2 - bottomTaperHeight / 2;
     canGroup.add(canBottomTaper);
     
     const bottomRimHeight = 0.05;
-    const canBottomRim = new THREE.Mesh(new THREE.CylinderGeometry(canRadius * 0.9, canRadius * 0.9, bottomRimHeight, 32), metalMaterial);
+    const canBottomRim = new THREE.Mesh(new THREE.CylinderGeometry(canRadius * 0.9, canRadius * 0.9, bottomRimHeight, segments), metalMaterial);
     canBottomRim.position.y = canBottomTaper.position.y - bottomTaperHeight / 2;
     canGroup.add(canBottomRim);
 
@@ -185,23 +186,40 @@ export function FlavorScene({ flavorName, flavorColor }: FlavorSceneProps) {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(50, currentMount.clientWidth / currentMount.clientHeight, 0.1, 100);
-    camera.position.z = 5;
+    camera.position.z = 6; // Moved camera back for full visibility
 
     renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true; // Enable shadows for realism
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
+
     currentMount.innerHTML = ''; 
     currentMount.appendChild(renderer.domElement);
     
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+    // Adjusted lighting for better contrast and realism
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 3.5);
     directionalLight.position.set(3, 5, 4);
+    directionalLight.castShadow = true; // Light will cast shadows
     scene.add(directionalLight);
 
     const can = createCanMesh(flavorName, flavorColor);
+    can.traverse(function(child) {
+        if ((child as THREE.Mesh).isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+        }
+    });
     scene.add(can);
 
     const fruit = createFruitMesh(flavorName);
+    fruit.traverse(function(child) {
+        if ((child as THREE.Mesh).isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+        }
+    });
     scene.add(fruit);
     
     let animationFrameId: number;
