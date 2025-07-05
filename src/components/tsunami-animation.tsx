@@ -71,7 +71,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     
     const clock = new THREE.Clock();
 
-    const geometry = new THREE.PlaneGeometry(15, 15, 128, 128);
+    const geometry = new THREE.PlaneGeometry(30, 30, 128, 128);
     const material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
