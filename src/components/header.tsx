@@ -54,6 +54,12 @@ export function Header() {
           >
             About
           </Link>
+          <Link
+            href="mailto:contact@riskit.com"
+            className="text-lg transition-colors hover:text-primary"
+          >
+            Contact
+          </Link>
           <Link href="/checkout">
             <Button>Buy Now</Button>
           </Link>
@@ -91,6 +97,13 @@ export function Header() {
                     onClick={closeMobileMenu}
                   >
                     About
+                  </Link>
+                  <Link
+                    href="mailto:contact@riskit.com"
+                    className="text-xl"
+                    onClick={closeMobileMenu}
+                  >
+                    Contact
                   </Link>
                 </nav>
                 <Link href="/checkout" onClick={closeMobileMenu}>
