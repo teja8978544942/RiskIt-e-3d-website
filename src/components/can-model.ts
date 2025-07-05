@@ -66,7 +66,13 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
     const bodyHeight = 2.8;
     const segments = 128;
     
-    const canBody = new THREE.Mesh(new THREE.CylinderGeometry(canRadius, canRadius, bodyHeight, segments), canBodyMaterial);
+    // The main can body now uses multiple materials: one for the textured sides, and one for the metallic top and bottom.
+    const canBodyGeom = new THREE.CylinderGeometry(canRadius, canRadius, bodyHeight, segments);
+    const canBody = new THREE.Mesh(canBodyGeom, [
+        canBodyMaterial, // Material for the sides
+        metalMaterial,   // Material for the top cap
+        metalMaterial    // Material for the bottom cap
+    ]);
     canGroup.add(canBody);
     
     const topGroup = new THREE.Group();
