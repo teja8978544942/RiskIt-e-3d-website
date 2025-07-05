@@ -28,11 +28,13 @@ const generateFlavorImageFlow = ai.defineFlow(
     outputSchema: GenerateFlavorImageOutputSchema,
   },
   async ({ flavorName }) => {
-    const prompt = `A dramatic, photorealistic product shot of a glass soda bottle. The bottle has a sleek, modern design and features the word "RiskIt" prominently on its label in a bold, adventurous font.
+    const prompt = `Create an ultra-realistic, professional product photograph of a single glass soda bottle for a premium brand called "RiskIt". The flavor of the soda is "${flavorName}".
 
-The bottle is surrounded by the core ingredients of the ${flavorName} flavor. For example, if the flavor is 'Midnight Chocolate', show rich dark chocolate pieces and cocoa powder. If it's 'Citrus Surge', show vibrant lemon and lime slices with a splash of juice.
+The bottle should look cold, with subtle condensation and fine water droplets on its surface. The label design is modern and minimalist, clearly displaying the "RiskIt" brand name and the flavor "${flavorName}".
 
-The background is a dynamic and abstract splash of colors and textures that complement the flavor. The lighting is dramatic, highlighting the bottle and ingredients, creating a sense of energy and excitement. The overall mood is bold, premium, and adventurous.`;
+The bottle is set on a clean, slightly reflective surface like polished concrete or marble. The background is simple and elegantly blurred, suggesting a high-end studio or kitchen setting.
+
+The lighting must be soft and professional, mimicking a studio setup with key and fill lights. This should create gentle highlights and realistic shadows that define the bottle's shape and accentuate the texture of the condensation. Avoid any dramatic, abstract, or unnatural elements. The final image should have the quality of a high-resolution photograph found in a premium beverage advertisement.`;
 
     const { media } = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
