@@ -2,7 +2,7 @@
 'use client';
 
 import * as THREE from 'three';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const vertexShader = `
 uniform float uTime;
@@ -180,6 +180,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
   const mountRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const [animationStage, setAnimationStage] = useState<'rising' | 'diving' | 'done'>('rising');
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -255,24 +256,25 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
 
     let animationFrameId: number;
     const startTime = clock.getElapsedTime();
-    let animationStage: 'rising' | 'diving' | 'done' = 'rising';
+    let localAnimationStage: 'rising' | 'diving' | 'done' = 'rising';
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
       const elapsedTime = clock.getElapsedTime();
       material.uniforms.uTime.value = elapsedTime * 0.4;
 
-      if (animationStage === 'rising') {
+      if (localAnimationStage === 'rising') {
         const progress = Math.min((elapsedTime - startTime) / 4.0, 1.0);
         const easedProgress = 1 - Math.pow(1 - progress, 3);
   
         wavePlane.position.y = THREE.MathUtils.lerp(-10, 4, easedProgress);
         
         if (progress >= 1.0) {
-            animationStage = 'diving';
+            localAnimationStage = 'diving';
+            setAnimationStage('diving');
             bubbles.visible = true;
         }
-      } else if (animationStage === 'diving') {
+      } else if (localAnimationStage === 'diving') {
         const diveStartTime = startTime + 4.0;
         const diveProgress = Math.min((elapsedTime - diveStartTime) / 4.0, 1.0);
         const easedDiveProgress = 1 - Math.pow(1 - diveProgress, 2);
@@ -296,7 +298,8 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
         bubbleGeometry.attributes.position.needsUpdate = true;
 
         if (diveProgress >= 1.0) {
-            animationStage = 'done';
+            localAnimationStage = 'done';
+            setAnimationStage('done');
             onCloseRef.current();
         }
       }
@@ -324,13 +327,22 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
         bubbleMaterial.dispose();
         renderer.dispose();
     };
-  }, [flavorColor]);
+  }, [flavorColor, setAnimationStage]);
 
   return (
     <div 
         className="fixed inset-0 z-50"
     >
         <div ref={mountRef} className="absolute inset-0" />
+        {animationStage === 'diving' && (
+            <div 
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            >
+                <h1 className="font-headline text-white text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
+                    Diving through the thirst
+                </h1>
+            </div>
+        )}
     </div>
   );
 }
