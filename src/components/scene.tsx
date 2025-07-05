@@ -47,8 +47,8 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
 
     const canBodyMaterial = new THREE.MeshStandardMaterial({
         map: texture,
-        metalness: 0.5,
-        roughness: 0.5,
+        metalness: 0.7,
+        roughness: 0.4,
         bumpMap: bumpTexture,
         bumpScale: 0.005,
     });
@@ -102,7 +102,7 @@ export function Scene() {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     scene.add(camera);
-    camera.position.z = 10;
+    camera.position.z = 8; // Moved camera closer
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -111,21 +111,25 @@ export function Scene() {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mountRef.current.appendChild(renderer.domElement);
 
-    const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1.5);
-    scene.add(hemisphereLight);
-    
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 4.0);
-    directionalLight.position.set(5, 5, 5);
-    directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width = 1024;
-    directionalLight.shadow.mapSize.height = 1024;
-    directionalLight.shadow.camera.near = 0.5;
-    directionalLight.shadow.camera.far = 20;
-    scene.add(directionalLight);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 3.0);
+    keyLight.position.set(5, 5, 5);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.width = 1024;
+    keyLight.shadow.mapSize.height = 1024;
+    keyLight.shadow.camera.near = 0.5;
+    keyLight.shadow.camera.far = 20;
+    scene.add(keyLight);
 
     const fillLight = new THREE.DirectionalLight(0xffffff, 1.0);
-    fillLight.position.set(-5, 2, -5);
+    fillLight.position.set(-5, 2, 5);
     scene.add(fillLight);
+    
+    const backLight = new THREE.DirectionalLight(0xffffff, 2.0);
+    backLight.position.set(0, 8, -10);
+    scene.add(backLight);
 
     const allCans: THREE.Group[] = [];
     let mainCan: THREE.Group | null = null;
@@ -183,16 +187,27 @@ export function Scene() {
         
         if (mainCan) {
           const scrollFraction = Math.min(scrollY / animationDistance, 1);
-
-          mainCan.position.y = THREE.MathUtils.lerp(0, -5, scrollFraction);
           
+          // Apply an ease-in-out curve for a more natural start and end
+          const easedFraction = scrollFraction < 0.5 
+            ? 4 * scrollFraction * scrollFraction * scrollFraction 
+            : 1 - Math.pow(-2 * scrollFraction + 2, 3) / 2;
+
+          // Animate position with easing
+          mainCan.position.y = THREE.MathUtils.lerp(0, -5, easedFraction);
+          
+          // Animate scale with easing
           const minScale = 1.0;
           const maxScale = 1.8;
-          const scale = THREE.MathUtils.lerp(minScale, maxScale, scrollFraction);
+          const scale = THREE.MathUtils.lerp(minScale, maxScale, easedFraction);
           mainCan.scale.set(scale, scale, scale);
           
-          mainCan.rotation.y = THREE.MathUtils.lerp(0, Math.PI * 2, scrollFraction);
-          mainCan.rotation.x = THREE.MathUtils.lerp(0.2, -0.2, scrollFraction);
+          // Animate rotation with easing
+          mainCan.rotation.y = THREE.MathUtils.lerp(0, Math.PI * 2, easedFraction);
+          
+          // Add a subtle, more "organic" tilt as it moves
+          mainCan.rotation.x = THREE.MathUtils.lerp(0.2, -0.2, easedFraction);
+          mainCan.rotation.z = Math.sin(easedFraction * Math.PI) * 0.15; // Creates a gentle arc-like sway
         }
     };
     window.addEventListener('scroll', onScroll, { passive: true });
