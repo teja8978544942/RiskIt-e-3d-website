@@ -12,14 +12,14 @@ import { ArrowDown } from 'lucide-react';
 import Image from 'next/image';
 
 const flavors = [
-  { name: 'Original Bold', hint: 'soda can' },
-  { name: 'Citrus Surge', hint: 'soda can' },
-  { name: 'Berry Blitz', hint: 'soda can' },
-  { name: 'Tropical Fusion', hint: 'soda can' },
-  { name: 'Arctic Mint', hint: 'soda can' },
-  { name: 'Spiced Apple', hint: 'soda can' },
-  { name: 'Cherry Bomb', hint: 'soda can' },
-  { name: 'Grape Escape', hint: 'soda can' },
+  { name: 'Original Bold', hint: 'soda can', color: 'A67B5B' },
+  { name: 'Citrus Surge', hint: 'soda can', color: 'F59E0B' },
+  { name: 'Berry Blitz', hint: 'soda can', color: '7C3AED' },
+  { name: 'Tropical Fusion', hint: 'soda can', color: '10B981' },
+  { name: 'Arctic Mint', hint: 'soda can', color: '3B82F6' },
+  { name: 'Spiced Apple', hint: 'soda can', color: 'EF4444' },
+  { name: 'Cherry Bomb', hint: 'soda can', color: 'D946EF' },
+  { name: 'Grape Escape', hint: 'soda can', color: '8B5CF6' },
 ];
 
 export default function Home() {
@@ -96,7 +96,7 @@ export default function Home() {
                       <CardContent className="flex flex-col items-center justify-center p-0">
                         <div className="aspect-[3/5] w-full overflow-hidden">
                           <Image
-                            src={`https://placehold.co/300x500.png`}
+                            src={`https://placehold.co/300x500/${flavor.color}/FFFFFF.png`}
                             alt={flavor.name}
                             width={300}
                             height={500}
