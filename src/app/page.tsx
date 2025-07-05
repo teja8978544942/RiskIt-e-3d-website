@@ -14,14 +14,14 @@ import { ArrowDown, Terminal } from 'lucide-react';
 import Image from 'next/image';
 
 const flavors = [
-  { name: 'Original Bold', hint: 'soda can', fruitDescription: 'dark berries and a hint of spice', color: '5A3A22' },
-  { name: 'Citrus Surge', hint: 'soda can', fruitDescription: 'lemons limes and oranges', color: 'F2C94C' },
-  { name: 'Berry Blitz', hint: 'soda can', fruitDescription: 'mixed berries like strawberries and blueberries', color: 'D64A6B' },
-  { name: 'Tropical Fusion', hint: 'soda can', fruitDescription: 'pineapple mango and passionfruit', color: 'F2994A' },
-  { name: 'Arctic Mint', hint: 'soda can', fruitDescription: 'fresh mint leaves with a cool icy effect', color: '56CCF2' },
-  { name: 'Spiced Apple', hint: 'soda can', fruitDescription: 'red apples and cinnamon sticks', color: 'EB5757' },
-  { name: 'Cherry Bomb', hint: 'soda can', fruitDescription: 'ripe dark cherries', color: '9B2C2C' },
-  { name: 'Grape Escape', hint: 'soda can', fruitDescription: 'purple and green grapes', color: 'BB6BD9' },
+  { name: 'Midnight Chocolate', hint: 'soda can chocolate', fruitDescription: 'rich dark chocolate chunks and cocoa beans', color: '5A3A22' },
+  { name: 'Citrus Surge', hint: 'soda can citrus', fruitDescription: 'lemons limes and oranges', color: 'F2C94C' },
+  { name: 'Berry Blitz', hint: 'soda can berry', fruitDescription: 'mixed berries like strawberries and blueberries', color: 'D64A6B' },
+  { name: 'Tropical Fusion', hint: 'soda can tropical', fruitDescription: 'pineapple mango and passionfruit', color: 'F2994A' },
+  { name: 'Arctic Mint', hint: 'soda can mint', fruitDescription: 'fresh mint leaves with a cool icy effect', color: '56CCF2' },
+  { name: 'Spiced Apple', hint: 'soda can apple', fruitDescription: 'red apples and cinnamon sticks', color: 'EB5757' },
+  { name: 'Cherry Bomb', hint: 'soda can cherry', fruitDescription: 'ripe dark cherries', color: '9B2C2C' },
+  { name: 'Grape Escape', hint: 'soda can grape', fruitDescription: 'purple and green grapes', color: 'BB6BD9' },
 ];
 
 export default async function Home() {
