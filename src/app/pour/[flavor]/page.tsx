@@ -221,7 +221,7 @@ export default function PourPage() {
                         break;
                     }
                     case 'tilting': {
-                        const targetPos = new THREE.Vector3(2.0, 2.2, 2.5);
+                        const targetPos = new THREE.Vector3(4.0, 2.2, 2.5);
                         can.position.x = THREE.MathUtils.damp(can.position.x, targetPos.x, 4, delta);
                         can.position.y = THREE.MathUtils.damp(can.position.y, targetPos.y, 4, delta);
                         can.position.z = THREE.MathUtils.damp(can.position.z, targetPos.z, 4, delta);
@@ -363,7 +363,7 @@ export default function PourPage() {
             state.startTime = performance.now();
 
             state.glass = createGlass();
-            state.glass.position.set(2.0, -1.7 + 1.5, 2.5);
+            state.glass.position.set(4.0, -1.7 + 1.5, 2.5);
             scene.add(state.glass);
 
             state.particles = createParticles(flavor.color);
