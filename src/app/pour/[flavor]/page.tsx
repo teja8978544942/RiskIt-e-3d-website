@@ -6,6 +6,7 @@ import { flavors } from '@/lib/flavors';
 import { useParams, useRouter } from 'next/navigation';
 import { createCanMesh } from '@/components/can-model';
 import { TsunamiAnimation } from '@/components/tsunami-animation';
+import { cn } from '@/lib/utils';
 
 function createGlass() {
     const points = [
@@ -351,7 +352,10 @@ export default function PourPage() {
     }
 
     return (
-        <main className="fixed inset-0 bg-black">
+        <main className={cn(
+            "fixed inset-0",
+            animationStage === 'tsunami' ? 'bg-black' : 'bg-background'
+        )}>
             {animationStage === 'tsunami' && (
                 <TsunamiAnimation
                     flavorColor={flavor.color}
