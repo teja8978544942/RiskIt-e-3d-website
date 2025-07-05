@@ -259,30 +259,32 @@ export function Scene() {
     let mainCan: THREE.Group | null = null;
     const otherCans: THREE.Group[] = [];
 
-    const orangeBurstFlavor = flavors.find(f => f.name === 'Orange Burst');
-    if (orangeBurstFlavor) {
-        mainCan = createCanMesh(orangeBurstFlavor.name, orangeBurstFlavor.color);
-        mainCan.position.set(0, 0, 0);
-        mainCan.castShadow = true;
-        mainCan.traverse(function(child) {
-            if ((child as THREE.Mesh).isMesh) {
-                child.castShadow = true;
-            }
-        });
-        allCans.push(mainCan);
-        scene.add(mainCan);
+    const spacing = 2.5;
+    const totalCans = flavors.length;
+
+    // Create a new array with Orange Burst at the 4th position (index 3) to be near the center
+    const reorderedFlavors = [...flavors];
+    const mainCanIndexOriginal = reorderedFlavors.findIndex(f => f.name === 'Orange Burst');
+    if (mainCanIndexOriginal !== -1 && mainCanIndexOriginal !== 3) {
+        const [mainCanFlavor] = reorderedFlavors.splice(mainCanIndexOriginal, 1);
+        reorderedFlavors.splice(3, 0, mainCanFlavor);
     }
 
-    const otherFlavors = flavors.filter(f => f.name !== 'Orange Burst');
-    const spacing = 2.0;
-    otherFlavors.forEach((flavor, index) => {
+    reorderedFlavors.forEach((flavor, index) => {
         const can = createCanMesh(flavor.name, flavor.color);
-        const side = (index % 2 === 0) ? 1 : -1;
-        const step = Math.ceil((index + 1) / 2);
-        can.position.x = side * (step + 1) * spacing;
+        
+        // This calculation places the cans symmetrically around x=0
+        const position = (index - (totalCans - 1) / 2) * spacing;
+        can.position.x = position;
+        
         can.castShadow = true;
         can.traverse(function(child) { if ((child as THREE.Mesh).isMesh) { child.castShadow = true; } });
-        otherCans.push(can);
+
+        if (flavor.name === 'Orange Burst') {
+            mainCan = can;
+        } else {
+            otherCans.push(can);
+        }
         allCans.push(can);
         scene.add(can);
     });
@@ -381,9 +383,12 @@ export function Scene() {
             const elapsedTime = (performance.now() - state.startTime) / 1000;
             
             // --- Camera Animation ---
-            const focusPoint = can.position.clone().add(new THREE.Vector3(0, 1, 4));
+            const worldPosition = new THREE.Vector3();
+            can.getWorldPosition(worldPosition);
+
+            const focusPoint = worldPosition.clone().add(new THREE.Vector3(0, 1, 4));
             camera.position.lerp(focusPoint, 0.05);
-            cameraLookAtTarget.position.lerp(can.position, 0.05);
+            cameraLookAtTarget.position.lerp(worldPosition, 0.05);
             camera.lookAt(cameraLookAtTarget.position);
 
             switch(state.stage) {
@@ -419,7 +424,11 @@ export function Scene() {
 
                     if (glass) {
                         glass.visible = true;
-                        glass.position.set(state.originalPosition.x, state.originalPosition.y - 1.5, 3);
+                        
+                        const glassWorldPosition = new THREE.Vector3();
+                        can.getWorldPosition(glassWorldPosition);
+                        glass.position.set(glassWorldPosition.x, worldPosition.y - 1.5, 3);
+                        
                         const progress = Math.min(elapsedTime / 0.5, 1);
                         glass.scale.set(progress, progress, progress);
                     }
@@ -562,4 +571,3 @@ export function Scene() {
 
   return <div ref={mountRef} className="fixed top-0 left-0 -z-10 h-full w-full" />;
 }
-
