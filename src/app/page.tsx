@@ -40,20 +40,19 @@ const fallbackImages: Record<string, string> = {
 export default async function Home() {
   const hasApiKey = !!process.env.GOOGLE_API_KEY;
 
-  const flavorImages = await Promise.all(
-    flavors.map(async (flavor) => {
-      let imageUrl = fallbackImages[flavor.name];
-      if (hasApiKey) {
-        try {
-          imageUrl = await generateFlavorImage({ flavorName: flavor.name });
-        } catch (error) {
-          console.error(`Failed to generate image for ${flavor.name}, using fallback. Error:`, error);
-          // imageUrl is already set to the fallback, so no action needed.
-        }
+  const flavorImages = [];
+  for (const flavor of flavors) {
+    let imageUrl = fallbackImages[flavor.name];
+    if (hasApiKey) {
+      try {
+        imageUrl = await generateFlavorImage({ flavorName: flavor.name });
+      } catch (error) {
+        console.error(`Failed to generate image for ${flavor.name}, using fallback. Error:`, error);
+        // imageUrl is already set to the fallback
       }
-      return { ...flavor, imageUrl };
-    })
-  );
+    }
+    flavorImages.push({ ...flavor, imageUrl });
+  }
 
   return (
     <main className="relative w-full overflow-x-hidden bg-background text-foreground">
