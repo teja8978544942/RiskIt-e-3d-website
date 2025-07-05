@@ -178,8 +178,10 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     const currentMount = mountRef.current;
     
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 3, 5);
+    scene.fog = new THREE.FogExp2(0x00102a, 0.03); // Deep blue fog for underwater effect
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 3, 10); // Start camera further back
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -195,17 +197,14 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
       fragmentShader,
       uniforms: {
         uTime: { value: 0 },
-        // Big Waves
         uBigWavesElevation: { value: 0.6 },
         uBigWavesFrequency: { value: new THREE.Vector2(0.6, 0.2) },
         uBigWavesSpeed: { value: 0.3 },
-        // Small Waves
         uSmallWavesElevation: { value: 0.25 },
         uSmallWavesFrequency: { value: 2.0 },
         uSmallWavesSpeed: { value: 1.0 },
-        // Colors
-        uDepthColor: { value: new THREE.Color('#043936') }, // Deep teal
-        uSurfaceColor: { value: new THREE.Color('#88c0d0') }, // Sea green/blue
+        uDepthColor: { value: new THREE.Color('#043936') },
+        uSurfaceColor: { value: new THREE.Color(flavorColor) },
         uFoamColor: { value: new THREE.Color('#ffffff') },
         uColorOffset: { value: 0.1 },
         uColorMultiplier: { value: 3.0 },
@@ -214,27 +213,76 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     
     const wavePlane = new THREE.Mesh(geometry, material);
     wavePlane.rotation.x = -Math.PI / 2;
-    wavePlane.position.y = -10; // Start below the viewport
+    wavePlane.position.y = -10;
     scene.add(wavePlane);
     
+    const bubbleCount = 400;
+    const bubbleGeometry = new THREE.BufferGeometry();
+    const bubblePositions = new Float32Array(bubbleCount * 3);
+
+    for (let i = 0; i < bubbleCount; i++) {
+        bubblePositions[i * 3 + 0] = (Math.random() - 0.5) * 60; // x
+        bubblePositions[i * 3 + 1] = (Math.random() - 1.5) * 40; // y start below
+        bubblePositions[i * 3 + 2] = (Math.random() - 0.5) * 60; // z
+    }
+    bubbleGeometry.setAttribute('position', new THREE.BufferAttribute(bubblePositions, 3));
+    
+    const bubbleMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.15,
+        transparent: true,
+        opacity: 0.6,
+        blending: THREE.AdditiveBlending,
+        sizeAttenuation: true,
+    });
+    const bubbles = new THREE.Points(bubbleGeometry, bubbleMaterial);
+    bubbles.visible = false;
+    scene.add(bubbles);
+
     let animationFrameId: number;
     const startTime = clock.getElapsedTime();
-    let isClosed = false;
+    let animationStage: 'rising' | 'diving' | 'done' = 'rising';
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
       const elapsedTime = clock.getElapsedTime();
       material.uniforms.uTime.value = elapsedTime * 0.4;
 
-      if (!isClosed) {
-        const progress = Math.min((elapsedTime - startTime) / 6.0, 1.0);
-        const easedProgress = 1 - Math.pow(1 - progress, 2);
+      if (animationStage === 'rising') {
+        const progress = Math.min((elapsedTime - startTime) / 4.0, 1.0);
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
   
-        // Animate the water level rising up past the camera to fill the screen
         wavePlane.position.y = THREE.MathUtils.lerp(-10, 4, easedProgress);
         
         if (progress >= 1.0) {
-            isClosed = true;
+            animationStage = 'diving';
+            bubbles.visible = true;
+        }
+      } else if (animationStage === 'diving') {
+        const diveStartTime = startTime + 4.0;
+        const diveProgress = Math.min((elapsedTime - diveStartTime) / 4.0, 1.0);
+        const easedDiveProgress = 1 - Math.pow(1 - diveProgress, 2);
+
+        camera.position.y = THREE.MathUtils.lerp(3, -15, easedDiveProgress);
+        camera.position.z = THREE.MathUtils.lerp(10, -20, easedDiveProgress);
+        if(scene.fog instanceof THREE.FogExp2) {
+          scene.fog.density = THREE.MathUtils.lerp(0.03, 0.08, easedDiveProgress);
+        }
+
+        const positions = bubbleGeometry.attributes.position.array as Float32Array;
+        for (let i = 0; i < bubbleCount; i++) {
+            positions[i * 3 + 1] += Math.random() * 0.1 + 0.05;
+            
+            if (positions[i * 3 + 1] > camera.position.y + 10) {
+                positions[i * 3 + 1] = camera.position.y - 30;
+                positions[i * 3 + 0] = camera.position.x + (Math.random() - 0.5) * 60;
+                positions[i * 3 + 2] = camera.position.z + (Math.random() - 0.5) * 60;
+            }
+        }
+        bubbleGeometry.attributes.position.needsUpdate = true;
+
+        if (diveProgress >= 1.0) {
+            animationStage = 'done';
             onCloseRef.current();
         }
       }
@@ -258,9 +306,11 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
         }
         geometry.dispose();
         material.dispose();
+        bubbleGeometry.dispose();
+        bubbleMaterial.dispose();
         renderer.dispose();
     };
-  }, [flavorColor]);
+  }, [flavorColor, onClose]);
 
   return (
     <div 
