@@ -86,18 +86,21 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
         new THREE.CylinderGeometry(canRadius * 0.8, canRadius * 0.8, 0.02, segments),
         metalMaterial
     );
-    centerPanel.position.y = -0.04;
+    // Make the panel more recessed for a deeper look
+    centerPanel.position.y = -0.05;
     topGroup.add(centerPanel);
     
     const slopedPanel = new THREE.Mesh(
-        new THREE.CylinderGeometry(canRadius * 0.98, canRadius * 0.8, 0.04, segments),
+        // Adjust height to match new recessed panel
+        new THREE.CylinderGeometry(canRadius * 0.98, canRadius * 0.8, 0.06, segments),
         metalMaterial
     );
     slopedPanel.position.y = -0.02;
     topGroup.add(slopedPanel);
     
     const rim = new THREE.Mesh(
-        new THREE.TorusGeometry(canRadius, 0.03, 16, segments),
+        // Use a thicker torus for a softer, more realistic rim
+        new THREE.TorusGeometry(canRadius, 0.04, 16, segments),
         metalMaterial
     );
     rim.rotation.x = Math.PI / 2;
@@ -105,20 +108,22 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
 
     const pullTab = new THREE.Group();
     pullTab.name = "pullTab";
+
+    // A more refined pull tab shape
     const tabShape = new THREE.Shape();
-    const arcRadius = 0.18;
+    const arcRadius = 0.22;
     const holeRadius = 0.1;
-    const leverWidth = 0.1;
-    tabShape.moveTo(-leverWidth / 2, -0.4);
-    tabShape.lineTo(leverWidth / 2, -0.4);
-    tabShape.absarc(0, -arcRadius, arcRadius, Math.PI * 1.35, Math.PI * -0.35, false);
-    tabShape.lineTo(leverWidth / 2, -0.4);
+    const leverWidth = 0.08;
+    tabShape.moveTo(-leverWidth, -0.45);
+    tabShape.lineTo(leverWidth, -0.45);
+    tabShape.absarc(0, -arcRadius, arcRadius, Math.PI * 1.4, Math.PI * -0.4, false);
+    tabShape.closePath();
 
     const tabHole = new THREE.Path();
     tabHole.absarc(0, 0, holeRadius, 0, Math.PI * 2, true);
     tabShape.holes.push(tabHole);
 
-    const extrudeSettings = { depth: 0.04, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.01, bevelThickness: 0.01 };
+    const extrudeSettings = { depth: 0.04, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.015, bevelThickness: 0.01 };
     const tabGeom = new THREE.ExtrudeGeometry(tabShape, extrudeSettings);
     const tabMesh = new THREE.Mesh(tabGeom, metalMaterial);
     tabMesh.rotation.x = Math.PI / 2;
