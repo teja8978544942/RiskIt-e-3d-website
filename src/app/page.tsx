@@ -14,14 +14,14 @@ import { ArrowDown, TriangleAlert } from 'lucide-react';
 import Image from 'next/image';
 
 const flavors = [
-    { name: 'Midnight Chocolate', hint: 'soda bottle chocolate', ingredients: 'dark chocolate chunks, cocoa beans', fallbackUrl: 'https://images.unsplash.com/photo-1572492398242-2d8c0f2d1e5d?w=300&h=500&fit=crop&q=80' },
-    { name: 'Citrus Surge', hint: 'soda bottle citrus', ingredients: 'orange slices, lemon wedges, lime', fallbackUrl: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=300&h=500&fit=crop&q=80' },
-    { name: 'Berry Blitz', hint: 'soda bottle berry', ingredients: 'blueberries, raspberries, strawberries', fallbackUrl: 'https://images.unsplash.com/photo-1628295987711-2d744252d6a5?w=300&h=500&fit=crop&q=80' },
-    { name: 'Tropical Fusion', hint: 'soda bottle tropical', ingredients: 'pineapple chunks, mango slices, passion fruit', fallbackUrl: 'https://images.unsplash.com/photo-1542289948-83e07f5941b3?w=300&h=500&fit=crop&q=80' },
-    { name: 'Arctic Mint', hint: 'soda bottle mint', ingredients: 'fresh mint leaves, ice crystals', fallbackUrl: 'https://images.unsplash.com/photo-1599602138162-fa5a5664367f?w=300&h=500&fit=crop&q=80' },
-    { name: 'Spiced Apple', hint: 'soda bottle apple', ingredients: 'red apple slices, cinnamon sticks', fallbackUrl: 'https://images.unsplash.com/photo-1619546813926-a78fa6332cd2?w=300&h=500&fit=crop&q=80' },
-    { name: 'Cherry Bomb', hint: 'soda bottle cherry', ingredients: 'ripe red cherries', fallbackUrl: 'https://images.unsplash.com/photo-1597873839242-3536b694c3c3?w=300&h=500&fit=crop&q=80' },
-    { name: 'Grape Escape', hint: 'soda bottle grape', ingredients: 'purple grapes', fallbackUrl: 'https://images.unsplash.com/photo-1587322838329-a417578705b1?w=300&h=500&fit=crop&q=80' },
+    { name: 'Midnight Chocolate', hint: 'soda bottle chocolate', ingredients: 'dark chocolate chunks, cocoa beans', fallbackUrl: 'https://images.unsplash.com/photo-1621235021202-a083f2a4a4b2?w=300&h=500&fit=crop&q=80' },
+    { name: 'Citrus Surge', hint: 'soda bottle citrus', ingredients: 'orange slices, lemon wedges, lime', fallbackUrl: 'https://images.unsplash.com/photo-1613563951236-75a90960538f?w=300&h=500&fit=crop&q=80' },
+    { name: 'Berry Blitz', hint: 'soda bottle berry', ingredients: 'blueberries, raspberries, strawberries', fallbackUrl: 'https://images.unsplash.com/photo-1625754294829-6505562149b5?w=300&h=500&fit=crop&q=80' },
+    { name: 'Tropical Fusion', hint: 'soda bottle tropical', ingredients: 'pineapple chunks, mango slices, passion fruit', fallbackUrl: 'https://images.unsplash.com/photo-1577805947690-2e4a6851327b?w=300&h=500&fit=crop&q=80' },
+    { name: 'Arctic Mint', hint: 'soda bottle mint', ingredients: 'fresh mint leaves, ice crystals', fallbackUrl: 'https://images.unsplash.com/photo-1558832194-4b476a1419a4?w=300&h=500&fit=crop&q=80' },
+    { name: 'Spiced Apple', hint: 'soda bottle apple', ingredients: 'red apple slices, cinnamon sticks', fallbackUrl: 'https://images.unsplash.com/photo-1567303004249-d323750cf395?w=300&h=500&fit=crop&q=80' },
+    { name: 'Cherry Bomb', hint: 'soda bottle cherry', ingredients: 'ripe red cherries', fallbackUrl: 'https://images.unsplash.com/photo-1528755699335-422e1b4b18a1?w=300&h=500&fit=crop&q=80' },
+    { name: 'Grape Escape', hint: 'soda bottle grape', ingredients: 'purple grapes', fallbackUrl: 'https://images.unsplash.com/photo-1618337130-1b33411c5862?w=300&h=500&fit=crop&q=80' },
 ];
 
 export default async function Home() {
@@ -30,26 +30,30 @@ export default async function Home() {
   let flavorsWithImages = flavors.map(f => ({ ...f, imageUrl: f.fallbackUrl }));
 
   if (hasApiKey) {
-    const imageGenerationPromises = flavors.map(flavor =>
-      generateFlavorImage({
-        flavorName: flavor.name,
-        ingredients: flavor.ingredients,
-      })
-    );
+    try {
+      const imageGenerationPromises = flavors.map(flavor =>
+        generateFlavorImage({
+          flavorName: flavor.name,
+          ingredients: flavor.ingredients,
+        })
+      );
 
-    const results = await Promise.allSettled(imageGenerationPromises);
+      const results = await Promise.allSettled(imageGenerationPromises);
 
-    flavorsWithImages = flavors.map((flavor, index) => {
-      const result = results[index];
-      if (result.status === 'fulfilled' && result.value.imageUrl) {
-        return { ...flavor, imageUrl: result.value.imageUrl };
-      } else {
-        if (result.status === 'rejected') {
-          console.error(`Image generation failed for ${flavor.name}:`, result.reason);
+      flavorsWithImages = flavors.map((flavor, index) => {
+        const result = results[index];
+        if (result.status === 'fulfilled' && result.value.imageUrl) {
+          return { ...flavor, imageUrl: result.value.imageUrl };
+        } else {
+          if (result.status === 'rejected') {
+            console.error(`Image generation failed for ${flavor.name}:`, result.reason);
+          }
+          return { ...flavor, imageUrl: flavor.fallbackUrl };
         }
-        return { ...flavor, imageUrl: flavor.fallbackUrl };
-      }
-    });
+      });
+    } catch (error) {
+      console.error("An error occurred during image generation:", error);
+    }
   }
   
   return (
