@@ -87,10 +87,10 @@ export default function PourPage() {
         if (!mountRef.current || typeof window === 'undefined') return;
 
         if (!popSoundRef.current) {
-            popSoundRef.current = new Audio('https://actions.google.com/sounds/v1/household/can_opening.ogg');
+            popSoundRef.current = new Audio('https://assets.codepen.io/217233/can-open.mp3');
         }
         if (!pourSoundRef.current) {
-            pourSoundRef.current = new Audio('https://actions.google.com/sounds/v1/water/water_pouring_into_a_glass.ogg');
+            pourSoundRef.current = new Audio('https://assets.codepen.io/217233/soda-pour.mp3');
             pourSoundRef.current.loop = true;
         }
         
