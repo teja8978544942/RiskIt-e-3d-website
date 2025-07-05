@@ -426,11 +426,11 @@ export default function PourPage() {
                 />
             )}
             <div className={cn(
-                "absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300",
+                "absolute inset-0 flex flex-col items-start justify-center p-8 md:p-16 lg:p-24 pointer-events-none transition-opacity duration-300",
                 animationStage === 'pouring' ? 'opacity-100' : 'opacity-0'
             )}>
-                <h1 className="font-headline text-foreground/10 text-8xl md:text-9xl lg:text-[12rem] text-center select-none">
-                    Then choose your flavour
+                <h1 className="font-headline text-foreground/10 text-8xl md:text-9xl lg:text-[12rem] text-left select-none leading-none">
+                    Then<br />choose<br />your<br />flavour
                 </h1>
             </div>
             <div ref={mountRef} className={cn(
