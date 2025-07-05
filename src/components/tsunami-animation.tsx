@@ -237,17 +237,6 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
       wavePlane.position.y = THREE.MathUtils.lerp(-4, 0, easedProgress);
       wavePlane.position.z = THREE.MathUtils.lerp(-2, 1, easedProgress);
       
-      // Add a slight camera shake effect as the wave peaks
-      if (progress > 0.5) {
-        const shakeProgress = (progress - 0.5) * 2; // Normalize to 0-1 range
-        const shakeIntensity = Math.pow(shakeProgress, 2) * 0.1;
-        camera.position.x = (Math.random() - 0.5) * shakeIntensity;
-        camera.position.y = (Math.random() - 0.5) * shakeIntensity;
-      } else {
-        camera.position.x = 0;
-        camera.position.y = 0;
-      }
-      
       camera.position.z = THREE.MathUtils.lerp(2.5, 3.5, easedProgress);
       
       renderer.render(scene, camera);
@@ -293,7 +282,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     >
         <div ref={mountRef} className="absolute inset-0" />
         <div 
-            className="absolute inset-0 flex items-start justify-center pointer-events-none pt-20"
+            className="absolute inset-0 flex items-start justify-center pointer-events-none pt-10"
         >
             <h1 className="font-headline text-black text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
                 Let's dive through your thirst
