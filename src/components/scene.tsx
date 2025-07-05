@@ -47,8 +47,8 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
 
     const canBodyMaterial = new THREE.MeshStandardMaterial({
         map: texture,
-        metalness: 0.4,
-        roughness: 0.6,
+        metalness: 0.5,
+        roughness: 0.5,
         bumpMap: bumpTexture,
         bumpScale: 0.005,
     });
@@ -56,7 +56,7 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
     const metalMaterial = new THREE.MeshStandardMaterial({
         color: new THREE.Color(0xcccccc),
         metalness: 0.9,
-        roughness: 0.3,
+        roughness: 0.2,
         bumpMap: bumpTexture,
         bumpScale: 0.02,
     });
@@ -102,7 +102,7 @@ export function Scene() {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     scene.add(camera);
-    camera.position.z = 12; // Moved camera closer to make cans appear larger
+    camera.position.z = 10;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -111,9 +111,10 @@ export function Scene() {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mountRef.current.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
-    scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 4.5);
+    const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1.5);
+    scene.add(hemisphereLight);
+    
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 4.0);
     directionalLight.position.set(5, 5, 5);
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.width = 1024;
@@ -122,15 +123,18 @@ export function Scene() {
     directionalLight.shadow.camera.far = 20;
     scene.add(directionalLight);
 
+    const fillLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    fillLight.position.set(-5, 2, -5);
+    scene.add(fillLight);
+
     const allCans: THREE.Group[] = [];
     let mainCan: THREE.Group | null = null;
     const otherCans: THREE.Group[] = [];
 
-    // Create and position the main can (Orange Burst) at the origin
     const orangeBurstFlavor = flavors.find(f => f.name === 'Orange Burst');
     if (orangeBurstFlavor) {
         mainCan = createCanMesh(orangeBurstFlavor.name, orangeBurstFlavor.color);
-        mainCan.position.set(0, 0, 0); // Center can for scrolling animation
+        mainCan.position.set(0, 0, 0);
         mainCan.castShadow = true;
         mainCan.traverse(function(child) {
             if ((child as THREE.Mesh).isMesh) {
@@ -144,11 +148,9 @@ export function Scene() {
     const otherFlavors = flavors.filter(f => f.name !== 'Orange Burst');
     const spacing = 2.5;
 
-    // Arrange other cans to the left and right of the main can
     otherFlavors.forEach((flavor, index) => {
         const can = createCanMesh(flavor.name, flavor.color);
         
-        // Alternate placing cans left and right of the center
         const side = (index % 2 === 0) ? 1 : -1;
         const step = Math.ceil((index + 1) / 2);
         can.position.x = side * step * spacing;
@@ -165,30 +167,25 @@ export function Scene() {
     });
 
     const shadowPlane = new THREE.Mesh(
-        new THREE.PlaneGeometry(30, 20), // Widen the shadow plane for all cans
+        new THREE.PlaneGeometry(30, 20),
         new THREE.ShadowMaterial({ opacity: 0.2 })
     );
     shadowPlane.rotation.x = -Math.PI / 2;
-    shadowPlane.position.y = -1.7; // Positioned right under the cans
+    shadowPlane.position.y = -1.7;
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
     
     let scrollY = window.scrollY;
-    // Animate over the first 3 screen heights for a more controlled effect.
     const animationDistance = window.innerHeight * 3;
 
     const onScroll = () => {
         scrollY = window.scrollY;
         
         if (mainCan) {
-          // Calculate scroll fraction, but clamp it to our desired animation distance.
           const scrollFraction = Math.min(scrollY / animationDistance, 1);
 
-          // Animate main can's position, scale, and rotation based on scroll.
-          // It starts at y=0 with the others and moves down.
           mainCan.position.y = THREE.MathUtils.lerp(0, -5, scrollFraction);
           
-          // It starts at the same size as others and enlarges.
           const minScale = 1.0;
           const maxScale = 1.8;
           const scale = THREE.MathUtils.lerp(minScale, maxScale, scrollFraction);
@@ -211,8 +208,6 @@ export function Scene() {
     const tick = () => {
         const targetLookAt = new THREE.Vector3(mouse.x * 0.1, -mouse.y * 0.1, -1);
         camera.lookAt(targetLookAt);
-        
-        // Other cans are now stationary
         
         renderer.render(scene, camera);
         window.requestAnimationFrame(tick);
