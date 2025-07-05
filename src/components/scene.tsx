@@ -102,7 +102,7 @@ export function Scene() {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     scene.add(camera);
-    camera.position.z = 8; // Moved camera closer
+    camera.position.z = 8; 
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -188,26 +188,18 @@ export function Scene() {
         if (mainCan) {
           const scrollFraction = Math.min(scrollY / animationDistance, 1);
           
-          // Apply an ease-in-out curve for a more natural start and end
           const easedFraction = scrollFraction < 0.5 
             ? 4 * scrollFraction * scrollFraction * scrollFraction 
             : 1 - Math.pow(-2 * scrollFraction + 2, 3) / 2;
 
-          // Animate position with easing
           mainCan.position.y = THREE.MathUtils.lerp(0, -5, easedFraction);
           
-          // Animate scale with easing
           const minScale = 1.0;
           const maxScale = 1.8;
           const scale = THREE.MathUtils.lerp(minScale, maxScale, easedFraction);
           mainCan.scale.set(scale, scale, scale);
           
-          // Animate rotation with easing
           mainCan.rotation.y = THREE.MathUtils.lerp(0, Math.PI * 2, easedFraction);
-          
-          // Add a subtle, more "organic" tilt as it moves
-          mainCan.rotation.x = THREE.MathUtils.lerp(0.2, -0.2, easedFraction);
-          mainCan.rotation.z = Math.sin(easedFraction * Math.PI) * 0.15; // Creates a gentle arc-like sway
         }
     };
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -221,7 +213,7 @@ export function Scene() {
     window.addEventListener('mousemove', onMouseMove, { passive: true });
     
     const tick = () => {
-        const targetLookAt = new THREE.Vector3(mouse.x * 0.1, -mouse.y * 0.1, -1);
+        const targetLookAt = new THREE.Vector3(mouse.x * 0.2, -mouse.y * 0.2, -1);
         camera.lookAt(targetLookAt);
         
         renderer.render(scene, camera);
