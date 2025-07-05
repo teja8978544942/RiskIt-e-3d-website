@@ -13,14 +13,14 @@ import { ArrowDown } from 'lucide-react';
 import Image from 'next/image';
 
 const flavors = [
-  { name: 'Orange Burst', imageUrl: '/4e5483d4-b78f-4316-92f7-7299a4c14c5c.png', hint: 'soda can orange' },
-  { name: 'Lime Zing', imageUrl: '/52655883-7c3e-436f-b2f5-b663e80064e4.png', hint: 'soda can lime' },
-  { name: 'Grape Blast', imageUrl: '/66a84c8a-a827-463d-82c1-d41933c0cf9a.png', hint: 'soda can grape' },
-  { name: 'Blueberry Wave', imageUrl: '/1aa3d42e-152e-4b77-802c-7b78996b5a03.png', hint: 'soda can blueberry' },
-  { name: 'Mango Tango', imageUrl: '/1f6b8c9d-1579-4503-ac8b-d5a2d64f0ca2.png', hint: 'soda can mango' },
-  { name: 'Raspberry Rush', imageUrl: '/4260f774-4b53-488b-a359-245ed7e7931f.png', hint: 'soda can raspberry' },
-  { name: 'Pearadise', imageUrl: '/d54e4c3a-2a4c-473d-8152-da0536c4b9d0.png', hint: 'soda can pear' },
-  { name: 'Strawberry Bliss', imageUrl: '/99e11500-1c05-4c6e-8120-04359483c65c.png', hint: 'soda can strawberry' },
+  { name: 'Orange Burst', imageUrl: 'https://i.ibb.co/6y402qf/Orange-Burst.png', hint: 'soda can orange' },
+  { name: 'Lime Zing', imageUrl: 'https://i.ibb.co/Tmg8Bv4/Lime-Zing.png', hint: 'soda can lime' },
+  { name: 'Grape Blast', imageUrl: 'https://i.ibb.co/P9t791z/Grape-Blast.png', hint: 'soda can grape' },
+  { name: 'Blueberry Wave', imageUrl: 'https://i.ibb.co/8mjyLzG/Blueberry-Wave.png', hint: 'soda can blueberry' },
+  { name: 'Mango Tango', imageUrl: 'https://i.ibb.co/JqSgL14/Mango-Tango.png', hint: 'soda can mango' },
+  { name: 'Raspberry Rush', imageUrl: 'https://i.ibb.co/5MqfJ2g/Raspberry-Rush.png', hint: 'soda can raspberry' },
+  { name: 'Pearadise', imageUrl: 'https://i.ibb.co/1nLzWbX/Pearadise.png', hint: 'soda can pear' },
+  { name: 'Strawberry Bliss', imageUrl: 'https://i.ibb.co/LQrVysS/Strawberry-Bliss.png', hint: 'soda can strawberry' },
 ];
 
 
