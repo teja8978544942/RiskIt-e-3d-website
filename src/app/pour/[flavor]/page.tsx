@@ -110,7 +110,6 @@ export default function PourPage() {
       stage: 'idle' as 'idle' | 'lifting' | 'opening' | 'tilting' | 'pouring' | 'resetting',
       startTime: 0,
       pourStartTime: 0,
-      liquidLevel: -1.5,
       cameraInitialPosition: new THREE.Vector3(),
       cameraInitialLookAt: new THREE.Vector3(),
     });
@@ -188,7 +187,6 @@ export default function PourPage() {
                 const liquid = state.liquid;
                 const foam = state.foam;
                 
-                // Dynamic camera logic
                 let cameraTargetPos = new THREE.Vector3(0.5, 0, 8);
                 let cameraLookAtPos = new THREE.Vector3(0.5, 0, 0);
 
@@ -223,7 +221,7 @@ export default function PourPage() {
                         break;
                     }
                     case 'tilting': {
-                        const targetPos = new THREE.Vector3(1.2, 2.2, 2.5); // Adjusted for better alignment
+                        const targetPos = new THREE.Vector3(1.2, 2.2, 2.5);
                         can.position.x = THREE.MathUtils.damp(can.position.x, targetPos.x, 4, delta);
                         can.position.y = THREE.MathUtils.damp(can.position.y, targetPos.y, 4, delta);
                         can.position.z = THREE.MathUtils.damp(can.position.z, targetPos.z, 4, delta);
@@ -257,7 +255,7 @@ export default function PourPage() {
 
                         if (pourProgress >= 1) {
                            if (state.stage === 'pouring') {
-                                state.stage = 'idle'; // Prevent re-triggering
+                                state.stage = 'idle';
                                 router.push('/');
                             }
                         }
@@ -271,49 +269,64 @@ export default function PourPage() {
 
                             const foamHeight = Math.max(0.1, 0.4 - (pourProgress * 0.3));
                             foam.scale.y = foamHeight;
+                            foam.scale.x = foam.scale.z = 1 + Math.sin(time * 50) * 0.03 + Math.sin(time * 30) * 0.02;
                             foam.position.y = liquid.position.y + (currentLiquidHeight / 2) + (foamHeight / 2);
-                            foam.position.y += Math.sin(time * 60) * 0.02 + Math.sin(time * 45) * 0.025; // More vigorous bubbling
+                            foam.position.y += (Math.sin(time * 80) * 0.015) + (Math.sin(time * 55) * 0.02) + (Math.sin(time * 25) * 0.01);
                         }
 
-                        state.liquidLevel = THREE.MathUtils.lerp(-1.5, 0.8, pourProgress);
 
-                        if (particles && glass && can) {
+                        if (particles && glass && can && liquid) {
                             particles.visible = true;
 
                             const positions = particles.geometry.attributes.position.array as Float32Array;
                             const velocities = particles.geometry.attributes.velocity.array as Float32Array;
                             const pourLocalOrigin = new THREE.Vector3(0.35, 1.4, 0);
                             const pourWorldOrigin = pourLocalOrigin.clone().applyMatrix4(can.matrixWorld);
+                            
+                            const liquidSurfaceY = glass.position.y - 1.5 + liquid.scale.y;
+                            const glassRadius = 0.85;
+                            const emissionRate = (0.2 + (Math.sin(time * 25) * 0.18)) * pourProgress;
 
                             for (let i = 0; i < positions.length; i += 3) {
-                              const isDead = velocities[i+1] === 0 && velocities[i] === 0;
+                              const isDead = velocities[i] === 0 && velocities[i+1] === 0 && velocities[i+2] === 0;
 
-                              if (isDead && Math.random() < 0.4) { // Respawn more particles
-                                  positions[i] = pourWorldOrigin.x + (Math.random() - 0.5) * 0.05; // Tighter stream
+                              if (isDead && Math.random() < emissionRate) {
+                                  positions[i] = pourWorldOrigin.x + (Math.random() - 0.5) * 0.04;
                                   positions[i+1] = pourWorldOrigin.y;
-                                  positions[i+2] = pourWorldOrigin.z + (Math.random() - 0.5) * 0.05;
+                                  positions[i+2] = pourWorldOrigin.z + (Math.random() - 0.5) * 0.04;
 
                                   velocities[i] = (Math.random() - 0.5) * 0.05;
-                                  velocities[i+1] = -0.2 - (Math.random() * 0.1); // More forceful
+                                  velocities[i+1] = -0.2 - (Math.random() * 0.15);
                                   velocities[i+2] = (Math.random() - 0.5) * 0.05;
                               }
                               
                               if (!isDead) {
-                                  velocities[i+1] -= 0.6 * delta; 
+                                  const particleIsSplashing = velocities[i+1] > 0.01;
+
+                                  if(particleIsSplashing) {
+                                    velocities[i+1] -= 0.5 * delta;
+                                  } else {
+                                    velocities[i+1] -= 0.8 * delta;
+                                  }
+
                                   positions[i] += velocities[i] * delta * 60;
                                   positions[i+1] += velocities[i+1] * delta * 60;
                                   positions[i+2] += velocities[i+2] * delta * 60;
 
-                                  const liquidSurfaceY = glass.position.y + state.liquidLevel;
-                                  const particleYinGlass = positions[i+1] < liquidSurfaceY;
+                                  const isFalling = velocities[i+1] < 0;
+                                  const particleY = positions[i+1];
                                   const particleXZ = new THREE.Vector2(positions[i] - glass.position.x, positions[i+2] - glass.position.z);
-                                  const glassRadius = 0.85;
 
-                                  if (particleYinGlass && particleXZ.length() < glassRadius) {
-                                      velocities[i] = 0;
-                                      velocities[i+1] = 0;
-                                      velocities[i+2] = 0;
-                                  } else if (positions[i+1] < glass.position.y - 1.5) {
+                                  if (isFalling && particleY < liquidSurfaceY && particleXZ.length() < glassRadius) {
+                                      positions[i+1] = liquidSurfaceY;
+
+                                      const splashFactor = 0.2;
+                                      velocities[i] += (Math.random() - 0.5) * splashFactor;
+                                      velocities[i+1] = (0.05 + Math.random() * 0.15);
+                                      velocities[i+2] += (Math.random() - 0.5) * splashFactor;
+                                  }
+
+                                  if (particleY < glass.position.y - 1.5 || (particleIsSplashing && velocities[i+1] < 0.01)) {
                                      velocities[i] = 0;
                                      velocities[i+1] = 0;
                                      velocities[i+2] = 0;
@@ -325,7 +338,6 @@ export default function PourPage() {
                         break;
                     }
                     case 'resetting': {
-                       // This stage is now skipped
                         break;
                     }
                 }
@@ -349,7 +361,6 @@ export default function PourPage() {
             state.originalRotation.copy(can.rotation);
             state.stage = 'lifting';
             state.startTime = performance.now();
-            state.liquidLevel = -1.5;
 
             state.glass = createGlass();
             state.glass.position.set(1.2, -1.7 + 1.5, 2.5);
@@ -414,15 +425,14 @@ export default function PourPage() {
                     onClose={() => setAnimationStage('pouring')}
                 />
             )}
-            {animationStage === 'pouring' && (
-                <div 
-                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                >
-                    <h1 className="font-headline text-foreground/10 text-8xl md:text-9xl lg:text-[12rem] text-center select-none animate-in fade-in-0 duration-1000">
-                        Then choose your flavour
-                    </h1>
-                </div>
-            )}
+            <div className={cn(
+                "absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300",
+                animationStage === 'pouring' ? 'opacity-100' : 'opacity-0'
+            )}>
+                <h1 className="font-headline text-foreground/10 text-8xl md:text-9xl lg:text-[12rem] text-center select-none">
+                    Then choose your flavour
+                </h1>
+            </div>
             <div ref={mountRef} className={cn(
                 "h-full w-full transition-opacity duration-500",
                 animationStage === 'pouring' ? 'opacity-100' : 'opacity-0 pointer-events-none'
