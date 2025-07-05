@@ -15,9 +15,9 @@ uniform float uSmallWavesElevation;
 uniform float uSmallWavesFrequency;
 uniform float uSmallWavesSpeed;
 
-
 varying float vElevation;
 varying vec3 vNormal;
+varying vec3 vViewPosition;
 
 // Simplex 3D Noise by Stefan Gustavson
 // https://github.com/ashima/webgl-noise
@@ -81,44 +81,41 @@ float snoise(vec3 v) {
 }
 
 float getWaterElevation(vec2 p) {
-    float elevation = 0.0;
+    float elevation = snoise(vec3(p.x * uBigWavesFrequency.x, p.y * uBigWavesFrequency.y, uTime * uBigWavesSpeed)) * uBigWavesElevation;
     
-    // Main large waves
-    elevation += snoise(vec3(p.x * uBigWavesFrequency.x, p.y * uBigWavesFrequency.y, uTime * uBigWavesSpeed)) * uBigWavesElevation;
-
-    // Smaller, detailed waves (fractal noise)
+    // FBM for smaller waves
     float freq = uSmallWavesFrequency;
     float amp = uSmallWavesElevation;
     for(int i = 0; i < 4; i++) {
-        elevation += snoise(vec3(p.x * freq, p.y * freq, uTime * uSmallWavesSpeed)) * amp;
-        freq *= 2.0;
-        amp *= 0.5;
+        elevation += snoise(vec3(p.x * freq, p.y * freq, uTime * uSmallWavesSpeed + float(i)*1.5)) * amp;
+        freq *= 1.8;
+        amp *= 0.6;
     }
     return elevation;
 }
 
-
 void main() {
-    // Calculations in object space before modelMatrix is applied
-    vec4 pos = vec4(position, 1.0);
-
-    float elevation = getWaterElevation(pos.xy);
-    pos.z = elevation;
+    vec4 modelPos = vec4(position, 1.0);
     
-    // Calculate normals for lighting/foam
+    float elevation = getWaterElevation(position.xy);
+    modelPos.z += elevation;
+    
     float epsilon = 0.01;
-    float elev_x = getWaterElevation(pos.xy + vec2(epsilon, 0.0));
-    float elev_y = getWaterElevation(pos.xy + vec2(0.0, epsilon));
-
-    // Using the displaced points to find the normal
-    vec3 p_x = vec3(epsilon, 0.0, elev_x - elevation);
-    vec3 p_y = vec3(0.0, epsilon, elev_y - elevation);
-    vec3 calculatedNormal = normalize(cross(p_y, p_x));
-
+    float elev_x = getWaterElevation(position.xy + vec2(epsilon, 0.0));
+    float elev_y = getWaterElevation(position.xy + vec2(0.0, epsilon));
+    
+    vec3 objectNormal = normalize(cross(
+        vec3(0.0, epsilon, elev_y - elevation), 
+        vec3(epsilon, 0.0, elev_x - elevation)
+    ));
+    
     vElevation = elevation;
-    vNormal = normalize(normalMatrix * calculatedNormal);
+    vNormal = normalize(normalMatrix * objectNormal);
 
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * pos;
+    vec4 viewPos = viewMatrix * modelMatrix * modelPos;
+    vViewPosition = viewPos.xyz;
+
+    gl_Position = projectionMatrix * viewPos;
 }
 `;
 
@@ -128,34 +125,46 @@ uniform vec3 uSurfaceColor;
 uniform vec3 uFoamColor;
 uniform float uColorOffset;
 uniform float uColorMultiplier;
+uniform vec3 uSpecularColor;
+uniform float uShininess;
 
 varying float vElevation;
 varying vec3 vNormal;
+varying vec3 vViewPosition;
 
 void main() {
-    // Basic directional light from above and to the side
-    vec3 lightDirection = normalize(vec3(0.8, 1.0, 0.5));
+    // Lighting is calculated in view space
+    vec3 lightDirection = normalize(vec3(1.0, 1.5, 1.0));
+    vec3 viewDirection = normalize(-vViewPosition);
+
+    // Fresnel
+    float fresnel = dot(viewDirection, vNormal);
+    fresnel = pow(1.0 - fresnel, 3.0);
+
+    // Diffuse
     float diffuse = max(0.0, dot(vNormal, lightDirection));
 
-    // Base color mix from deep to surface water
+    // Specular
+    vec3 reflection = reflect(-lightDirection, vNormal);
+    float specularStrength = pow(max(dot(viewDirection, reflection), 0.0), uShininess);
+    vec3 specular = specularStrength * uSpecularColor;
+
+    // Base Color
     float mixStrength = (vElevation + uColorOffset) * uColorMultiplier;
     vec3 color = mix(uDepthColor, uSurfaceColor, mixStrength);
     
-    // Apply lighting, but keep it subtle so water doesn't get too dark
-    color = color * (diffuse * 0.6 + 0.4);
+    // Apply diffuse lighting
+    color *= (diffuse * 0.7 + 0.3);
 
-    // Foam on crests
+    // Foam
     float foamCrests = smoothstep(0.4, 0.7, vElevation);
+    float foamSteepness = smoothstep(0.2, 0.6, 1.0 - vNormal.y);
+    float foamStrength = clamp(foamCrests + foamSteepness, 0.0, 1.0);
     
-    // Add some foam based on steepness of the wave from the normal
-    // A more upright normal (in view space) means flatter water.
-    // So we want foam when the y-component of the normal is low.
-    float steepness = 1.0 - vNormal.y;
-    float foamSteepness = smoothstep(0.3, 0.7, steepness);
-
-    float foamStrength = foamCrests + foamSteepness * 0.5;
-
     color = mix(color, uFoamColor, foamStrength);
+
+    // Add specular highlights on top of everything
+    color += specular * (0.5 + 0.5 * fresnel);
 
     gl_FragColor = vec4(color, 1.0);
 }
@@ -197,17 +206,22 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
       fragmentShader,
       uniforms: {
         uTime: { value: 0 },
+        // Big Waves
         uBigWavesElevation: { value: 0.6 },
         uBigWavesFrequency: { value: new THREE.Vector2(0.6, 0.2) },
         uBigWavesSpeed: { value: 0.3 },
+        // Small Waves
         uSmallWavesElevation: { value: 0.25 },
         uSmallWavesFrequency: { value: 2.0 },
         uSmallWavesSpeed: { value: 1.0 },
+        // Colors & Lighting
         uDepthColor: { value: new THREE.Color('#043936') },
         uSurfaceColor: { value: new THREE.Color(flavorColor) },
         uFoamColor: { value: new THREE.Color('#ffffff') },
         uColorOffset: { value: 0.1 },
         uColorMultiplier: { value: 3.0 },
+        uSpecularColor: { value: new THREE.Color(0xffffff) },
+        uShininess: { value: 50.0 },
       }
     });
     
@@ -310,7 +324,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
         bubbleMaterial.dispose();
         renderer.dispose();
     };
-  }, [flavorColor, onClose]);
+  }, [flavorColor]);
 
   return (
     <div 
