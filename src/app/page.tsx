@@ -13,7 +13,7 @@ import Image from 'next/image';
 
 const flavors = [
     { name: 'Midnight Chocolate', hint: 'soda can chocolate', imageUrl: 'https://images.unsplash.com/photo-1612230438343-cce33350371b?w=300&h=500&fit=crop&q=80' },
-    { name: 'Citrus Surge', hint: 'soda can citrus', imageUrl: 'https://images.unsplash.com/photo-1542462159-33a5953c513e?w=300&h=500&fit=crop&q=80' },
+    { name: 'Citrus Surge', hint: 'soda can citrus', imageUrl: 'https://images.unsplash.com/photo-1619158401928-a0279a426643?w=300&h=500&fit=crop&q=80' },
     { name: 'Berry Blitz', hint: 'soda can berry', imageUrl: 'https://images.unsplash.com/photo-1595748898950-705a6a3788a4?w=300&h=500&fit=crop&q=80' },
     { name: 'Tropical Fusion', hint: 'soda can tropical', imageUrl: 'https://images.unsplash.com/photo-1553531384-411a247ccd78?w=300&h=500&fit=crop&q=80' },
     { name: 'Arctic Mint', hint: 'soda can mint', imageUrl: 'https://images.unsplash.com/photo-1600205273392-38dd18c538a8?w=300&h=500&fit=crop&q=80' },
