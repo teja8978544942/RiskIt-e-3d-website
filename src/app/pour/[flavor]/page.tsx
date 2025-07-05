@@ -63,11 +63,13 @@ function createParticles(color: string) {
 }
 
 function createLiquid(color: string) {
-    const geometry = new THREE.CylinderGeometry(0.84, 0.65, 1, 32, 1, true);
+    // The liquid mesh is now created at its full height.
+    // It will be revealed by an animated clipping plane.
+    const geometry = new THREE.CylinderGeometry(0.84, 0.65, 3, 32);
     const material = new THREE.MeshStandardMaterial({
         color: color,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.9,
         metalness: 0,
         roughness: 0.2,
         emissive: color,
@@ -78,10 +80,42 @@ function createLiquid(color: string) {
     return liquid;
 }
 
+function createFoamTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const context = canvas.getContext('2d');
+    if (context) {
+        context.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        context.fillRect(0, 0, 256, 256);
+        for (let i = 0; i < 150; i++) {
+            const x = Math.random() * 256;
+            const y = Math.random() * 256;
+            const r = Math.random() * 15 + 5;
+            const grad = context.createRadialGradient(x, y, r * 0.25, x, y, r);
+            grad.addColorStop(0, `rgba(255, 255, 255, ${0.3 + Math.random() * 0.3})`);
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            context.fillStyle = grad;
+            context.fillRect(x - r, y - r, r * 2, r * 2);
+        }
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(2, 2);
+    return texture;
+}
+
+
 function createFoam() {
+    const foamTexture = createFoamTexture();
     const geometry = new THREE.CylinderGeometry(0.84, 0.84, 0.1, 32);
     const material = new THREE.MeshStandardMaterial({
         color: 0xffffff,
+        map: foamTexture,
+        alphaMap: foamTexture,
+        bumpMap: foamTexture,
+        bumpScale: 0.02,
         transparent: true,
         opacity: 0.9,
     });
@@ -105,6 +139,7 @@ export default function PourPage() {
       particles: null as THREE.Points | null,
       liquid: null as THREE.Mesh | null,
       foam: null as THREE.Mesh | null,
+      liquidClipPlane: null as THREE.Plane | null,
       originalPosition: new THREE.Vector3(),
       originalRotation: new THREE.Euler(),
       stage: 'idle' as 'idle' | 'lifting' | 'opening' | 'tilting' | 'pouring' | 'resetting',
@@ -137,6 +172,7 @@ export default function PourPage() {
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.localClippingEnabled = true;
         currentMount.appendChild(renderer.domElement);
 
         const hemiLight = new THREE.HemisphereLight(0xffffff, 0x888888, 1.5);
@@ -186,9 +222,10 @@ export default function PourPage() {
                 const particles = state.particles;
                 const liquid = state.liquid;
                 const foam = state.foam;
+                const liquidClipPlane = state.liquidClipPlane;
                 
-                let cameraTargetPos = new THREE.Vector3(0.5, 0, 8);
-                let cameraLookAtPos = new THREE.Vector3(0.5, 0, 0);
+                let cameraTargetPos = new THREE.Vector3(4.5, 0, 8);
+                let cameraLookAtPos = new THREE.Vector3(4.5, 0, 0);
 
                 if (state.stage === 'pouring' && glass) {
                     cameraTargetPos = new THREE.Vector3(glass.position.x, glass.position.y + 1, glass.position.z + 4);
@@ -243,7 +280,6 @@ export default function PourPage() {
                                     liquid.visible = true;
                                     foam.visible = true;
                                     liquid.position.copy(glass.position);
-                                    foam.position.copy(glass.position);
                                 }
                             }
                         }
@@ -260,18 +296,22 @@ export default function PourPage() {
                             }
                         }
 
-                        if (liquid && foam && glass) {
-                            const maxLiquidHeight = 2.3;
-                            const currentLiquidHeight = maxLiquidHeight * pourProgress;
-                            
-                            liquid.scale.y = currentLiquidHeight;
-                            liquid.position.y = glass.position.y - 1.5 + (currentLiquidHeight / 2);
+                        const glassBottomY = -1.7;
+                        const glassTopY = 1.0;
+                        const liquidSurfaceY = THREE.MathUtils.lerp(glassBottomY, glassTopY, pourProgress);
+                        
+                        if (liquidClipPlane) {
+                           liquidClipPlane.constant = liquidSurfaceY;
+                        }
 
+                        if (foam) {
                             const foamHeight = Math.max(0.1, 0.4 - (pourProgress * 0.3));
                             foam.scale.y = foamHeight;
                             foam.scale.x = foam.scale.z = 1 + Math.sin(time * 50) * 0.03 + Math.sin(time * 30) * 0.02;
-                            foam.position.y = liquid.position.y + (currentLiquidHeight / 2) + (foamHeight / 2);
+                            foam.position.y = liquidSurfaceY + (foamHeight / 2);
                             foam.position.y += (Math.sin(time * 80) * 0.015) + (Math.sin(time * 55) * 0.02) + (Math.sin(time * 25) * 0.01);
+                            foam.position.x = glass.position.x;
+                            foam.position.z = glass.position.z;
                         }
 
 
@@ -283,7 +323,6 @@ export default function PourPage() {
                             const pourLocalOrigin = new THREE.Vector3(0.35, 1.4, 0);
                             const pourWorldOrigin = pourLocalOrigin.clone().applyMatrix4(can.matrixWorld);
                             
-                            const liquidSurfaceY = glass.position.y - 1.5 + liquid.scale.y;
                             const glassRadius = 0.85;
                             const emissionRate = (0.2 + (Math.sin(time * 25) * 0.18)) * pourProgress;
 
@@ -363,13 +402,16 @@ export default function PourPage() {
             state.startTime = performance.now();
 
             state.glass = createGlass();
-            state.glass.position.set(4.0, -1.7 + 1.5, 2.5);
+            state.glass.position.set(4.0, -0.2, 2.5);
             scene.add(state.glass);
 
             state.particles = createParticles(flavor.color);
             scene.add(state.particles);
 
             state.liquid = createLiquid(flavor.color);
+            const liquidClipPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -1.7);
+            (state.liquid.material as THREE.Material).clippingPlanes = [liquidClipPlane];
+            state.liquidClipPlane = liquidClipPlane;
             scene.add(state.liquid);
 
             state.foam = createFoam();
@@ -403,6 +445,7 @@ export default function PourPage() {
                     materials.forEach(material => {
                         if (material.map) material.map.dispose();
                         if (material.bumpMap) material.bumpMap.dispose();
+                        if (material.alphaMap) material.alphaMap.dispose();
                         material.dispose()
                     });
                 }
