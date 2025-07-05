@@ -100,19 +100,20 @@ export function PourAnimation({ flavorName, flavorColor, onComplete }: PourAnima
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         currentMount.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
-        scene.add(ambientLight);
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x888888, 1.5);
+        hemiLight.position.set(0, 20, 0);
+        scene.add(hemiLight);
 
-        const keyLight = new THREE.DirectionalLight(0xffffff, 3.0);
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
         keyLight.position.set(5, 5, 5);
         keyLight.castShadow = true;
         scene.add(keyLight);
         
-        const fillLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
         fillLight.position.set(-5, 2, 5);
         scene.add(fillLight);
         
-        const backLight = new THREE.DirectionalLight(0xffffff, 3.0);
+        const backLight = new THREE.DirectionalLight(0xffffff, 1.5);
         backLight.position.set(0, 8, -10);
         scene.add(backLight);
 
