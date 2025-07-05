@@ -351,7 +351,7 @@ export default function PourPage() {
     }
 
     return (
-        <>
+        <main className="fixed inset-0 bg-black">
             {animationStage === 'tsunami' && (
                 <TsunamiAnimation
                     flavorColor={flavor.color}
@@ -359,10 +359,8 @@ export default function PourPage() {
                 />
             )}
             {animationStage === 'pouring' && (
-                <main className="fixed inset-0 z-50 bg-background">
-                    <div ref={mountRef} className="h-full w-full" />
-                </main>
+                <div ref={mountRef} className="h-full w-full" />
             )}
-        </>
+        </main>
     );
 }
