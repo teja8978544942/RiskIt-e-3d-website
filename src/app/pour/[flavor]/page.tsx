@@ -86,10 +86,10 @@ export default function PourPage() {
         if (!mountRef.current || typeof window === 'undefined') return;
 
         if (!popSoundRef.current) {
-            popSoundRef.current = new Audio('https://actions.google.com/sounds/v1/household/can_opener.ogg');
+            popSoundRef.current = new Audio('https://cdn.freesound.org/previews/253/253886_4469695-lq.mp3');
         }
         if (!pourSoundRef.current) {
-            pourSoundRef.current = new Audio('https://actions.google.com/sounds/v1/water/pouring_water.ogg');
+            pourSoundRef.current = new Audio('https://cdn.freesound.org/previews/235/235954_4169605-lq.mp3');
             pourSoundRef.current.loop = true;
         }
         
