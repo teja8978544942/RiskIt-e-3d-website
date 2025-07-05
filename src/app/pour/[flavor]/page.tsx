@@ -63,6 +63,9 @@ export default function PourPage() {
     const router = useRouter();
     const params = useParams();
     const flavorName = decodeURIComponent(params.flavor as string);
+    
+    const popSoundRef = useRef<HTMLAudioElement>();
+    const pourSoundRef = useRef<HTMLAudioElement>();
 
     const animationState = useRef({
       isAnimating: false,
@@ -82,16 +85,24 @@ export default function PourPage() {
     useEffect(() => {
         if (!mountRef.current || typeof window === 'undefined') return;
 
+        if (!popSoundRef.current) {
+            popSoundRef.current = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_19b1683932.mp3');
+        }
+        if (!pourSoundRef.current) {
+            pourSoundRef.current = new Audio('https://cdn.pixabay.com/audio/2022/09/20/audio_5514f6b289.mp3');
+            pourSoundRef.current.loop = true;
+        }
+        
+        const popSound = popSoundRef.current;
+        const pourSound = pourSoundRef.current;
+
+
         const currentMount = mountRef.current;
         const flavor = flavors.find(f => f.name === flavorName);
         if (!flavor) {
             router.push('/');
             return;
         }
-
-        const popSound = document.getElementById('pop-sound') as HTMLAudioElement | null;
-        const pourSound = document.getElementById('pour-sound') as HTMLAudioElement | null;
-        if (pourSound) pourSound.loop = true;
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -348,8 +359,6 @@ export default function PourPage() {
     return (
         <main className="fixed inset-0 z-50 bg-background">
             <div ref={mountRef} className="h-full w-full" />
-            <audio id="pop-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_19b1683932.mp3" preload="auto"></audio>
-            <audio id="pour-sound" src="https://cdn.pixabay.com/audio/2022/09/20/audio_5514f6b289.mp3" preload="auto"></audio>
         </main>
     );
 }
