@@ -34,7 +34,7 @@ function createGlass() {
 }
 
 function createParticles(color: string) {
-    const particleCount = 2000;
+    const particleCount = 5000;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const velocities = new Float32Array(particleCount * 3);
@@ -48,10 +48,10 @@ function createParticles(color: string) {
     geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
     
     const material = new THREE.PointsMaterial({
-        color: color,
-        size: 0.03,
+        color: new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.2),
+        size: 0.05,
         transparent: true,
-        opacity: 0.8,
+        opacity: 0.6,
         blending: THREE.AdditiveBlending,
         sizeAttenuation: true
     });
@@ -60,6 +60,33 @@ function createParticles(color: string) {
     particles.visible = false;
     return particles;
 }
+
+function createLiquid(color: string) {
+    const geometry = new THREE.CylinderGeometry(0.84, 0.65, 1, 32, 1, true);
+    const material = new THREE.MeshStandardMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.85,
+        metalness: 0,
+        roughness: 0.2,
+    });
+    const liquid = new THREE.Mesh(geometry, material);
+    liquid.visible = false;
+    return liquid;
+}
+
+function createFoam() {
+    const geometry = new THREE.CylinderGeometry(0.84, 0.84, 0.1, 32);
+    const material = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.9,
+    });
+    const foam = new THREE.Mesh(geometry, material);
+    foam.visible = false;
+    return foam;
+}
+
 
 export default function PourPage() {
     const mountRef = useRef<HTMLDivElement>(null);
@@ -73,6 +100,8 @@ export default function PourPage() {
       can: null as THREE.Group | null,
       glass: null as THREE.Mesh | null,
       particles: null as THREE.Points | null,
+      liquid: null as THREE.Mesh | null,
+      foam: null as THREE.Mesh | null,
       originalPosition: new THREE.Vector3(),
       originalRotation: new THREE.Euler(),
       stage: 'idle' as 'idle' | 'lifting' | 'opening' | 'tilting' | 'pouring' | 'resetting',
@@ -145,6 +174,7 @@ export default function PourPage() {
         const tick = () => {
             animationFrameId = requestAnimationFrame(tick);
             const delta = clock.getDelta();
+            const time = clock.getElapsedTime();
             const state = animationState.current;
             
             if (state.isAnimating && state.can) {
@@ -152,7 +182,8 @@ export default function PourPage() {
                 const pullTab = can.getObjectByName('pullTab');
                 const glass = state.glass;
                 const particles = state.particles;
-                const elapsedTime = (performance.now() - state.startTime) / 1000;
+                const liquid = state.liquid;
+                const foam = state.foam;
                 
                 const worldPosition = new THREE.Vector3();
                 can.getWorldPosition(worldPosition);
@@ -195,11 +226,11 @@ export default function PourPage() {
                         if (glass) {
                             glass.visible = true;
                             
-                            const glassWorldPosition = new THREE.Vector3();
-                            can.getWorldPosition(glassWorldPosition);
-                            glass.position.set(glassWorldPosition.x, worldPosition.y - 1.5, 3);
+                            const pourLocalOrigin = new THREE.Vector3(0, 1.4, 0);
+                            const pourWorldOrigin = pourLocalOrigin.clone().applyMatrix4(can.matrixWorld);
+                            glass.position.set(pourWorldOrigin.x, pourWorldOrigin.y - 2.8, pourWorldOrigin.z);
                             
-                            const progress = Math.min(elapsedTime / 0.5, 1);
+                            const progress = Math.min((performance.now() - state.startTime) / 500, 1);
                             glass.scale.set(progress, progress, progress);
                         }
 
@@ -207,22 +238,44 @@ export default function PourPage() {
                             if (state.stage === 'tilting') {
                                 state.stage = 'pouring';
                                 state.pourStartTime = performance.now();
+                                if(liquid && foam && glass) {
+                                    liquid.visible = true;
+                                    foam.visible = true;
+                                    liquid.position.copy(glass.position);
+                                    foam.position.copy(glass.position);
+                                }
                             }
                         }
                         break;
                     }
                     case 'pouring': {
                         const pourDuration = 2000;
-                        if (performance.now() - state.pourStartTime > pourDuration) {
+                        const pourProgress = Math.min((performance.now() - state.pourStartTime) / pourDuration, 1);
+
+                        if (pourProgress >= 1) {
                            if (state.stage === 'pouring') {
                                 state.stage = 'idle'; // Prevent re-triggering
                                 router.push('/');
                             }
                         }
 
+                        if (liquid && foam && glass) {
+                            const maxLiquidHeight = 2.3;
+                            const currentLiquidHeight = maxLiquidHeight * pourProgress;
+                            
+                            liquid.scale.y = currentLiquidHeight;
+                            liquid.position.y = glass.position.y - 1.5 + (currentLiquidHeight / 2);
+
+                            const foamHeight = Math.max(0.1, 0.3 - (pourProgress * 0.2));
+                            foam.scale.y = foamHeight;
+                            foam.position.y = liquid.position.y + (currentLiquidHeight / 2) + (foamHeight / 2);
+                            foam.position.y += Math.sin(time * 30) * 0.01;
+                        }
+
+                        state.liquidLevel = THREE.MathUtils.lerp(-1.5, 0.8, pourProgress);
+
                         if (particles && glass && can) {
                             particles.visible = true;
-                            state.liquidLevel = THREE.MathUtils.lerp(-1.5, 0.8, (performance.now() - state.pourStartTime) / pourDuration);
 
                             const positions = particles.geometry.attributes.position.array as Float32Array;
                             const velocities = particles.geometry.attributes.velocity.array as Float32Array;
@@ -230,31 +283,30 @@ export default function PourPage() {
                             const pourWorldOrigin = pourLocalOrigin.clone().applyMatrix4(can.matrixWorld);
 
                             for (let i = 0; i < positions.length; i += 3) {
-                              const isDead = velocities[i+1] === 0;
+                              const isDead = velocities[i+1] === 0 && velocities[i] === 0;
 
-                              if (isDead && Math.random() < 0.1) { // Respawn
+                              if (isDead && Math.random() < 0.2) { // Respawn
                                   positions[i] = pourWorldOrigin.x + (Math.random() - 0.5) * 0.1;
                                   positions[i+1] = pourWorldOrigin.y;
                                   positions[i+2] = pourWorldOrigin.z + (Math.random() - 0.5) * 0.1;
 
-                                  velocities[i] = (Math.random() - 0.5) * 0.1;
-                                  velocities[i+1] = -0.1 - (Math.random() * 0.05); // Initial downward velocity
-                                  velocities[i+2] = (Math.random() - 0.5) * 0.1;
+                                  velocities[i] = (Math.random() - 0.5) * 0.05;
+                                  velocities[i+1] = -0.15 - (Math.random() * 0.1);
+                                  velocities[i+2] = (Math.random() - 0.5) * 0.05;
                               }
                               
                               if (!isDead) {
-                                  velocities[i+1] -= 0.3 * delta; // Framerate-independent gravity
+                                  velocities[i+1] -= 0.4 * delta; 
                                   positions[i] += velocities[i] * delta * 60;
                                   positions[i+1] += velocities[i+1] * delta * 60;
                                   positions[i+2] += velocities[i+2] * delta * 60;
 
-                                  const particlePos = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]);
-                                  const glassPos = glass.position;
-                                  const glassRadius = 0.85;
-
-                                  if (particlePos.y < glassPos.y + state.liquidLevel && 
-                                      particlePos.distanceTo(new THREE.Vector3(glassPos.x, particlePos.y, glassPos.z)) < glassRadius) {
-                                      velocities[i+1] = 0; // Kill particle
+                                  const liquidSurfaceY = glass.position.y + state.liquidLevel;
+                                  
+                                  if (positions[i+1] < liquidSurfaceY) {
+                                      velocities[i] = 0;
+                                      velocities[i+1] = 0;
+                                      velocities[i+2] = 0;
                                   }
                               }
                             }
@@ -263,25 +315,7 @@ export default function PourPage() {
                         break;
                     }
                     case 'resetting': {
-                        can.position.x = THREE.MathUtils.damp(can.position.x, state.originalPosition.x, 2, delta);
-                        can.position.y = THREE.MathUtils.damp(can.position.y, state.originalPosition.y, 2, delta);
-                        can.position.z = THREE.MathUtils.damp(can.position.z, state.originalPosition.z, 2, delta);
-                        
-                        can.rotation.x = THREE.MathUtils.damp(can.rotation.x, state.originalRotation.x, 2, delta);
-                        can.rotation.y = THREE.MathUtils.damp(can.rotation.y, state.originalRotation.y, 2, delta);
-                        can.rotation.z = THREE.MathUtils.damp(can.rotation.z, state.originalRotation.z, 2, delta);
-                        
-                        if(glass) glass.scale.x = THREE.MathUtils.damp(glass.scale.x, 0, 4, delta);
-                        if(glass) glass.scale.y = THREE.MathUtils.damp(glass.scale.y, 0, 4, delta);
-                        if(glass) glass.scale.z = THREE.MathUtils.damp(glass.scale.z, 0, 4, delta);
-                        
-                        if(pullTab) pullTab.rotation.x = THREE.MathUtils.damp(pullTab.rotation.x, 0, 2, delta);
-
-                        if (can.position.distanceTo(state.originalPosition) < 0.01) {
-                             if (state.stage === 'resetting') {
-                                state.stage = 'idle'; // Prevent re-triggering
-                            }
-                        }
+                       // This stage is now skipped
                         break;
                     }
                 }
@@ -312,6 +346,12 @@ export default function PourPage() {
 
             state.particles = createParticles(flavor.color);
             scene.add(state.particles);
+
+            state.liquid = createLiquid(flavor.color);
+            scene.add(state.liquid);
+
+            state.foam = createFoam();
+            scene.add(state.foam);
 
             tick();
         };
@@ -360,7 +400,6 @@ export default function PourPage() {
         )}>
             {animationStage === 'tsunami' && (
                 <TsunamiAnimation
-                    flavorColor={flavor.color}
                     onClose={() => setAnimationStage('pouring')}
                 />
             )}
