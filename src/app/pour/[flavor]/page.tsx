@@ -64,9 +64,6 @@ export default function PourPage() {
     const router = useRouter();
     const params = useParams();
     const flavorName = decodeURIComponent(params.flavor as string);
-    
-    const popSoundRef = useRef<HTMLAudioElement>(null);
-    const pourSoundRef = useRef<HTMLAudioElement>(null);
 
     const animationState = useRef({
       isAnimating: false,
@@ -85,10 +82,6 @@ export default function PourPage() {
 
     useEffect(() => {
         if (!mountRef.current || typeof window === 'undefined') return;
-
-        const popSound = popSoundRef.current;
-        const pourSound = pourSoundRef.current;
-
 
         const currentMount = mountRef.current;
         const flavor = flavors.find(f => f.name === flavorName);
@@ -177,7 +170,6 @@ export default function PourPage() {
                         if(pullTab) pullTab.rotation.x = THREE.MathUtils.damp(pullTab.rotation.x, targetRotX, 8, delta);
                         if (pullTab && Math.abs(pullTab.rotation.x - targetRotX) < 0.1) {
                             if (state.stage === 'opening') {
-                                popSound?.play().catch(e => console.error("Audio play failed:", e));
                                 state.stage = 'tilting';
                                 state.startTime = performance.now();
                             }
@@ -208,7 +200,6 @@ export default function PourPage() {
                             if (state.stage === 'tilting') {
                                 state.stage = 'pouring';
                                 state.pourStartTime = performance.now();
-                                pourSound?.play().catch(e => console.error("Audio play failed:", e));
                             }
                         }
                         break;
@@ -218,10 +209,6 @@ export default function PourPage() {
                         if (performance.now() - state.pourStartTime > pourDuration) {
                             state.stage = 'resetting';
                             state.startTime = performance.now();
-                            if(pourSound) {
-                                pourSound.pause();
-                                pourSound.currentTime = 0;
-                            }
                         }
 
                         if (particles && glass && can) {
@@ -332,15 +319,6 @@ export default function PourPage() {
             window.removeEventListener('resize', onResize);
             cancelAnimationFrame(animationFrameId);
 
-            if (popSound) {
-                popSound.pause();
-                popSound.currentTime = 0;
-            }
-            if (pourSound) {
-                pourSound.pause();
-                pourSound.currentTime = 0;
-            }
-            
             if (currentMount && renderer.domElement.parentElement === currentMount) {
                 currentMount.removeChild(renderer.domElement);
             }
@@ -361,8 +339,6 @@ export default function PourPage() {
 
     return (
         <main className="fixed inset-0 z-50 bg-background">
-            <audio ref={popSoundRef} src="https://archive.org/download/opening-a-can-of-coke/56_opening_a_can_of_coke.mp3" preload="auto" />
-            <audio ref={pourSoundRef} src="https://archive.org/download/pouring-a-glass-of-coke/55_pouring_a_glass_of_coke.mp3" preload="auto" loop />
             <div ref={mountRef} className="h-full w-full" />
         </main>
     );
