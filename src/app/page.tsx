@@ -16,26 +16,25 @@ import { flavors } from '@/lib/flavors';
 import { Header } from '@/components/header';
 import { useState } from 'react';
 import { TsunamiAnimation } from '@/components/tsunami-animation';
-import { useRouter } from 'next/navigation';
+import { PourAnimation } from '@/components/pour-animation';
 
 
 export default function Home() {
-  const router = useRouter();
-  const [tsunamiActive, setTsunamiActive] = useState(false);
-  const [selectedFlavor, setSelectedFlavor] = useState<{name: string, color: string} | null>(null);
+  const [animationState, setAnimationState] = useState<{
+    stage: 'idle' | 'tsunami' | 'pouring';
+    flavor: { name: string; color: string } | null;
+  }>({ stage: 'idle', flavor: null });
 
   const handleCanClick = (flavor: {name: string, color: string}) => {
-    setSelectedFlavor(flavor);
-    setTsunamiActive(true);
+    setAnimationState({ stage: 'tsunami', flavor });
   };
 
-  const handleTsunamiClose = () => {
-    if (selectedFlavor) {
-      router.push(`/pour/${encodeURIComponent(selectedFlavor.name)}`);
-    }
-    // Reset state after initiating navigation or on close
-    setTsunamiActive(false);
-    setSelectedFlavor(null);
+  const handleTsunamiComplete = () => {
+    setAnimationState(prevState => ({ ...prevState, stage: 'pouring' }));
+  }
+
+  const handlePourComplete = () => {
+    setAnimationState({ stage: 'idle', flavor: null });
   }
 
   return (
@@ -151,10 +150,18 @@ export default function Home() {
         </footer>
       </div>
 
-      {tsunamiActive && selectedFlavor && (
+      {animationState.stage === 'tsunami' && animationState.flavor && (
         <TsunamiAnimation 
-          flavorColor={selectedFlavor.color} 
-          onClose={handleTsunamiClose} 
+          flavorColor={animationState.flavor.color} 
+          onClose={handleTsunamiComplete} 
+        />
+      )}
+
+      {animationState.stage === 'pouring' && animationState.flavor && (
+        <PourAnimation
+          flavorName={animationState.flavor.name}
+          flavorColor={animationState.flavor.color}
+          onComplete={handlePourComplete}
         />
       )}
     </main>
