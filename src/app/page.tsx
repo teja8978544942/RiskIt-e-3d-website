@@ -1,6 +1,4 @@
-import { generateFlavorImage } from '@/ai/flows/generate-flavor-image-flow';
 import { Scene } from '@/components/scene';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -10,52 +8,21 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
-import { ArrowDown, TriangleAlert } from 'lucide-react';
+import { ArrowDown } from 'lucide-react';
 import Image from 'next/image';
 
 const flavors = [
-    { name: 'Midnight Chocolate', hint: 'soda bottle chocolate', ingredients: 'dark chocolate chunks, cocoa beans', fallbackUrl: 'https://images.unsplash.com/photo-1621235021202-a083f2a4a4b2?w=300&h=500&fit=crop&q=80' },
-    { name: 'Citrus Surge', hint: 'soda bottle citrus', ingredients: 'orange slices, lemon wedges, lime', fallbackUrl: 'https://images.unsplash.com/photo-1613563951236-75a90960538f?w=300&h=500&fit=crop&q=80' },
-    { name: 'Berry Blitz', hint: 'soda bottle berry', ingredients: 'blueberries, raspberries, strawberries', fallbackUrl: 'https://images.unsplash.com/photo-1625754294829-6505562149b5?w=300&h=500&fit=crop&q=80' },
-    { name: 'Tropical Fusion', hint: 'soda bottle tropical', ingredients: 'pineapple chunks, mango slices, passion fruit', fallbackUrl: 'https://images.unsplash.com/photo-1577805947690-2e4a6851327b?w=300&h=500&fit=crop&q=80' },
-    { name: 'Arctic Mint', hint: 'soda bottle mint', ingredients: 'fresh mint leaves, ice crystals', fallbackUrl: 'https://images.unsplash.com/photo-1558832194-4b476a1419a4?w=300&h=500&fit=crop&q=80' },
-    { name: 'Spiced Apple', hint: 'soda bottle apple', ingredients: 'red apple slices, cinnamon sticks', fallbackUrl: 'https://images.unsplash.com/photo-1567303004249-d323750cf395?w=300&h=500&fit=crop&q=80' },
-    { name: 'Cherry Bomb', hint: 'soda bottle cherry', ingredients: 'ripe red cherries', fallbackUrl: 'https://images.unsplash.com/photo-1528755699335-422e1b4b18a1?w=300&h=500&fit=crop&q=80' },
-    { name: 'Grape Escape', hint: 'soda bottle grape', ingredients: 'purple grapes', fallbackUrl: 'https://images.unsplash.com/photo-1618337130-1b33411c5862?w=300&h=500&fit=crop&q=80' },
+    { name: 'Midnight Chocolate', hint: 'soda can chocolate', imageUrl: 'https://images.unsplash.com/photo-1612230438343-cce33350371b?w=300&h=500&fit=crop&q=80' },
+    { name: 'Citrus Surge', hint: 'soda can citrus', imageUrl: 'https://images.unsplash.com/photo-1542462159-33a5953c513e?w=300&h=500&fit=crop&q=80' },
+    { name: 'Berry Blitz', hint: 'soda can berry', imageUrl: 'https://images.unsplash.com/photo-1595748898950-705a6a3788a4?w=300&h=500&fit=crop&q=80' },
+    { name: 'Tropical Fusion', hint: 'soda can tropical', imageUrl: 'https://images.unsplash.com/photo-1553531384-411a247ccd78?w=300&h=500&fit=crop&q=80' },
+    { name: 'Arctic Mint', hint: 'soda can mint', imageUrl: 'https://images.unsplash.com/photo-1600205273392-38dd18c538a8?w=300&h=500&fit=crop&q=80' },
+    { name: 'Spiced Apple', hint: 'soda can apple', imageUrl: 'https://images.unsplash.com/photo-1579888131237-c1955b9a897f?w=300&h=500&fit=crop&q=80' },
+    { name: 'Cherry Bomb', hint: 'soda can cherry', imageUrl: 'https://images.unsplash.com/photo-1528755699335-422e1b4b18a1?w=300&h=500&fit=crop&q=80' },
+    { name: 'Grape Escape', hint: 'soda can grape', imageUrl: 'https://images.unsplash.com/photo-1618337130-1b33411c5862?w=300&h=500&fit=crop&q=80' },
 ];
 
 export default async function Home() {
-  const hasApiKey = !!process.env.GOOGLE_API_KEY;
-
-  let flavorsWithImages = flavors.map(f => ({ ...f, imageUrl: f.fallbackUrl }));
-
-  if (hasApiKey) {
-    try {
-      const imageGenerationPromises = flavors.map(flavor =>
-        generateFlavorImage({
-          flavorName: flavor.name,
-          ingredients: flavor.ingredients,
-        })
-      );
-
-      const results = await Promise.allSettled(imageGenerationPromises);
-
-      flavorsWithImages = flavors.map((flavor, index) => {
-        const result = results[index];
-        if (result.status === 'fulfilled' && result.value.imageUrl) {
-          return { ...flavor, imageUrl: result.value.imageUrl };
-        } else {
-          if (result.status === 'rejected') {
-            console.error(`Image generation failed for ${flavor.name}:`, result.reason);
-          }
-          return { ...flavor, imageUrl: flavor.fallbackUrl };
-        }
-      });
-    } catch (error) {
-      console.error("An error occurred during image generation:", error);
-    }
-  }
-  
   return (
     <main className="relative w-full overflow-x-hidden bg-background text-foreground">
       <div className="absolute inset-0 z-0">
@@ -115,17 +82,6 @@ export default async function Home() {
             8 Bold Flavors
           </h2>
           
-          {!hasApiKey && (
-            <Alert variant="default" className="mb-8 max-w-2xl">
-              <TriangleAlert className="h-4 w-4" />
-              <AlertTitle>Image Generation Disabled</AlertTitle>
-              <AlertDescription>
-                To see unique, AI-generated images for each flavor, please add your Google AI API key to the .env file.
-                Currently displaying fallback images.
-              </AlertDescription>
-            </Alert>
-          )}
-
           <Carousel
             opts={{
               align: 'start',
@@ -134,7 +90,7 @@ export default async function Home() {
             className="w-full max-w-sm md:max-w-2xl lg:max-w-4xl"
           >
             <CarouselContent>
-              {flavorsWithImages.map((flavor, index) => (
+              {flavors.map((flavor, index) => (
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-1">
                     <Card className="overflow-hidden rounded-lg border-border bg-card shadow-sm transition-shadow hover:shadow-lg">
