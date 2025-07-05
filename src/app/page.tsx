@@ -1,6 +1,26 @@
 import { Scene } from '@/components/scene';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 import { ArrowDown } from 'lucide-react';
+import Image from 'next/image';
+
+const flavors = [
+  { name: 'Original Bold', hint: 'soda can' },
+  { name: 'Citrus Surge', hint: 'soda can' },
+  { name: 'Berry Blitz', hint: 'soda can' },
+  { name: 'Tropical Fusion', hint: 'soda can' },
+  { name: 'Arctic Mint', hint: 'soda can' },
+  { name: 'Spiced Apple', hint: 'soda can' },
+  { name: 'Cherry Bomb', hint: 'soda can' },
+  { name: 'Grape Escape', hint: 'soda can' },
+];
 
 export default function Home() {
   return (
@@ -52,6 +72,52 @@ export default function Home() {
               sip is an invitation to a new experience, a new adventure.
             </p>
           </div>
+        </section>
+
+        <section
+          id="flavors"
+          className="container mx-auto flex h-screen flex-col items-center justify-center p-4"
+        >
+          <h2 className="mb-12 text-center font-headline text-4xl font-bold md:text-6xl">
+            8 Bold Flavors
+          </h2>
+          <Carousel
+            opts={{
+              align: 'start',
+              loop: true,
+            }}
+            className="w-full max-w-sm md:max-w-2xl lg:max-w-4xl"
+          >
+            <CarouselContent>
+              {flavors.map((flavor, index) => (
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-1">
+                    <Card className="overflow-hidden rounded-lg border-border bg-card shadow-sm transition-shadow hover:shadow-lg">
+                      <CardContent className="flex flex-col items-center justify-center p-0">
+                        <div className="aspect-[3/5] w-full overflow-hidden">
+                          <Image
+                            src={`https://placehold.co/300x500.png`}
+                            alt={flavor.name}
+                            width={300}
+                            height={500}
+                            className="h-full w-full object-cover transition-transform duration-300 hover:scale-110"
+                            data-ai-hint={flavor.hint}
+                          />
+                        </div>
+                        <div className="w-full p-4 bg-background/50">
+                          <h3 className="text-center font-headline text-xl font-bold">
+                            {flavor.name}
+                          </h3>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
         </section>
 
         <section
