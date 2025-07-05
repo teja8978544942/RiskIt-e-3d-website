@@ -354,7 +354,10 @@ export default function PourPage() {
     }
 
     return (
-        <main className="fixed inset-0 bg-black">
+        <main className={cn(
+            "fixed inset-0 transition-colors duration-500",
+            animationStage === 'tsunami' ? 'bg-black' : 'bg-background'
+        )}>
             {animationStage === 'tsunami' && (
                 <TsunamiAnimation
                     flavorColor={flavor.color}
@@ -369,7 +372,7 @@ export default function PourPage() {
                 <div 
                     className="absolute inset-0 flex items-start justify-center pointer-events-none pt-10"
                 >
-                    <h1 className="font-headline text-white text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
+                    <h1 className="font-headline text-foreground text-5xl md:text-7xl lg:text-8xl text-center p-4 animate-in fade-in-0 duration-1000">
                         Then choose your flavour
                     </h1>
                 </div>
