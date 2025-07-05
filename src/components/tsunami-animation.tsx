@@ -188,7 +188,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     
     const clock = new THREE.Clock();
 
-    const geometry = new THREE.PlaneGeometry(80, 80, 256, 256);
+    const geometry = new THREE.PlaneGeometry(100, 100, 256, 256);
     const material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
@@ -197,14 +197,14 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
         // Big Waves
         uBigWavesElevation: { value: 0.3 },
         uBigWavesFrequency: { value: new THREE.Vector2(0.6, 0.2) },
-        uBigWavesSpeed: { value: 0.4 },
+        uBigWavesSpeed: { value: 0.3 },
         // Small Waves
         uSmallWavesElevation: { value: 0.15 },
         uSmallWavesFrequency: { value: 2.0 },
-        uSmallWavesSpeed: { value: 1.5 },
+        uSmallWavesSpeed: { value: 1.0 },
         // Colors
-        uDepthColor: { value: new THREE.Color('#00072d') },
-        uSurfaceColor: { value: new THREE.Color('#0077b6') },
+        uDepthColor: { value: new THREE.Color('#022c43') },
+        uSurfaceColor: { value: new THREE.Color('#34a8a5') },
         uFoamColor: { value: new THREE.Color('#ffffff') },
         uColorOffset: { value: 0.1 },
         uColorMultiplier: { value: 2.5 },
@@ -224,15 +224,14 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
       const elapsedTime = clock.getElapsedTime();
       material.uniforms.uTime.value = elapsedTime;
 
-      const progress = Math.min((elapsedTime - startTime) / 2.0, 1.0);
+      const progress = Math.min((elapsedTime - startTime) / 4.0, 1.0);
       const easeOutQuad = (x: number): number => x * (2 - x);
       const easedProgress = easeOutQuad(progress);
 
       // Animate wave properties to make it more dramatic
-      material.uniforms.uBigWavesElevation.value = THREE.MathUtils.lerp(0.2, 0.8, easedProgress);
+      material.uniforms.uBigWavesElevation.value = THREE.MathUtils.lerp(0.2, 0.6, easedProgress);
       material.uniforms.uSmallWavesElevation.value = THREE.MathUtils.lerp(0.1, 0.25, easedProgress);
       material.uniforms.uColorMultiplier.value = THREE.MathUtils.lerp(2.5, 4.0, easedProgress);
-      material.uniforms.uBigWavesSpeed.value = THREE.MathUtils.lerp(0.4, 1.0, easedProgress);
 
       wavePlane.position.y = THREE.MathUtils.lerp(-4, 0, easedProgress);
       wavePlane.position.z = THREE.MathUtils.lerp(-2, 1, easedProgress);
@@ -253,7 +252,7 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     
     const closeTimeout = setTimeout(() => {
       onCloseRef.current();
-    }, 2500);
+    }, 4500);
 
     const handleClick = () => {
         onCloseRef.current();
