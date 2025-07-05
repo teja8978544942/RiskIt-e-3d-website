@@ -2,7 +2,7 @@
 "use client";
 
 import * as THREE from 'three';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { flavors } from '@/lib/flavors';
 
 function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
@@ -100,6 +100,7 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
 
     // Pull Tab
     const pullTab = new THREE.Group();
+    pullTab.name = "pullTab"; // Naming for animation
     const tabShape = new THREE.Shape();
     const arcRadius = 0.18;
     const holeRadius = 0.1;
@@ -148,11 +149,81 @@ function createCanMesh(flavorName: string, flavorColor: string): THREE.Group {
 }
 
 
+function createGlass() {
+    const points = [
+        new THREE.Vector2(0.7, -1.5),
+        new THREE.Vector2(0.8, -1.45),
+        new THREE.Vector2(0.9, 1.45),
+        new THREE.Vector2(1.0, 1.5)
+    ];
+    const geometry = new THREE.LatheGeometry(points, 32);
+    const material = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        metalness: 0,
+        roughness: 0.1,
+        transmission: 1,
+        ior: 1.5,
+        thickness: 0.2,
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.DoubleSide
+    });
+    const glass = new THREE.Mesh(geometry, material);
+    glass.visible = false;
+    return glass;
+}
+
+function createParticles(color: string) {
+    const particleCount = 500;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const velocities = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount * 3; i++) {
+        positions[i] = 0;
+        velocities[i] = 0;
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+    
+    const material = new THREE.PointsMaterial({
+        color: color,
+        size: 0.05,
+        transparent: true,
+        opacity: 0.7,
+        blending: THREE.AdditiveBlending,
+        sizeAttenuation: true
+    });
+
+    const particles = new THREE.Points(geometry, material);
+    particles.visible = false;
+    return particles;
+}
+
 export function Scene() {
   const mountRef = useRef<HTMLDivElement>(null);
+  const animationState = useRef({
+      isAnimating: false,
+      can: null as THREE.Group | null,
+      glass: null as THREE.Mesh | null,
+      particles: null as THREE.Points | null,
+      originalPosition: new THREE.Vector3(),
+      originalRotation: new THREE.Euler(),
+      stage: 'idle' as 'idle' | 'lifting' | 'opening' | 'tilting' | 'pouring' | 'resetting',
+      startTime: 0,
+      pourStartTime: 0,
+  });
+  
+  const popSound = useRef<HTMLAudioElement | null>(null);
+  const pourSound = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (!mountRef.current || typeof window === 'undefined') return;
+
+    popSound.current = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_19b1683932.mp3');
+    pourSound.current = new Audio('https://cdn.pixabay.com/audio/2022/09/20/audio_5514f6b289.mp3');
+    if (pourSound.current) pourSound.current.loop = true;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -238,20 +309,15 @@ export function Scene() {
     const animationDistance = window.innerHeight * 3;
 
     const onScroll = () => {
+        if (animationState.current.isAnimating) return;
         scrollY = window.scrollY;
         
         if (mainCan) {
           const scrollFraction = Math.min(scrollY / animationDistance, 1);
-          
           const easedFraction = 1 - Math.pow(1 - scrollFraction, 3);
-
           mainCan.position.y = THREE.MathUtils.lerp(0, -5, easedFraction);
-          
-          const minScale = 1.0;
-          const maxScale = 1.8;
-          const scale = THREE.MathUtils.lerp(minScale, maxScale, easedFraction);
+          const scale = THREE.MathUtils.lerp(1.0, 1.8, easedFraction);
           mainCan.scale.set(scale, scale, scale);
-          
           mainCan.rotation.y = THREE.MathUtils.lerp(0, Math.PI * 2, easedFraction);
         }
     };
@@ -265,10 +331,157 @@ export function Scene() {
     };
     window.addEventListener('mousemove', onMouseMove, { passive: true });
     
+    const raycaster = new THREE.Raycaster();
+    const handleClick = (event: MouseEvent) => {
+        if (animationState.current.isAnimating) return;
+        
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.intersectObjects(allCans, true);
+
+        if (intersects.length > 0) {
+            let clickedObject = intersects[0].object;
+            while(clickedObject.parent && !allCans.includes(clickedObject as THREE.Group)) {
+                clickedObject = clickedObject.parent;
+            }
+            const can = clickedObject as THREE.Group;
+            const flavor = flavors.find(f => f.name.toUpperCase() === (can.children[0] as any).material.map.image.getContext('2d').__font.split("'")[3].toUpperCase());
+
+            if (can && flavor) {
+                const state = animationState.current;
+                state.isAnimating = true;
+                state.can = can;
+                state.originalPosition.copy(can.position);
+                state.originalRotation.copy(can.rotation);
+                state.stage = 'lifting';
+                state.startTime = performance.now();
+                
+                state.glass = createGlass();
+                scene.add(state.glass);
+
+                state.particles = createParticles(flavor.color);
+                scene.add(state.particles);
+            }
+        }
+    };
+    window.addEventListener('click', handleClick);
+
     const tick = () => {
         const targetLookAt = new THREE.Vector3(mouse.x * 0.2, -mouse.y * 0.2, 0);
         camera.position.x += (mouse.x * 0.5 - camera.position.x) * 0.05;
         camera.lookAt(targetLookAt);
+        
+        const state = animationState.current;
+        if (state.isAnimating && state.can) {
+            const can = state.can;
+            const pullTab = can.getObjectByName('pullTab');
+            const glass = state.glass;
+            const particles = state.particles;
+            const elapsedTime = (performance.now() - state.startTime) / 1000;
+            
+            switch(state.stage) {
+                case 'lifting': {
+                    const progress = Math.min(elapsedTime / 0.5, 1);
+                    can.position.y = THREE.MathUtils.lerp(state.originalPosition.y, state.originalPosition.y + 2, progress);
+                    if (progress >= 1) {
+                        state.stage = 'opening';
+                        state.startTime = performance.now();
+                    }
+                    break;
+                }
+                case 'opening': {
+                    const progress = Math.min(elapsedTime / 0.3, 1);
+                    if(pullTab) pullTab.rotation.x = THREE.MathUtils.lerp(0, -Math.PI / 2, progress);
+                    if (progress >= 1 && state.stage === 'opening') {
+                        popSound.current?.play();
+                        state.stage = 'tilting';
+                        state.startTime = performance.now();
+                    }
+                    break;
+                }
+                case 'tilting': {
+                    const progress = Math.min(elapsedTime / 1, 1);
+                    if (glass) {
+                        glass.visible = true;
+                        glass.scale.set(progress, progress, progress);
+                        glass.position.set(state.originalPosition.x, state.originalPosition.y - 1.5, 3);
+                    }
+                    can.position.x = THREE.MathUtils.lerp(state.originalPosition.x, state.originalPosition.x, progress);
+                    can.position.y = THREE.MathUtils.lerp(state.originalPosition.y + 2, state.originalPosition.y + 1, progress);
+                    can.position.z = THREE.MathUtils.lerp(0, 2.5, progress);
+                    can.rotation.x = THREE.MathUtils.lerp(0, -Math.PI / 2.2, progress);
+                     if (progress >= 1) {
+                        state.stage = 'pouring';
+                        state.startTime = performance.now();
+                        state.pourStartTime = performance.now();
+                        pourSound.current?.play();
+                    }
+                    break;
+                }
+                case 'pouring': {
+                    if (particles && glass && can) {
+                        particles.visible = true;
+                        const pourDuration = 3000;
+                        if(performance.now() - state.pourStartTime > pourDuration) {
+                            state.stage = 'resetting';
+                            state.startTime = performance.now();
+                            pourSound.current?.pause();
+                            if(pourSound.current) pourSound.current.currentTime = 0;
+                        }
+
+                        const positions = particles.geometry.attributes.position.array as Float32Array;
+                        const velocities = particles.geometry.attributes.velocity.array as Float32Array;
+                        const pourOrigin = new THREE.Vector3(0, 1.4, 0);
+                        can.localToWorld(pourOrigin);
+                        particles.position.copy(pourOrigin).negate();
+
+                        for (let i = 0; i < positions.length; i += 3) {
+                           if(velocities[i+1] === 0) { // is particle 'dead'?
+                                velocities[i] = (Math.random() - 0.5) * 0.1;
+                                velocities[i+1] = Math.random() * 0.1;
+                                velocities[i+2] = (Math.random() - 0.5) * 0.1;
+                                positions[i] = pourOrigin.x;
+                                positions[i+1] = pourOrigin.y;
+                                positions[i+2] = pourOrigin.z;
+                           }
+                           
+                           velocities[i+1] -= 0.005; // gravity
+                           positions[i] += velocities[i];
+                           positions[i+1] += velocities[i+1];
+                           positions[i+2] += velocities[i+2];
+
+                           const worldParticlePos = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).add(pourOrigin);
+                           if(worldParticlePos.y < glass.position.y - 1.5) {
+                               velocities[i+1] = 0;
+                           }
+                        }
+                        particles.geometry.attributes.position.needsUpdate = true;
+                    }
+                    break;
+                }
+                 case 'resetting': {
+                    const progress = Math.min(elapsedTime / 1.0, 1);
+                    can.position.lerp(state.originalPosition, progress);
+                    can.rotation.x = THREE.MathUtils.lerp(can.rotation.x, state.originalRotation.x, progress);
+                    can.rotation.y = THREE.MathUtils.lerp(can.rotation.y, state.originalRotation.y, progress);
+                    can.rotation.z = THREE.MathUtils.lerp(can.rotation.z, state.originalRotation.z, progress);
+                    
+                    if(glass) glass.scale.lerp(new THREE.Vector3(0,0,0), progress);
+                    if(pullTab) pullTab.rotation.x = THREE.MathUtils.lerp(pullTab.rotation.x, 0, progress);
+
+                    if (progress >= 1) {
+                        if (glass) scene.remove(glass);
+                        if (particles) scene.remove(particles);
+                        state.isAnimating = false;
+                        state.can = null;
+                        state.stage = 'idle';
+                    }
+                    break;
+                }
+            }
+        }
         
         renderer.render(scene, camera);
         window.requestAnimationFrame(tick);
@@ -287,6 +500,7 @@ export function Scene() {
         window.removeEventListener('resize', onResize);
         window.removeEventListener('scroll', onScroll);
         window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('click', handleClick);
         if (mountRef.current && renderer.domElement.parentElement === mountRef.current) {
             mountRef.current.removeChild(renderer.domElement);
         }
