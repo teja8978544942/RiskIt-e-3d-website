@@ -40,6 +40,8 @@ interface TsunamiAnimationProps {
 
 export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps) {
   const mountRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -87,13 +89,18 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
     };
     window.addEventListener('resize', onResize);
     
+    const closeTimeout = setTimeout(() => {
+      onCloseRef.current();
+    }, 2500);
+
     const handleClick = () => {
-        onClose();
+        onCloseRef.current();
     };
     currentMount.addEventListener('click', handleClick);
 
     return () => {
         window.removeEventListener('resize', onResize);
+        clearTimeout(closeTimeout);
         if (currentMount) {
             currentMount.removeEventListener('click', handleClick);
             if (renderer.domElement.parentElement === currentMount) {
@@ -105,12 +112,11 @@ export function TsunamiAnimation({ flavorColor, onClose }: TsunamiAnimationProps
         material.dispose();
         renderer.dispose();
     };
-  }, [flavorColor, onClose]);
+  }, [flavorColor]);
 
   return (
     <div 
         className="fixed inset-0 z-[60] bg-black/50 animate-in fade-in-0 duration-500"
-        onClick={onClose}
     >
         <div ref={mountRef} className="absolute inset-0" />
         <div 

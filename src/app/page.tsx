@@ -16,9 +16,11 @@ import { flavors } from '@/lib/flavors';
 import { Header } from '@/components/header';
 import { useState } from 'react';
 import { TsunamiAnimation } from '@/components/tsunami-animation';
+import { useRouter } from 'next/navigation';
 
 
 export default function Home() {
+  const router = useRouter();
   const [tsunamiActive, setTsunamiActive] = useState(false);
   const [selectedFlavor, setSelectedFlavor] = useState<{name: string, color: string} | null>(null);
 
@@ -28,6 +30,10 @@ export default function Home() {
   };
 
   const handleTsunamiClose = () => {
+    if (selectedFlavor) {
+      router.push(`/pour/${encodeURIComponent(selectedFlavor.name)}`);
+    }
+    // Reset state after initiating navigation or on close
     setTsunamiActive(false);
     setSelectedFlavor(null);
   }
