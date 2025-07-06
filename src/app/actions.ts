@@ -1,9 +1,9 @@
+
 'use server';
 
 import { z } from 'zod';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const toEmail = process.env.FORM_TO_EMAIL;
 // This address must be a verified domain in your Resend account.
 // For testing, you can use 'onboarding@resend.dev' but this is rate-limited.
@@ -30,7 +30,9 @@ export async function submitFeedback(
   prevState: FormState | null,
   formData: FormData
 ): Promise<FormState> {
-  if (!process.env.RESEND_API_KEY || !toEmail) {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey || !toEmail) {
     console.error('Missing environment variables for Resend.');
     return {
       message: 'Server configuration error. Cannot send feedback.',
@@ -54,6 +56,7 @@ export async function submitFeedback(
 
     const { name, email, message } = validatedFields.data;
 
+    const resend = new Resend(apiKey);
     await resend.emails.send({
       from: fromEmail,
       to: toEmail,
@@ -84,7 +87,9 @@ export async function subscribeToNewsletter(
   prevState: FormState | null,
   formData: FormData
 ): Promise<FormState> {
-  if (!process.env.RESEND_API_KEY || !toEmail) {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey || !toEmail) {
     console.error('Missing environment variables for Resend.');
     return {
       message: 'Server configuration error. Cannot subscribe.',
@@ -106,6 +111,7 @@ export async function subscribeToNewsletter(
 
     const { email } = validatedFields.data;
 
+    const resend = new Resend(apiKey);
     await resend.emails.send({
       from: fromEmail,
       to: toEmail,
