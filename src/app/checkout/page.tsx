@@ -49,7 +49,19 @@ function CheckoutPageContent() {
       </div>
 
       <div className="grid w-full max-w-6xl grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-16">
-        <div className="order-1 flex w-full items-center justify-center lg:order-1">
+        <div className="relative flex h-[50vh] min-h-[400px] w-full items-center justify-center lg:h-full">
+          {selectedFlavor ? (
+            <CheckoutCanPreview 
+              key={selectedFlavor.name} 
+              flavorName={selectedFlavor.name} 
+              flavorColor={selectedFlavor.color} 
+            />
+          ) : (
+            <Skeleton className="h-64 w-64 rounded-full" />
+          )}
+        </div>
+
+        <div className="flex w-full items-center justify-center">
           <Card className="w-full max-w-md border-0 shadow-none lg:border lg:shadow-xl">
             <CardHeader>
               <CardTitle className="font-headline text-3xl md:text-4xl">Secure Checkout</CardTitle>
@@ -66,18 +78,6 @@ function CheckoutPageContent() {
               <CheckoutFormSkeleton />
             )}
           </Card>
-        </div>
-        
-        <div className="relative order-2 flex h-[50vh] min-h-[400px] w-full items-center justify-center lg:order-2 lg:h-full">
-          {selectedFlavor ? (
-            <CheckoutCanPreview 
-              key={selectedFlavor.name} 
-              flavorName={selectedFlavor.name} 
-              flavorColor={selectedFlavor.color} 
-            />
-          ) : (
-            <Skeleton className="h-64 w-64 rounded-full" />
-          )}
         </div>
       </div>
     </main>
@@ -96,7 +96,10 @@ function CheckoutPageSkeleton() {
     return (
         <main className="flex min-h-screen w-full flex-col items-center justify-center bg-zinc-50 p-4 dark:bg-zinc-950 lg:p-8">
             <div className="grid w-full max-w-6xl grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-16">
-                <div className="order-1 flex w-full items-center justify-center lg:order-1">
+                <div className="relative flex h-full min-h-[400px] w-full items-center justify-center">
+                    <Skeleton className="h-64 w-64 rounded-full"/>
+                </div>
+                <div className="flex w-full items-center justify-center">
                     <Card className="w-full max-w-md border-0 shadow-none lg:border lg:shadow-xl">
                         <CardHeader>
                             <Skeleton className="h-10 w-3/4 mb-2" />
@@ -104,9 +107,6 @@ function CheckoutPageSkeleton() {
                         </CardHeader>
                         <CheckoutFormSkeleton />
                     </Card>
-                </div>
-                <div className="relative order-2 flex h-full min-h-[400px] w-full items-center justify-center lg:order-2">
-                    <Skeleton className="h-64 w-64 rounded-full"/>
                 </div>
             </div>
         </main>
