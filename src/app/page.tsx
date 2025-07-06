@@ -24,7 +24,7 @@ import { FlavorExplosionAnimation } from '@/components/flavor-explosion-animatio
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Linkedin, MousePointerClick } from 'lucide-react';
+import { MousePointerClick } from 'lucide-react';
 
 function FeedbackSubmitButton() {
   const { pending } = useFormStatus();
@@ -291,12 +291,7 @@ export default function Home() {
           </section>
 
           <footer className="h-[50vh] flex items-center justify-center text-center text-foreground/60">
-            <div className="flex items-center gap-4">
-              <p>&copy; {new Date().getFullYear()} YourBrand. All rights reserved.</p>
-              <Link href="https://www.linkedin.com/in/your-profile-here" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile" className="transition-colors hover:text-primary">
-                <Linkedin className="h-5 w-5" />
-              </Link>
-            </div>
+            <p>&copy; {new Date().getFullYear()} YourBrand. All rights reserved.</p>
           </footer>
         </div>
       </main>
