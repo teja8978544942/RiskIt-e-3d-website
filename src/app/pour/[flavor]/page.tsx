@@ -63,7 +63,7 @@ function createParticles(color: string) {
 }
 
 function createLiquid(color: string) {
-    const geometry = new THREE.CylinderGeometry(0.84, 0.65, 3, 32);
+    const geometry = new THREE.CylinderGeometry(0.84, 0.65, 3.05, 32);
     const material = new THREE.MeshPhysicalMaterial({
         color: new THREE.Color(color),
         metalness: 0,
@@ -281,6 +281,7 @@ export default function PourPage() {
                                     liquid.visible = true;
                                     foam.visible = true;
                                     liquid.position.copy(glass.position);
+                                    liquid.position.y -= 0.025;
                                 }
                             }
                         }
@@ -302,7 +303,7 @@ export default function PourPage() {
                         }
 
                         const glassBottomY = -1.7;
-                        const glassTopY = 1.25;
+                        const glassTopY = 1.4;
                         const liquidSurfaceY = THREE.MathUtils.lerp(glassBottomY, glassTopY, pourProgress);
                         
                         if (liquidClipPlane) {
