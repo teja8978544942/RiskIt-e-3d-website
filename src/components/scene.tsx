@@ -53,7 +53,8 @@ export function Scene({ onCanClick }: { onCanClick: (flavor: {name: string, colo
     const totalCans = flavors.length;
 
     const reorderedFlavors = [...flavors];
-    const mainCanIndexOriginal = reorderedFlavors.findIndex(f => f.name === 'Orange Burst');
+    const mainCanName = 'Flavor One';
+    const mainCanIndexOriginal = reorderedFlavors.findIndex(f => f.name === mainCanName);
     if (mainCanIndexOriginal !== -1) {
         const [mainCanFlavor] = reorderedFlavors.splice(mainCanIndexOriginal, 1);
         reorderedFlavors.splice(Math.floor(totalCans / 2) -1, 0, mainCanFlavor);
@@ -68,7 +69,7 @@ export function Scene({ onCanClick }: { onCanClick: (flavor: {name: string, colo
           can.castShadow = true;
           can.traverse(function(child) { if ((child as THREE.Mesh).isMesh) { child.castShadow = true; } });
 
-          if (flavor.name === 'Orange Burst') {
+          if (flavor.name === mainCanName) {
               mainCan = can;
           }
           allCans.push(can);

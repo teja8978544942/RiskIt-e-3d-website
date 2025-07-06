@@ -123,7 +123,7 @@ export default function Home() {
         <div className="relative z-10">
           <section className="flex h-screen flex-col items-center justify-center p-4 text-center">
             <h1 className="font-headline text-6xl font-bold md:text-8xl lg:text-9xl">
-              RiskIt
+              YourBrand
             </h1>
             <p className="mt-4 text-lg md:text-xl">
               The bold taste of adventure.
@@ -145,7 +145,7 @@ export default function Home() {
                 Natural Ingredients
               </h2>
               <p className="mt-4 text-base md:text-lg">
-                Crafted with the finest, all-natural ingredients, RiskIt offers a
+                Crafted with the finest, all-natural ingredients, our product offers a
                 pure and refreshing taste. We believe in transparency and
                 quality, from farm to can.
               </p>
@@ -292,7 +292,7 @@ export default function Home() {
 
           <footer className="h-[50vh] flex items-center justify-center text-center text-foreground/60">
             <div className="flex items-center gap-4">
-              <p>&copy; {new Date().getFullYear()} RiskIt. All rights reserved.</p>
+              <p>&copy; {new Date().getFullYear()} YourBrand. All rights reserved.</p>
               <Link href="https://www.linkedin.com/in/your-profile-here" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile" className="transition-colors hover:text-primary">
                 <Linkedin className="h-5 w-5" />
               </Link>

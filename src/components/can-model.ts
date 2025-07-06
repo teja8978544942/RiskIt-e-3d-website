@@ -18,7 +18,7 @@ export async function createCanMesh(flavorName: string, flavorColor: string): Pr
       context.fillStyle = 'white';
       context.textAlign = 'center';
       context.textBaseline = 'middle';
-      context.fillText('RiskIt', canvas.width / 2, canvas.height / 2 - 20);
+      context.fillText('YourBrand', canvas.width / 2, canvas.height / 2 - 20);
 
       context.font = 'bold 70px "PT Sans"';
       context.fillText(flavorName.toUpperCase(), canvas.width / 2, canvas.height / 2 + 80);

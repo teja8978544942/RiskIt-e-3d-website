@@ -37,7 +37,7 @@ export function Header() {
           className="font-headline text-3xl font-bold"
           onClick={closeMobileMenu}
         >
-          RiskIt
+          YourBrand
         </Link>
 
         {/* Desktop Nav */}
@@ -55,7 +55,7 @@ export function Header() {
             About
           </Link>
           <Link
-            href="mailto:contact@riskit.com"
+            href="mailto:contact@yourbrand.com"
             className="text-lg transition-colors hover:text-primary"
           >
             Contact
@@ -81,7 +81,7 @@ export function Header() {
                   className="self-start font-headline text-3xl font-bold"
                   onClick={closeMobileMenu}
                 >
-                  RiskIt
+                  YourBrand
                 </Link>
                 <nav className="flex flex-col space-y-4">
                   <Link
@@ -99,7 +99,7 @@ export function Header() {
                     About
                   </Link>
                   <Link
-                    href="mailto:contact@riskit.com"
+                    href="mailto:contact@yourbrand.com"
                     className="text-xl"
                     onClick={closeMobileMenu}
                   >
