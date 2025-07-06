@@ -37,7 +37,7 @@ export function Header() {
           className="font-headline text-3xl font-bold"
           onClick={closeMobileMenu}
         >
-          YourBrand
+          RiskIt
         </Link>
 
         {/* Desktop Nav */}
@@ -81,7 +81,7 @@ export function Header() {
                   className="self-start font-headline text-3xl font-bold"
                   onClick={closeMobileMenu}
                 >
-                  YourBrand
+                  RiskIt
                 </Link>
                 <nav className="flex flex-col space-y-4">
                   <Link

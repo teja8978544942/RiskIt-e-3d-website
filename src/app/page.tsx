@@ -123,7 +123,7 @@ export default function Home() {
         <div className="relative z-10">
           <section className="flex h-screen flex-col items-center justify-center p-4 text-center">
             <h1 className="font-headline text-6xl font-bold md:text-8xl lg:text-9xl">
-              YourBrand
+              RiskIt
             </h1>
             <p className="mt-4 text-lg md:text-xl">
               The bold taste of adventure.
@@ -291,7 +291,7 @@ export default function Home() {
           </section>
 
           <footer className="h-[50vh] flex items-center justify-center text-center text-foreground/60">
-            <p>&copy; {new Date().getFullYear()} YourBrand. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} RiskIt. All rights reserved.</p>
           </footer>
         </div>
       </main>
