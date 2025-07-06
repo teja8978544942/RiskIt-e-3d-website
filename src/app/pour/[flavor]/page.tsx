@@ -163,6 +163,33 @@ function createFoam() {
     return foam;
 }
 
+function createBubbles() {
+    const bubbleCount = 200;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(bubbleCount * 3);
+
+    // Initialize positions at 0,0,0
+    for(let i=0; i< bubbleCount*3; i++) {
+        positions[i] = 0;
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    
+    const material = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.04,
+        transparent: true,
+        opacity: 0.5,
+        blending: THREE.AdditiveBlending,
+        sizeAttenuation: true,
+        depthWrite: false,
+    });
+
+    const bubbles = new THREE.Points(geometry, material);
+    bubbles.visible = false;
+    return bubbles;
+}
+
 
 export default function PourPage() {
     const mountRef = useRef<HTMLDivElement>(null);
@@ -178,6 +205,7 @@ export default function PourPage() {
       particles: null as THREE.Points | null,
       liquid: null as THREE.Mesh | null,
       foam: null as THREE.Mesh | null,
+      bubbles: null as THREE.Points | null,
       liquidClipPlane: null as THREE.Plane | null,
       originalPosition: new THREE.Vector3(),
       originalRotation: new THREE.Euler(),
@@ -370,6 +398,52 @@ export default function PourPage() {
                             foam.position.z = glass.position.z;
                         }
 
+                        // Bubble animation logic
+                        if (state.bubbles && glass && liquid && pourProgress > 0.1) {
+                            state.bubbles.visible = true;
+                            const positions = state.bubbles.geometry.attributes.position.array as Float32Array;
+
+                            const liquidTopY = liquidSurfaceY;
+                            
+                            const getRadiusAtY = (y: number) => {
+                                const t = (y - (-1.7)) / (1.45 - (-1.7)); // Normalize y between glass bottom and top
+                                return THREE.MathUtils.lerp(0.6, 0.85, t); // Lerp radius
+                            };
+
+                            for (let i = 0; i < positions.length; i+=3) {
+                                const isDead = positions[i] === 0 && positions[i+1] === 0 && positions[i+2] === 0;
+
+                                if (isDead && Math.random() < 0.1) { // spawn new bubble
+                                    const y = glassBottomY + Math.random() * 0.2; // spawn at the bottom
+                                    const radius = getRadiusAtY(y) * Math.random();
+                                    const angle = Math.random() * Math.PI * 2;
+                                    
+                                    positions[i] = glass.position.x + Math.cos(angle) * radius;
+                                    positions[i+1] = y;
+                                    positions[i+2] = glass.position.z + Math.sin(angle) * radius;
+                                }
+
+                                if (!isDead) {
+                                    // Move up
+                                    positions[i+1] += (0.2 + Math.random() * 0.5) * delta;
+                                    // Drift sideways
+                                    positions[i] += (Math.random() - 0.5) * 0.05 * delta;
+                                    positions[i+2] += (Math.random() - 0.5) * 0.05 * delta;
+
+                                    const currentRadius = getRadiusAtY(positions[i+1]);
+                                    const distFromCenter = Math.sqrt(Math.pow(positions[i] - glass.position.x, 2) + Math.pow(positions[i+2] - glass.position.z, 2));
+                                    
+                                    // Kill if it reaches top or goes out of bounds
+                                    if (positions[i+1] > liquidTopY || distFromCenter > currentRadius) {
+                                        positions[i] = 0;
+                                        positions[i+1] = 0;
+                                        positions[i+2] = 0;
+                                    }
+                                }
+                            }
+                            state.bubbles.geometry.attributes.position.needsUpdate = true;
+                        }
+
 
                         if (particles && glass && can && liquid) {
                             particles.visible = true;
@@ -473,6 +547,9 @@ export default function PourPage() {
             state.foam = createFoam();
             scene.add(state.foam);
 
+            state.bubbles = createBubbles();
+            scene.add(state.bubbles);
+
             tick();
         };
 
@@ -495,7 +572,7 @@ export default function PourPage() {
                 currentMount.removeChild(renderer.domElement);
             }
              scene.traverse(object => {
-                if (object instanceof THREE.Mesh) {
+                if (object instanceof THREE.Mesh || object instanceof THREE.Points) {
                     object.geometry.dispose();
                     const materials = Array.isArray(object.material) ? object.material : [object.material];
                     materials.forEach(material => {
