@@ -18,6 +18,9 @@ import { Header } from '@/components/header';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FlavorExplosionAnimation } from '@/components/flavor-explosion-animation';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function Home() {
   const router = useRouter();
@@ -131,6 +134,51 @@ export default function Home() {
           </section>
 
           <section
+            id="feedback"
+            className="container mx-auto flex min-h-screen flex-col items-center justify-center p-4"
+          >
+            <div className="w-full max-w-2xl text-center">
+              <h2 className="mb-4 font-headline text-4xl font-bold md:text-6xl">
+                Share Your Thoughts
+              </h2>
+              <p className="mb-8 text-base text-muted-foreground md:text-lg">
+                We're always looking to improve. Let us know what you think!
+              </p>
+              <Card className="text-left shadow-lg">
+                <CardContent className="p-8">
+                  <form className="grid gap-6" onSubmit={(e) => e.preventDefault()}>
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="feedback-name">Name</Label>
+                        <Input id="feedback-name" placeholder="Your name" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="feedback-email">Email</Label>
+                        <Input
+                          id="feedback-email"
+                          type="email"
+                          placeholder="Your email"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="feedback-message">Message</Label>
+                      <Textarea
+                        id="feedback-message"
+                        placeholder="Your feedback..."
+                        rows={5}
+                      />
+                    </div>
+                    <div className="flex justify-end">
+                      <Button type="submit">Submit Feedback</Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          <section
             id="section-3"
             className="flex h-screen flex-col items-center justify-center p-4 text-center"
           >
@@ -150,6 +198,19 @@ export default function Home() {
             </div>
           </section>
           
+          <section id="signup" className="bg-secondary py-24">
+            <div className="container mx-auto max-w-2xl text-center">
+              <h2 className="font-headline text-3xl font-bold md:text-5xl">Stay in the Loop</h2>
+              <p className="mb-8 mt-4 text-base text-secondary-foreground/80 md:text-lg">
+                Sign up for our newsletter to get the latest on new flavors, deals, and adventures.
+              </p>
+              <form className="mx-auto flex max-w-md" onSubmit={(e) => e.preventDefault()}>
+                <Input type="email" placeholder="Enter your email address" className="rounded-r-none focus:z-10 text-base" />
+                <Button type="submit" className="rounded-l-none">Sign Up</Button>
+              </form>
+            </div>
+          </section>
+
           <footer className="h-[50vh] flex items-center justify-center text-center text-foreground/60">
               <p>&copy; {new Date().getFullYear()} RiskIt. All rights reserved.</p>
           </footer>
