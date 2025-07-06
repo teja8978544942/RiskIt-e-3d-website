@@ -24,6 +24,7 @@ import { FlavorExplosionAnimation } from '@/components/flavor-explosion-animatio
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { MousePointerClick } from 'lucide-react';
 
 function FeedbackSubmitButton() {
   const { pending } = useFormStatus();
@@ -46,6 +47,7 @@ function NewsletterSubmitButton() {
 export default function Home() {
   const router = useRouter();
   const [animatingFlavor, setAnimatingFlavor] = useState<{name: string, color: string} | null>(null);
+  const [showHint, setShowHint] = useState(false);
 
   const { toast } = useToast();
 
@@ -54,6 +56,14 @@ export default function Home() {
 
   const newsletterFormRef = useRef<HTMLFormElement>(null);
   const [newsletterState, newsletterAction] = useActionState(subscribeToNewsletter, null);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowHint(true);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (feedbackState?.type === 'success') {
@@ -118,6 +128,12 @@ export default function Home() {
             <p className="mt-4 text-lg md:text-xl">
               The bold taste of adventure.
             </p>
+            {showHint && (
+              <div className="animate-in fade-in-50 slide-in-from-bottom-5 duration-1000 mt-12 flex items-center gap-3 rounded-full bg-background/50 px-4 py-2 text-foreground/80 backdrop-blur-sm">
+                <MousePointerClick className="h-5 w-5 animate-pulse" />
+                <span>Click a can to dive into the flavor</span>
+              </div>
+            )}
           </section>
 
           <section
