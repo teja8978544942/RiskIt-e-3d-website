@@ -17,24 +17,24 @@ import { flavors } from '@/lib/flavors';
 import { Header } from '@/components/header';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { LiquidMorphAnimation } from '@/components/liquid-morph-animation';
+import { ZoomFocusAnimation } from '@/components/zoom-focus-animation';
 
 export default function Home() {
   const router = useRouter();
-  const [morphingFlavor, setMorphingFlavor] = useState<{name: string, color: string} | null>(null);
+  const [animatingFlavor, setAnimatingFlavor] = useState<{name: string, color: string} | null>(null);
 
   const handleCanClick = (flavor: {name: string, color: string}) => {
     router.push(`/pour/${encodeURIComponent(flavor.name)}`);
   };
 
   const handleCarouselClick = (flavor: {name: string, color: string}) => {
-    setMorphingFlavor(flavor);
+    setAnimatingFlavor(flavor);
   };
 
   const handleAnimationComplete = () => {
-    if (morphingFlavor) {
-      router.push(`/checkout?flavor=${encodeURIComponent(morphingFlavor.name)}`);
-      setMorphingFlavor(null);
+    if (animatingFlavor) {
+      router.push(`/checkout?flavor=${encodeURIComponent(animatingFlavor.name)}`);
+      setAnimatingFlavor(null);
     }
   };
 
@@ -155,10 +155,10 @@ export default function Home() {
           </footer>
         </div>
       </main>
-      {morphingFlavor && (
-        <LiquidMorphAnimation 
-          flavorName={morphingFlavor.name} 
-          flavorColor={morphingFlavor.color} 
+      {animatingFlavor && (
+        <ZoomFocusAnimation 
+          flavorName={animatingFlavor.name} 
+          flavorColor={animatingFlavor.color} 
           onComplete={handleAnimationComplete} 
         />
       )}
