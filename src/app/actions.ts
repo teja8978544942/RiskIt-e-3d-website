@@ -1,6 +1,13 @@
 'use server';
 
 import { z } from 'zod';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+const toEmail = process.env.FORM_TO_EMAIL;
+// This address must be a verified domain in your Resend account.
+// For testing, you can use 'onboarding@resend.dev' but this is rate-limited.
+const fromEmail = 'onboarding@resend.dev'; 
 
 // Define the schema for the feedback form
 const feedbackSchema = z.object({
@@ -23,6 +30,14 @@ export async function submitFeedback(
   prevState: FormState | null,
   formData: FormData
 ): Promise<FormState> {
+  if (!process.env.RESEND_API_KEY || !toEmail) {
+    console.error('Missing environment variables for Resend.');
+    return {
+      message: 'Server configuration error. Cannot send feedback.',
+      type: 'error',
+    };
+  }
+  
   try {
     const validatedFields = feedbackSchema.safeParse({
       name: formData.get('name'),
@@ -37,14 +52,27 @@ export async function submitFeedback(
       };
     }
 
-    // In a real application, you would save this data to a database.
-    console.log('Feedback submitted:', validatedFields.data);
+    const { name, email, message } = validatedFields.data;
+
+    await resend.emails.send({
+      from: fromEmail,
+      to: toEmail,
+      subject: 'New Website Feedback Submission',
+      html: `
+        <h2>New Feedback Received</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+      `,
+    });
 
     return {
       message: 'Thank you for your feedback!',
       type: 'success',
     };
   } catch (e) {
+    console.error(e);
     return {
       message: 'An unexpected error occurred. Please try again.',
       type: 'error',
@@ -56,6 +84,14 @@ export async function subscribeToNewsletter(
   prevState: FormState | null,
   formData: FormData
 ): Promise<FormState> {
+  if (!process.env.RESEND_API_KEY || !toEmail) {
+    console.error('Missing environment variables for Resend.');
+    return {
+      message: 'Server configuration error. Cannot subscribe.',
+      type: 'error',
+    };
+  }
+
   try {
     const validatedFields = newsletterSchema.safeParse({
       email: formData.get('email'),
@@ -68,14 +104,24 @@ export async function subscribeToNewsletter(
       };
     }
 
-    // In a real application, you would add this email to your mailing list.
-    console.log('Newsletter subscription:', validatedFields.data.email);
+    const { email } = validatedFields.data;
+
+    await resend.emails.send({
+      from: fromEmail,
+      to: toEmail,
+      subject: 'New Newsletter Subscription',
+      html: `
+        <h2>New Subscriber</h2>
+        <p>The email address <strong>${email}</strong> has signed up for the newsletter.</p>
+      `,
+    });
 
     return {
       message: 'Thanks for subscribing!',
       type: 'success',
     };
   } catch (e) {
+    console.error(e);
     return {
       message: 'An unexpected error occurred. Please try again.',
       type: 'error',
