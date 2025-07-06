@@ -16,15 +16,76 @@ import { FlavorScene } from '@/components/flavor-scene';
 import { flavors } from '@/lib/flavors';
 import { Header } from '@/components/header';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
+import { useFormStatus } from 'react-dom';
+import { useToast } from '@/hooks/use-toast';
+import { submitFeedback, subscribeToNewsletter } from '@/app/actions';
 import { FlavorExplosionAnimation } from '@/components/flavor-explosion-animation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
+function FeedbackSubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" disabled={pending}>
+      {pending ? 'Submitting...' : 'Submit Feedback'}
+    </Button>
+  );
+}
+
+function NewsletterSubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" className="rounded-l-none" disabled={pending}>
+      {pending ? 'Signing up...' : 'Sign Up'}
+    </Button>
+  );
+}
+
 export default function Home() {
   const router = useRouter();
   const [animatingFlavor, setAnimatingFlavor] = useState<{name: string, color: string} | null>(null);
+
+  const { toast } = useToast();
+
+  const feedbackFormRef = useRef<HTMLFormElement>(null);
+  const [feedbackState, feedbackAction] = useActionState(submitFeedback, null);
+
+  const newsletterFormRef = useRef<HTMLFormElement>(null);
+  const [newsletterState, newsletterAction] = useActionState(subscribeToNewsletter, null);
+
+  useEffect(() => {
+    if (feedbackState?.type === 'success') {
+      toast({
+        title: 'Success!',
+        description: feedbackState.message,
+      });
+      feedbackFormRef.current?.reset();
+    } else if (feedbackState?.type === 'error') {
+      toast({
+        title: 'Oops!',
+        description: feedbackState.message,
+        variant: 'destructive',
+      });
+    }
+  }, [feedbackState, toast]);
+
+  useEffect(() => {
+    if (newsletterState?.type === 'success') {
+      toast({
+        title: 'Success!',
+        description: newsletterState.message,
+      });
+      newsletterFormRef.current?.reset();
+    } else if (newsletterState?.type === 'error') {
+      toast({
+        title: 'Oops!',
+        description: newsletterState.message,
+        variant: 'destructive',
+      });
+    }
+  }, [newsletterState, toast]);
 
   const handleCanClick = (flavor: {name: string, color: string}) => {
     router.push(`/pour/${encodeURIComponent(flavor.name)}`);
@@ -146,16 +207,17 @@ export default function Home() {
               </p>
               <Card className="text-left shadow-lg">
                 <CardContent className="p-8">
-                  <form className="grid gap-6" onSubmit={(e) => e.preventDefault()}>
+                  <form ref={feedbackFormRef} action={feedbackAction} className="grid gap-6">
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="feedback-name">Name</Label>
-                        <Input id="feedback-name" placeholder="Your name" />
+                        <Input id="feedback-name" name="name" placeholder="Your name" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="feedback-email">Email</Label>
                         <Input
                           id="feedback-email"
+                          name="email"
                           type="email"
                           placeholder="Your email"
                         />
@@ -165,12 +227,13 @@ export default function Home() {
                       <Label htmlFor="feedback-message">Message</Label>
                       <Textarea
                         id="feedback-message"
+                        name="message"
                         placeholder="Your feedback..."
                         rows={5}
                       />
                     </div>
                     <div className="flex justify-end">
-                      <Button type="submit">Submit Feedback</Button>
+                      <FeedbackSubmitButton />
                     </div>
                   </form>
                 </CardContent>
@@ -204,9 +267,9 @@ export default function Home() {
               <p className="mb-8 mt-4 text-base text-secondary-foreground/80 md:text-lg">
                 Sign up for our newsletter to get the latest on new flavors, deals, and adventures.
               </p>
-              <form className="mx-auto flex max-w-md" onSubmit={(e) => e.preventDefault()}>
-                <Input type="email" placeholder="Enter your email address" className="rounded-r-none focus:z-10 text-base" />
-                <Button type="submit" className="rounded-l-none">Sign Up</Button>
+              <form ref={newsletterFormRef} action={newsletterAction} className="mx-auto flex max-w-md">
+                <Input name="email" type="email" placeholder="Enter your email address" className="rounded-r-none focus:z-10 text-base" />
+                <NewsletterSubmitButton />
               </form>
             </div>
           </section>
