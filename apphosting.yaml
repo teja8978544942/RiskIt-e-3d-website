@@ -1,0 +1,13 @@
+# This file is used by Firebase App Hosting to build and deploy your Next.js app.
+run:
+  build:
+    - npm install --legacy-peer-deps
+    - npm run build
+entrypoint: npm run start
+requiredCpu: 0.5
+requiredMemory: 512Mi
+# Environment variables that must be set for the backend to run.
+# You will be prompted to set these values when you create a backend.
+environment:
+  - variable: RESEND_API_KEY
+  - variable: FORM_TO_EMAIL
