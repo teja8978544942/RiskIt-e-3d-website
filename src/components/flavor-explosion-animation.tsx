@@ -177,7 +177,7 @@ export function FlavorExplosionAnimation({ flavorName, flavorColor, onComplete }
                 size: 0.05,
                 transparent: true,
                 opacity: 1.0,
-                blending: THREE.AdditiveBlending,
+                blending: THREE.NormalBlending,
                 sizeAttenuation: true
             });
 
