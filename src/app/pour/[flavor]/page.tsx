@@ -302,7 +302,7 @@ export default function PourPage() {
                         }
 
                         const glassBottomY = -1.7;
-                        const glassTopY = 1.0;
+                        const glassTopY = 1.25;
                         const liquidSurfaceY = THREE.MathUtils.lerp(glassBottomY, glassTopY, pourProgress);
                         
                         if (liquidClipPlane) {
