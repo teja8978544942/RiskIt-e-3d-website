@@ -127,30 +127,35 @@ export function Scene({ onCanClick }: { onCanClick: (flavor: {name: string, colo
     scene.add(cameraLookAtTarget);
     
     let animationFrameId: number;
+    const clock = new THREE.Clock();
 
     const tick = () => {
         animationFrameId = window.requestAnimationFrame(tick);
+        const delta = clock.getDelta();
         
         if (mainCan) {
           const scrollFraction = Math.min(scrollY / animationDistance, 1);
           const easedFraction = 1 - Math.pow(1 - scrollFraction, 3);
           
           const targetY = THREE.MathUtils.lerp(0, -5, easedFraction);
-          mainCan.position.y = THREE.MathUtils.lerp(mainCan.position.y, targetY, 0.05);
+          mainCan.position.y = THREE.MathUtils.damp(mainCan.position.y, targetY, 4, delta);
 
           const targetScale = THREE.MathUtils.lerp(1.0, 1.8, easedFraction);
-          mainCan.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.05);
+          mainCan.scale.x = THREE.MathUtils.damp(mainCan.scale.x, targetScale, 4, delta);
+          mainCan.scale.y = THREE.MathUtils.damp(mainCan.scale.y, targetScale, 4, delta);
+          mainCan.scale.z = THREE.MathUtils.damp(mainCan.scale.z, targetScale, 4, delta);
 
           const targetRotationY = THREE.MathUtils.lerp(0, Math.PI * 2, easedFraction);
-          mainCan.rotation.y = THREE.MathUtils.lerp(mainCan.rotation.y, targetRotationY, 0.05);
+          mainCan.rotation.y = THREE.MathUtils.damp(mainCan.rotation.y, targetRotationY, 4, delta);
         }
 
-        // Default Camera Behavior
-        cameraLookAtTarget.position.x = mouse.x * 0.2;
-        cameraLookAtTarget.position.y = -mouse.y * 0.2;
-        
         const targetCamPos = new THREE.Vector3(mouse.x * 0.5, 0, 9.5);
-        camera.position.lerp(targetCamPos, 0.05);
+        camera.position.x = THREE.MathUtils.damp(camera.position.x, targetCamPos.x, 8, delta);
+        camera.position.y = THREE.MathUtils.damp(camera.position.y, targetCamPos.y, 8, delta);
+        camera.position.z = THREE.MathUtils.damp(camera.position.z, targetCamPos.z, 8, delta);
+        
+        cameraLookAtTarget.position.x = THREE.MathUtils.damp(cameraLookAtTarget.position.x, mouse.x * 0.2, 8, delta);
+        cameraLookAtTarget.position.y = THREE.MathUtils.damp(cameraLookAtTarget.position.y, -mouse.y * 0.2, 8, delta);
         camera.lookAt(cameraLookAtTarget.position);
         
         renderer.render(scene, camera);

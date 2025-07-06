@@ -66,13 +66,18 @@ export function FlavorScene({ flavorName, flavorColor }: FlavorSceneProps) {
     initCan();
     
     let animationFrameId: number;
+    const clock = new THREE.Clock();
 
     const animate = () => {
+      animationFrameId = requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      const elapsedTime = clock.getElapsedTime();
+
       if (can) {
-        can.rotation.y += 0.005;
+        can.rotation.y += 0.3 * delta;
+        can.position.y = Math.sin(elapsedTime * 1.5) * 0.05;
       }
       renderer.render(scene, camera);
-      animationFrameId = requestAnimationFrame(animate);
     };
     animate();
 

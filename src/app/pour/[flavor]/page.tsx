@@ -299,8 +299,14 @@ export default function PourPage() {
                     cameraLookAtPos = new THREE.Vector3(glass.position.x, glass.position.y, glass.position.z);
                 }
 
-                camera.position.lerp(cameraTargetPos, 0.04);
-                cameraLookAtTarget.position.lerp(cameraLookAtPos, 0.04);
+                camera.position.x = THREE.MathUtils.damp(camera.position.x, cameraTargetPos.x, 8, delta);
+                camera.position.y = THREE.MathUtils.damp(camera.position.y, cameraTargetPos.y, 8, delta);
+                camera.position.z = THREE.MathUtils.damp(camera.position.z, cameraTargetPos.z, 8, delta);
+
+                cameraLookAtTarget.position.x = THREE.MathUtils.damp(cameraLookAtTarget.position.x, cameraLookAtPos.x, 8, delta);
+                cameraLookAtTarget.position.y = THREE.MathUtils.damp(cameraLookAtTarget.position.y, cameraLookAtPos.y, 8, delta);
+                cameraLookAtTarget.position.z = THREE.MathUtils.damp(cameraLookAtTarget.position.z, cameraLookAtPos.z, 8, delta);
+
                 camera.lookAt(cameraLookAtTarget.position);
 
                 switch(state.stage) {
