@@ -16,15 +16,19 @@ function createGlass() {
         new THREE.Vector2(0.85, 1.45),
         new THREE.Vector2(0.9, 1.5)
     ];
-    const geometry = new THREE.LatheGeometry(points, 32);
+    const geometry = new THREE.LatheGeometry(points, 64);
     const material = new THREE.MeshPhysicalMaterial({
         color: 0xffffff,
         metalness: 0,
-        roughness: 0.02,
+        roughness: 0.1,
         transmission: 1.0,
-        ior: 1.5,
-        thickness: 0.5,
+        ior: 1.52,
+        thickness: 1.5,
+        specularIntensity: 1.0,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.1,
         transparent: true,
+        side: THREE.FrontSide,
     });
     const glass = new THREE.Mesh(geometry, material);
     glass.visible = false;
@@ -72,7 +76,7 @@ function createLiquid(color: string) {
         transparent: true,
     });
     const liquid = new THREE.Mesh(geometry, material);
-    liquid.position.y = -0.1;
+    liquid.position.y = -0.15;
     liquid.visible = false;
     return liquid;
 }
@@ -298,7 +302,7 @@ export default function PourPage() {
                                     liquid.visible = true;
                                     foam.visible = true;
                                     liquid.position.copy(glass.position);
-                                    liquid.position.y -= 0.1;
+                                    liquid.position.y -= 0.15;
                                 }
                             }
                         }
@@ -321,7 +325,7 @@ export default function PourPage() {
 
                         const glassBottomY = -1.7;
                         const glassTopY = 1.45;
-                        const liquidSurfaceY = THREE.MathUtils.lerp(glassBottomY, glassTopY, pourProgress);
+                        const liquidSurfaceY = THREE.MathUtils.lerp(glassBottomY, glassTopY + 0.1, pourProgress);
                         
                         if (liquidClipPlane) {
                            liquidClipPlane.constant = liquidSurfaceY;
@@ -380,7 +384,7 @@ export default function PourPage() {
                                   if(particleIsSplashing) {
                                     velocities[i+1] -= 0.5 * delta;
                                   } else {
-                                    velocities[i+1] -= 0.8 * delta;
+                                    velocities[i+1] -= 1.2 * delta;
                                   }
 
                                   positions[i] += velocities[i] * delta * 60;
