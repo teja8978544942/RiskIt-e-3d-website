@@ -19,13 +19,12 @@ function createGlass() {
     const geometry = new THREE.LatheGeometry(points, 32);
     const material = new THREE.MeshPhysicalMaterial({
         color: 0xffffff,
-        metalness: 0.1,
-        roughness: 0.05,
-        transmission: 1,
+        metalness: 0,
+        roughness: 0.02,
+        transmission: 1.0,
         ior: 1.5,
-        thickness: 0.3,
+        thickness: 0.5,
         transparent: true,
-        opacity: 0.5,
         side: THREE.DoubleSide
     });
     const glass = new THREE.Mesh(geometry, material);
@@ -49,11 +48,11 @@ function createParticles(color: string) {
     geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
     
     const material = new THREE.PointsMaterial({
-        color: new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.2),
-        size: 0.035,
+        color: new THREE.Color(color),
+        size: 0.03,
         transparent: true,
-        opacity: 0.7,
-        blending: THREE.AdditiveBlending,
+        opacity: 0.8,
+        blending: THREE.NormalBlending,
         sizeAttenuation: true
     });
 
@@ -63,47 +62,64 @@ function createParticles(color: string) {
 }
 
 function createLiquid(color: string) {
-    const geometry = new THREE.CylinderGeometry(0.84, 0.65, 3.05, 32);
+    const geometry = new THREE.CylinderGeometry(0.84, 0.65, 3.1, 32);
     const material = new THREE.MeshPhysicalMaterial({
         color: new THREE.Color(color),
         metalness: 0,
-        roughness: 0.1,
-        transmission: 0.9,
+        roughness: 0.05,
+        transmission: 0.95,
         ior: 1.33,
-        thickness: 1.2,
+        thickness: 2.5,
         transparent: true,
-        opacity: 0.9,
-        emissive: new THREE.Color(color),
-        emissiveIntensity: 0.1,
     });
     const liquid = new THREE.Mesh(geometry, material);
+    liquid.position.y = -0.05;
     liquid.visible = false;
     return liquid;
 }
 
 function createFoamTexture() {
     const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
+    canvas.width = 512;
+    canvas.height = 512;
     const context = canvas.getContext('2d');
     if (context) {
-        context.fillStyle = 'rgba(255, 255, 255, 0.7)';
-        context.fillRect(0, 0, 256, 256);
-        for (let i = 0; i < 150; i++) {
-            const x = Math.random() * 256;
-            const y = Math.random() * 256;
-            const r = Math.random() * 15 + 5;
+        context.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        context.fillRect(0, 0, 512, 512);
+        
+        // Large bubbles
+        for (let i = 0; i < 50; i++) {
+            context.beginPath();
+            const x = Math.random() * 512;
+            const y = Math.random() * 512;
+            const r = Math.random() * 30 + 10;
             const grad = context.createRadialGradient(x, y, r * 0.25, x, y, r);
-            grad.addColorStop(0, `rgba(255, 255, 255, ${0.3 + Math.random() * 0.3})`);
+            grad.addColorStop(0, `rgba(255, 255, 255, ${0.4 + Math.random() * 0.3})`);
             grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
             context.fillStyle = grad;
-            context.fillRect(x - r, y - r, r * 2, r * 2);
+            context.arc(x, y, r, 0, Math.PI * 2);
+            context.fill();
+        }
+
+        // Small bubbles
+        for (let i = 0; i < 400; i++) {
+            context.beginPath();
+            const x = Math.random() * 512;
+            const y = Math.random() * 512;
+            const r = Math.random() * 5 + 2;
+            const grad = context.createRadialGradient(x, y, r * 0.1, x, y, r);
+            grad.addColorStop(0, `rgba(255, 255, 255, ${0.5 + Math.random() * 0.3})`);
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            context.fillStyle = grad;
+            context.arc(x, y, r, 0, Math.PI * 2);
+            context.fill();
         }
     }
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(2, 2);
+    texture.repeat.set(1, 1);
+    texture.anisotropy = 16;
     return texture;
 }
 
@@ -116,9 +132,11 @@ function createFoam() {
         map: foamTexture,
         alphaMap: foamTexture,
         bumpMap: foamTexture,
-        bumpScale: 0.02,
+        bumpScale: 0.01,
         transparent: true,
-        opacity: 0.9,
+        opacity: 0.95,
+        roughness: 0.9,
+        metalness: 0,
     });
     const foam = new THREE.Mesh(geometry, material);
     foam.visible = false;
@@ -176,20 +194,20 @@ export default function PourPage() {
         renderer.localClippingEnabled = true;
         currentMount.appendChild(renderer.domElement);
 
-        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x888888, 1.5);
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0xbbbbbb, 2.0);
         hemiLight.position.set(0, 20, 0);
         scene.add(hemiLight);
 
-        const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        const keyLight = new THREE.DirectionalLight(0xffffff, 2.0);
         keyLight.position.set(5, 5, 5);
         keyLight.castShadow = true;
         scene.add(keyLight);
         
-        const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.7);
         fillLight.position.set(-5, 2, 5);
         scene.add(fillLight);
         
-        const backLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        const backLight = new THREE.DirectionalLight(0xffffff, 2.5);
         backLight.position.set(0, 8, -10);
         scene.add(backLight);
 
@@ -303,7 +321,7 @@ export default function PourPage() {
                         }
 
                         const glassBottomY = -1.7;
-                        const glassTopY = 1.4;
+                        const glassTopY = 1.45;
                         const liquidSurfaceY = THREE.MathUtils.lerp(glassBottomY, glassTopY, pourProgress);
                         
                         if (liquidClipPlane) {
