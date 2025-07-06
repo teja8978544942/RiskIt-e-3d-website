@@ -16,19 +16,19 @@ import { flavors } from '@/lib/flavors';
 import { Header } from '@/components/header';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { PourAnimation } from '@/components/pour-animation';
+import { BoxAnimation } from '@/components/box-animation';
 
 
 export default function Home() {
   const router = useRouter();
-  const [pouringFlavor, setPouringFlavor] = useState<{ name: string; color: string } | null>(null);
+  const [boxAnimationFlavor, setBoxAnimationFlavor] = useState<{ name: string; color: string } | null>(null);
 
   const handleCanClick = (flavor: {name: string, color: string}) => {
     router.push(`/pour/${encodeURIComponent(flavor.name)}`);
   };
 
   const handleCarouselCanClick = (flavor: { name: string; color: string }) => {
-    setPouringFlavor(flavor);
+    setBoxAnimationFlavor(flavor);
   };
 
   return (
@@ -146,13 +146,13 @@ export default function Home() {
             <p>&copy; {new Date().getFullYear()} RiskIt. All rights reserved.</p>
         </footer>
       </div>
-      {pouringFlavor && (
-        <PourAnimation
-          flavorName={pouringFlavor.name}
-          flavorColor={pouringFlavor.color}
+      {boxAnimationFlavor && (
+        <BoxAnimation
+          flavorName={boxAnimationFlavor.name}
+          flavorColor={boxAnimationFlavor.color}
           onComplete={() => {
-            router.push(`/checkout?flavor=${encodeURIComponent(pouringFlavor.name)}`);
-            setPouringFlavor(null);
+            router.push(`/checkout?flavor=${encodeURIComponent(boxAnimationFlavor.name)}`);
+            setBoxAnimationFlavor(null);
           }}
         />
       )}
