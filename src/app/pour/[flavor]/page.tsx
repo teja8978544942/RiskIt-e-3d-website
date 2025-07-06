@@ -65,9 +65,26 @@ function createParticles(color: string) {
 }
 
 function createLiquid(color: string) {
+    const flavorColor = new THREE.Color(color);
+    const depthColor = flavorColor.clone().multiplyScalar(0.5);
+    const surfaceColor = flavorColor.clone().lerp(new THREE.Color(0xffffff), 0.5);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 2;
+    canvas.height = 256;
+    const context = canvas.getContext('2d');
+    if (context) {
+        const gradient = context.createLinearGradient(0, 0, 0, 256);
+        gradient.addColorStop(0, surfaceColor.getStyle());
+        gradient.addColorStop(1, depthColor.getStyle());
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    const gradientTexture = new THREE.CanvasTexture(canvas);
+
     const geometry = new THREE.CylinderGeometry(0.84, 0.65, 3.2, 32);
     const material = new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color(color),
+        map: gradientTexture,
         metalness: 0,
         roughness: 0.05,
         transmission: 0.95,
