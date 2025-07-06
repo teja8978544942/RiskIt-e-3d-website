@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Scene } from '@/components/scene';
@@ -15,20 +16,12 @@ import { FlavorScene } from '@/components/flavor-scene';
 import { flavors } from '@/lib/flavors';
 import { Header } from '@/components/header';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { BoxAnimation } from '@/components/box-animation';
-
 
 export default function Home() {
   const router = useRouter();
-  const [boxAnimationFlavor, setBoxAnimationFlavor] = useState<{ name: string; color: string } | null>(null);
 
   const handleCanClick = (flavor: {name: string, color: string}) => {
     router.push(`/pour/${encodeURIComponent(flavor.name)}`);
-  };
-
-  const handleCarouselCanClick = (flavor: { name: string; color: string }) => {
-    setBoxAnimationFlavor(flavor);
   };
 
   return (
@@ -100,7 +93,7 @@ export default function Home() {
                   <div className="p-1">
                     <Card
                       className="overflow-hidden rounded-lg cursor-pointer transition-shadow hover:shadow-xl"
-                      onClick={() => handleCarouselCanClick(flavor)}
+                      onClick={() => handleCanClick(flavor)}
                     >
                       <CardContent className="p-0">
                         <div className="relative w-full aspect-square">
@@ -146,16 +139,6 @@ export default function Home() {
             <p>&copy; {new Date().getFullYear()} RiskIt. All rights reserved.</p>
         </footer>
       </div>
-      {boxAnimationFlavor && (
-        <BoxAnimation
-          flavorName={boxAnimationFlavor.name}
-          flavorColor={boxAnimationFlavor.color}
-          onComplete={() => {
-            router.push(`/checkout?flavor=${encodeURIComponent(boxAnimationFlavor.name)}`);
-            setBoxAnimationFlavor(null);
-          }}
-        />
-      )}
     </main>
   );
 }
