@@ -332,7 +332,7 @@ export function BoxAnimation({ flavorName, flavorColor, onComplete }: BoxAnimati
             });
             renderer.dispose();
         };
-    }, [flavorName, flavorColor, onComplete]);
+    }, [flavorName, flavorColor]);
 
     return (
         <div className="fixed inset-0 z-[60] bg-background/50 backdrop-blur-sm">
