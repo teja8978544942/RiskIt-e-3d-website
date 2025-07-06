@@ -43,6 +43,110 @@ export function LiquidMorphAnimation({ flavorName, flavorColor, onComplete }: Li
         let blobPositions: Float32Array | null = null;
         let swirlEndPositions: Float32Array | null = null;
         
+        const clock = new THREE.Clock();
+        let animationFrameId: number;
+        let stage = 'melt';
+        let stageStartTime = 0;
+
+        const animate = () => {
+            animationFrameId = requestAnimationFrame(animate);
+            const elapsedTime = clock.getElapsedTime();
+
+            if (!particles || !canMesh || !initialPositions || !blobPositions || !swirlEndPositions) {
+                renderer.render(scene, camera);
+                return;
+            }
+            
+            if (stageStartTime === 0) stageStartTime = elapsedTime;
+            const timeInStage = elapsedTime - stageStartTime;
+
+            const meltDuration = 1.2;
+            const swirlDuration = 2.0;
+            const reformDuration = 1.2;
+
+            const currentPositions = particles.geometry.attributes.position.array as Float32Array;
+            
+            if (stage === 'melt') {
+                const progress = Math.min(timeInStage / meltDuration, 1);
+                const easedProgress = 1 - Math.pow(1 - progress, 3);
+                
+                for (let i = 0; i < currentPositions.length / 3; i++) {
+                    const i3 = i * 3;
+                    const initialVec = new THREE.Vector3(initialPositions[i3], initialPositions[i3+1], initialPositions[i3+2]);
+                    const blobVec = new THREE.Vector3(blobPositions[i3], blobPositions[i3+1], blobPositions[i3+2]);
+                    const currentVec = initialVec.lerp(blobVec, easedProgress);
+                    currentPositions[i3] = currentVec.x;
+                    currentPositions[i3+1] = currentVec.y;
+                    currentPositions[i3+2] = currentVec.z;
+                }
+
+                if (progress >= 1.0) {
+                    stage = 'swirl';
+                    stageStartTime = elapsedTime;
+                }
+            } else if (stage === 'swirl') {
+                const progress = Math.min(timeInStage / swirlDuration, 1);
+                
+                particles.rotation.y += 0.015;
+                particles.rotation.x += 0.01;
+
+                // Add a little extra turbulence to the swirl
+                const totalVertices = currentPositions.length / 3;
+                for (let i = 0; i < totalVertices; i++) {
+                    const i3 = i * 3;
+                    const d = 0.1 * Math.sin(progress * Math.PI);
+                    currentPositions[i3] += Math.sin(elapsedTime * 5 + blobPositions[i3+1]) * d;
+                    currentPositions[i3+1] += Math.cos(elapsedTime * 4 + blobPositions[i3+2]) * d;
+                    currentPositions[i3+2] += Math.sin(elapsedTime * 6 + blobPositions[i3]) * d;
+                }
+
+                if (progress >= 1.0) {
+                    stage = 'reform';
+                    stageStartTime = elapsedTime;
+                    
+                    particles.updateMatrix();
+                    const tempGeom = particles.geometry.clone();
+                    tempGeom.applyMatrix4(particles.matrix);
+                    swirlEndPositions.set(tempGeom.attributes.position.array);
+                    particles.rotation.set(0, 0, 0); 
+                }
+            } else if (stage === 'reform') {
+                const progress = Math.min(timeInStage / reformDuration, 1);
+                const easedProgress = progress * progress;
+
+                for (let i = 0; i < currentPositions.length / 3; i++) {
+                     const i3 = i * 3;
+                    const swirlVec = new THREE.Vector3(swirlEndPositions[i3], swirlEndPositions[i3+1], swirlEndPositions[i3+2]);
+                    const initialVec = new THREE.Vector3(initialPositions[i3], initialPositions[i3+1], initialPositions[i3+2]);
+                    const currentVec = swirlVec.lerp(initialVec, easedProgress);
+                    currentPositions[i3] = currentVec.x;
+                    currentPositions[i3+1] = currentVec.y;
+                    currentPositions[i3+2] = currentVec.z;
+                }
+                
+                (particles.material as THREE.PointsMaterial).opacity = 1.0 - easedProgress;
+                
+                if (progress > 0.3) {
+                    canMesh.traverse(child => {
+                        if (child instanceof THREE.Mesh) {
+                            const materials = Array.isArray(child.material) ? child.material : [child.material];
+                            materials.forEach(m => {
+                                m.opacity = (progress - 0.3) / 0.7;
+                            });
+                        }
+                    });
+                }
+
+                if (progress >= 1.0) {
+                    stage = 'done';
+                    onCompleteRef.current();
+                }
+            }
+            
+            particles.geometry.attributes.position.needsUpdate = true;
+            renderer.render(scene, camera);
+        };
+        
         const initScene = async () => {
             const tempCan = await createCanMesh(flavorName, flavorColor);
             
@@ -114,113 +218,10 @@ export function LiquidMorphAnimation({ flavorName, flavorColor, onComplete }: Li
                 }
             });
             scene.add(canMesh);
+            animate();
         };
         
         initScene();
-        
-        const clock = new THREE.Clock();
-        let animationFrameId: number;
-        let stage = 'melt';
-        let stageStartTime = 0;
-
-        const animate = () => {
-            animationFrameId = requestAnimationFrame(animate);
-            const elapsedTime = clock.getElapsedTime();
-
-            if (!particles || !canMesh || !initialPositions || !blobPositions || !swirlEndPositions) {
-                renderer.render(scene, camera);
-                return;
-            }
-            
-            if (stageStartTime === 0) stageStartTime = elapsedTime;
-            const timeInStage = elapsedTime - stageStartTime;
-
-            const meltDuration = 1.2;
-            const swirlDuration = 2.0;
-            const reformDuration = 1.2;
-
-            const currentPositions = particles.geometry.attributes.position.array as Float32Array;
-            
-            if (stage === 'melt') {
-                const progress = Math.min(timeInStage / meltDuration, 1);
-                const easedProgress = 1 - Math.pow(1 - progress, 3);
-                
-                for (let i = 0; i < currentPositions.length / 3; i++) {
-                    const i3 = i * 3;
-                    const initialVec = new THREE.Vector3(initialPositions[i3], initialPositions[i3+1], initialPositions[i3+2]);
-                    const blobVec = new THREE.Vector3(blobPositions[i3], blobPositions[i3+1], blobPositions[i3+2]);
-                    const currentVec = initialVec.lerp(blobVec, easedProgress);
-                    currentPositions[i3] = currentVec.x;
-                    currentPositions[i3+1] = currentVec.y;
-                    currentPositions[i3+2] = currentVec.z;
-                }
-
-                if (progress >= 1.0) {
-                    stage = 'swirl';
-                    stageStartTime = elapsedTime;
-                }
-            } else if (stage === 'swirl') {
-                const progress = Math.min(timeInStage / swirlDuration, 1);
-                
-                particles.rotation.y += 0.015;
-                particles.rotation.x += 0.01;
-
-                // Add a little extra turbulence to the swirl
-                for (let i = 0; i < totalVertices; i++) {
-                    const i3 = i * 3;
-                    const d = 0.1 * Math.sin(progress * Math.PI);
-                    currentPositions[i3] += Math.sin(elapsedTime * 5 + blobPositions[i3+1]) * d;
-                    currentPositions[i3+1] += Math.cos(elapsedTime * 4 + blobPositions[i3+2]) * d;
-                    currentPositions[i3+2] += Math.sin(elapsedTime * 6 + blobPositions[i3]) * d;
-                }
-
-                if (progress >= 1.0) {
-                    stage = 'reform';
-                    stageStartTime = elapsedTime;
-                    
-                    particles.updateMatrix();
-                    const tempGeom = particles.geometry.clone();
-                    tempGeom.applyMatrix4(particles.matrix);
-                    swirlEndPositions.set(tempGeom.attributes.position.array);
-                    particles.rotation.set(0, 0, 0); 
-                }
-            } else if (stage === 'reform') {
-                const progress = Math.min(timeInStage / reformDuration, 1);
-                const easedProgress = progress * progress;
-
-                for (let i = 0; i < currentPositions.length / 3; i++) {
-                     const i3 = i * 3;
-                    const swirlVec = new THREE.Vector3(swirlEndPositions[i3], swirlEndPositions[i3+1], swirlEndPositions[i3+2]);
-                    const initialVec = new THREE.Vector3(initialPositions[i3], initialPositions[i3+1], initialPositions[i3+2]);
-                    const currentVec = swirlVec.lerp(initialVec, easedProgress);
-                    currentPositions[i3] = currentVec.x;
-                    currentPositions[i3+1] = currentVec.y;
-                    currentPositions[i3+2] = currentVec.z;
-                }
-                
-                (particles.material as THREE.PointsMaterial).opacity = 1.0 - easedProgress;
-                
-                if (progress > 0.3) {
-                    canMesh.traverse(child => {
-                        if (child instanceof THREE.Mesh) {
-                            const materials = Array.isArray(child.material) ? child.material : [child.material];
-                            materials.forEach(m => {
-                                m.opacity = (progress - 0.3) / 0.7;
-                            });
-                        }
-                    });
-                }
-
-                if (progress >= 1.0) {
-                    stage = 'done';
-                    onCompleteRef.current();
-                }
-            }
-            
-            particles.geometry.attributes.position.needsUpdate = true;
-            renderer.render(scene, camera);
-        };
-        animate();
 
         const onResize = () => {
             if (currentMount) {
