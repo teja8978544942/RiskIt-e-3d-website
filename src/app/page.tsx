@@ -17,24 +17,24 @@ import { flavors } from '@/lib/flavors';
 import { Header } from '@/components/header';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { FlavorExplosionAnimation } from '@/components/flavor-explosion-animation';
+import { LiquidMorphAnimation } from '@/components/liquid-morph-animation';
 
 export default function Home() {
   const router = useRouter();
-  const [explodingFlavor, setExplodingFlavor] = useState<{name: string, color: string} | null>(null);
+  const [morphingFlavor, setMorphingFlavor] = useState<{name: string, color: string} | null>(null);
 
   const handleCanClick = (flavor: {name: string, color: string}) => {
     router.push(`/pour/${encodeURIComponent(flavor.name)}`);
   };
 
   const handleCarouselClick = (flavor: {name: string, color: string}) => {
-    setExplodingFlavor(flavor);
+    setMorphingFlavor(flavor);
   };
 
   const handleAnimationComplete = () => {
-    if (explodingFlavor) {
-      router.push(`/checkout?flavor=${encodeURIComponent(explodingFlavor.name)}`);
-      setExplodingFlavor(null);
+    if (morphingFlavor) {
+      router.push(`/checkout?flavor=${encodeURIComponent(morphingFlavor.name)}`);
+      setMorphingFlavor(null);
     }
   };
 
@@ -155,10 +155,10 @@ export default function Home() {
           </footer>
         </div>
       </main>
-      {explodingFlavor && (
-        <FlavorExplosionAnimation 
-          flavorName={explodingFlavor.name} 
-          flavorColor={explodingFlavor.color} 
+      {morphingFlavor && (
+        <LiquidMorphAnimation 
+          flavorName={morphingFlavor.name} 
+          flavorColor={morphingFlavor.color} 
           onComplete={handleAnimationComplete} 
         />
       )}

@@ -5,13 +5,13 @@ import * as THREE from 'three';
 import { useEffect, useRef } from 'react';
 import { createCanMesh } from '@/components/can-model';
 
-interface FlavorExplosionAnimationProps {
+interface LiquidMorphAnimationProps {
     flavorName: string;
     flavorColor: string;
     onComplete: () => void;
 }
 
-export function FlavorExplosionAnimation({ flavorName, flavorColor, onComplete }: FlavorExplosionAnimationProps) {
+export function LiquidMorphAnimation({ flavorName, flavorColor, onComplete }: LiquidMorphAnimationProps) {
     const mountRef = useRef<HTMLDivElement>(null);
     const onCompleteRef = useRef(onComplete);
     onCompleteRef.current = onComplete;
@@ -40,7 +40,8 @@ export function FlavorExplosionAnimation({ flavorName, flavorColor, onComplete }
         let canMesh: THREE.Group | null = null;
         let particles: THREE.Points | null = null;
         let initialPositions: Float32Array | null = null;
-        let explosionPaths: Float32Array | null = null;
+        let blobPositions: Float32Array | null = null;
+        let swirlEndPositions: Float32Array | null = null;
         
         const initScene = async () => {
             const tempCan = await createCanMesh(flavorName, flavorColor);
@@ -58,7 +59,8 @@ export function FlavorExplosionAnimation({ flavorName, flavorColor, onComplete }
             geometries.forEach(g => totalVertices += g.attributes.position.count);
             
             initialPositions = new Float32Array(totalVertices * 3);
-            explosionPaths = new Float32Array(totalVertices * 3);
+            blobPositions = new Float32Array(totalVertices * 3);
+            swirlEndPositions = new Float32Array(totalVertices * 3);
             const currentPositions = new Float32Array(totalVertices * 3);
 
             let offset = 0;
@@ -68,25 +70,27 @@ export function FlavorExplosionAnimation({ flavorName, flavorColor, onComplete }
             }
             currentPositions.set(initialPositions);
 
+            // Create blob positions (a sphere with some noise)
+            const blobCenter = new THREE.Vector3(0, 0, 0);
+            const blobRadius = 1.5;
+            const noiseFactor = 0.5;
             for (let i = 0; i < totalVertices; i++) {
                 const i3 = i * 3;
-                const vertex = new THREE.Vector3(initialPositions[i3], initialPositions[i3+1], initialPositions[i3+2]);
-                const explosionVec = vertex.clone().normalize().add(
-                    new THREE.Vector3(
-                        (Math.random() - 0.5),
-                        (Math.random() - 0.5),
-                        (Math.random() - 0.5)
-                    ).multiplyScalar(2)
-                ).multiplyScalar(10 + Math.random() * 5);
-
-                explosionPaths[i3] = explosionVec.x;
-                explosionPaths[i3+1] = explosionVec.y;
-                explosionPaths[i3+2] = explosionVec.z;
+                const p = new THREE.Vector3(
+                    (Math.random() - 0.5),
+                    (Math.random() - 0.5),
+                    (Math.random() - 0.5)
+                ).normalize().multiplyScalar(blobRadius + (Math.random() - 0.5) * noiseFactor);
+                
+                blobPositions[i3] = blobCenter.x + p.x;
+                blobPositions[i3+1] = blobCenter.y + p.y;
+                blobPositions[i3+2] = blobCenter.z + p.z;
             }
+
 
             const particleGeometry = new THREE.BufferGeometry();
             particleGeometry.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
-
+            
             const particleMaterial = new THREE.PointsMaterial({
                 color: new THREE.Color(flavorColor),
                 size: 0.05,
@@ -116,14 +120,14 @@ export function FlavorExplosionAnimation({ flavorName, flavorColor, onComplete }
         
         const clock = new THREE.Clock();
         let animationFrameId: number;
-        let stage = 'explode';
+        let stage = 'melt';
         let stageStartTime = 0;
 
         const animate = () => {
             animationFrameId = requestAnimationFrame(animate);
             const elapsedTime = clock.getElapsedTime();
 
-            if (!particles || !canMesh || !initialPositions || !explosionPaths) {
+            if (!particles || !canMesh || !initialPositions || !blobPositions || !swirlEndPositions) {
                 renderer.render(scene, camera);
                 return;
             }
@@ -131,20 +135,26 @@ export function FlavorExplosionAnimation({ flavorName, flavorColor, onComplete }
             if (stageStartTime === 0) stageStartTime = elapsedTime;
             const timeInStage = elapsedTime - stageStartTime;
 
-            const explosionDuration = 1.2;
+            const meltDuration = 1.2;
             const swirlDuration = 2.0;
             const reformDuration = 1.2;
 
             const currentPositions = particles.geometry.attributes.position.array as Float32Array;
             
-            if (stage === 'explode') {
-                const progress = Math.min(timeInStage / explosionDuration, 1);
-                const easedProgress = 1 - Math.pow(1 - progress, 2);
+            if (stage === 'melt') {
+                const progress = Math.min(timeInStage / meltDuration, 1);
+                const easedProgress = 1 - Math.pow(1 - progress, 3);
                 
-                for (let i = 0; i < currentPositions.length; i++) {
-                    currentPositions[i] = THREE.MathUtils.lerp(initialPositions[i], explosionPaths[i], easedProgress);
+                for (let i = 0; i < currentPositions.length / 3; i++) {
+                    const i3 = i * 3;
+                    const initialVec = new THREE.Vector3(initialPositions[i3], initialPositions[i3+1], initialPositions[i3+2]);
+                    const blobVec = new THREE.Vector3(blobPositions[i3], blobPositions[i3+1], blobPositions[i3+2]);
+                    const currentVec = initialVec.lerp(blobVec, easedProgress);
+                    currentPositions[i3] = currentVec.x;
+                    currentPositions[i3+1] = currentVec.y;
+                    currentPositions[i3+2] = currentVec.z;
                 }
-                
+
                 if (progress >= 1.0) {
                     stage = 'swirl';
                     stageStartTime = elapsedTime;
@@ -152,27 +162,40 @@ export function FlavorExplosionAnimation({ flavorName, flavorColor, onComplete }
             } else if (stage === 'swirl') {
                 const progress = Math.min(timeInStage / swirlDuration, 1);
                 
-                for (let i = 0; i < currentPositions.length / 3; i++) {
+                particles.rotation.y += 0.015;
+                particles.rotation.x += 0.01;
+
+                // Add a little extra turbulence to the swirl
+                for (let i = 0; i < totalVertices; i++) {
                     const i3 = i * 3;
-                    const angle = elapsedTime * 2;
-                    const d = 0.2 * Math.sin(progress * Math.PI);
-                    currentPositions[i3] += Math.sin(angle + initialPositions[i3+1]) * d;
-                    currentPositions[i3+1] += Math.cos(angle + initialPositions[i3+2]) * d;
-                    currentPositions[i3+2] += Math.sin(angle + initialPositions[i3]) * d;
+                    const d = 0.1 * Math.sin(progress * Math.PI);
+                    currentPositions[i3] += Math.sin(elapsedTime * 5 + blobPositions[i3+1]) * d;
+                    currentPositions[i3+1] += Math.cos(elapsedTime * 4 + blobPositions[i3+2]) * d;
+                    currentPositions[i3+2] += Math.sin(elapsedTime * 6 + blobPositions[i3]) * d;
                 }
-                particles.rotation.y += 0.01;
 
                 if (progress >= 1.0) {
                     stage = 'reform';
                     stageStartTime = elapsedTime;
-                    explosionPaths.set(currentPositions);
+                    
+                    particles.updateMatrix();
+                    const tempGeom = particles.geometry.clone();
+                    tempGeom.applyMatrix4(particles.matrix);
+                    swirlEndPositions.set(tempGeom.attributes.position.array);
+                    particles.rotation.set(0, 0, 0); 
                 }
             } else if (stage === 'reform') {
                 const progress = Math.min(timeInStage / reformDuration, 1);
                 const easedProgress = progress * progress;
 
-                for (let i = 0; i < currentPositions.length; i++) {
-                    currentPositions[i] = THREE.MathUtils.lerp(explosionPaths[i], initialPositions[i], easedProgress);
+                for (let i = 0; i < currentPositions.length / 3; i++) {
+                     const i3 = i * 3;
+                    const swirlVec = new THREE.Vector3(swirlEndPositions[i3], swirlEndPositions[i3+1], swirlEndPositions[i3+2]);
+                    const initialVec = new THREE.Vector3(initialPositions[i3], initialPositions[i3+1], initialPositions[i3+2]);
+                    const currentVec = swirlVec.lerp(initialVec, easedProgress);
+                    currentPositions[i3] = currentVec.x;
+                    currentPositions[i3+1] = currentVec.y;
+                    currentPositions[i3+2] = currentVec.z;
                 }
                 
                 (particles.material as THREE.PointsMaterial).opacity = 1.0 - easedProgress;
