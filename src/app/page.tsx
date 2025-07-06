@@ -15,13 +15,20 @@ import { FlavorScene } from '@/components/flavor-scene';
 import { flavors } from '@/lib/flavors';
 import { Header } from '@/components/header';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { PourAnimation } from '@/components/pour-animation';
 
 
 export default function Home() {
   const router = useRouter();
+  const [pouringFlavor, setPouringFlavor] = useState<{ name: string; color: string } | null>(null);
 
   const handleCanClick = (flavor: {name: string, color: string}) => {
     router.push(`/pour/${encodeURIComponent(flavor.name)}`);
+  };
+
+  const handleCarouselCanClick = (flavor: { name: string; color: string }) => {
+    setPouringFlavor(flavor);
   };
 
   return (
@@ -91,7 +98,10 @@ export default function Home() {
               {flavors.map((flavor, index) => (
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-1">
-                    <Card className="overflow-hidden rounded-lg">
+                    <Card
+                      className="overflow-hidden rounded-lg cursor-pointer transition-shadow hover:shadow-xl"
+                      onClick={() => handleCarouselCanClick(flavor)}
+                    >
                       <CardContent className="p-0">
                         <div className="relative w-full aspect-square">
                           <FlavorScene flavorName={flavor.name} flavorColor={flavor.color} />
@@ -136,6 +146,16 @@ export default function Home() {
             <p>&copy; {new Date().getFullYear()} RiskIt. All rights reserved.</p>
         </footer>
       </div>
+      {pouringFlavor && (
+        <PourAnimation
+          flavorName={pouringFlavor.name}
+          flavorColor={pouringFlavor.color}
+          onComplete={() => {
+            router.push(`/checkout?flavor=${encodeURIComponent(pouringFlavor.name)}`);
+            setPouringFlavor(null);
+          }}
+        />
+      )}
     </main>
   );
 }
