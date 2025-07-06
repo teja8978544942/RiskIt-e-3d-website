@@ -17,7 +17,7 @@ import { flavors } from '@/lib/flavors';
 import { Header } from '@/components/header';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { ZoomFocusAnimation } from '@/components/zoom-focus-animation';
+import { FlavorExplosionAnimation } from '@/components/flavor-explosion-animation';
 
 export default function Home() {
   const router = useRouter();
@@ -156,7 +156,7 @@ export default function Home() {
         </div>
       </main>
       {animatingFlavor && (
-        <ZoomFocusAnimation 
+        <FlavorExplosionAnimation 
           flavorName={animatingFlavor.name} 
           flavorColor={animatingFlavor.color} 
           onComplete={handleAnimationComplete} 

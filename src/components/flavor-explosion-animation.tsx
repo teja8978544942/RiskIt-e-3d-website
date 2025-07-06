@@ -235,6 +235,3 @@ export function FlavorExplosionAnimation({ flavorName, flavorColor, onComplete }
         </div>
     );
 }
-
-// Rename the component export to avoid breaking changes in page.tsx if it was imported as default
-export { FlavorExplosionAnimation as ZoomFocusAnimation };
