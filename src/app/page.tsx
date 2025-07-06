@@ -17,24 +17,24 @@ import { flavors } from '@/lib/flavors';
 import { Header } from '@/components/header';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { BoxAnimation } from '@/components/box-animation';
+import { FlavorExplosionAnimation } from '@/components/flavor-explosion-animation';
 
 export default function Home() {
   const router = useRouter();
-  const [animatingFlavor, setAnimatingFlavor] = useState<{name: string, color: string} | null>(null);
+  const [explodingFlavor, setExplodingFlavor] = useState<{name: string, color: string} | null>(null);
 
   const handleCanClick = (flavor: {name: string, color: string}) => {
     router.push(`/pour/${encodeURIComponent(flavor.name)}`);
   };
 
   const handleCarouselClick = (flavor: {name: string, color: string}) => {
-    setAnimatingFlavor(flavor);
+    setExplodingFlavor(flavor);
   };
 
   const handleAnimationComplete = () => {
-    if (animatingFlavor) {
-      router.push(`/checkout?flavor=${encodeURIComponent(animatingFlavor.name)}`);
-      setAnimatingFlavor(null);
+    if (explodingFlavor) {
+      router.push(`/checkout?flavor=${encodeURIComponent(explodingFlavor.name)}`);
+      setExplodingFlavor(null);
     }
   };
 
@@ -155,10 +155,10 @@ export default function Home() {
           </footer>
         </div>
       </main>
-      {animatingFlavor && (
-        <BoxAnimation 
-          flavorName={animatingFlavor.name} 
-          flavorColor={animatingFlavor.color} 
+      {explodingFlavor && (
+        <FlavorExplosionAnimation 
+          flavorName={explodingFlavor.name} 
+          flavorColor={explodingFlavor.color} 
           onComplete={handleAnimationComplete} 
         />
       )}
