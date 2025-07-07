@@ -71,7 +71,7 @@ export async function submitFeedback(
     });
 
     return {
-      message: 'Thank you for your feedback!',
+      message: 'Thank you for your afeedback!',
       type: 'success',
     };
   } catch (e) {
