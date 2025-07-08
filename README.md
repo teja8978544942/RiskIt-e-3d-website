@@ -101,11 +101,38 @@ Here is a list of the website's main functions:
 
 ---
 
+## How to Push to GitHub
+
+To get this project on your GitHub profile, follow these steps in your terminal.
+
+1.  **Create an empty repository on GitHub.** Do not add a README or any other files.
+2.  **Run the following commands one by one in your VS Code terminal:**
+
+    ```bash
+    # Initialize Git (this environment uses 'master' as the default branch)
+    git init -b master
+
+    # Add all your files for tracking
+    git add .
+
+    # Save your files in a commit
+    git commit -m "Initial commit of the RiskIt website"
+
+    # Connect your local project to your GitHub repository
+    # (Replace the URL with your own)
+    git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
+
+    # Push your code to GitHub
+    git push -u origin master
+    ```
+
+---
+
 ## How to Deploy
 
 The best way to deploy this Next.js application is with **Vercel**, the company that created Next.js.
 
-1.  Push your code to a public GitHub repository using the steps I provided earlier.
+1.  Push your code to a public GitHub repository using the steps above.
 2.  Go to [vercel.com](https://vercel.com/) and sign up with your GitHub account.
 3.  Import your GitHub repository into Vercel.
 4.  Add your `RESEND_API_KEY` and `FORM_TO_EMAIL` as Environment Variables in the Vercel project settings.
