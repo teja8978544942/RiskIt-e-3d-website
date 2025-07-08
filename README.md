@@ -125,6 +125,7 @@ To get this project on your GitHub profile, follow these steps in your terminal.
     # Push your code to GitHub
     git push -u origin master
     ```
+    **Note:** When you push for the first time, GitHub will ask for your credentials. Enter your username, and for the password, use a [Personal Access Token (PAT)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) with `repo` scopes.
 
 ---
 
