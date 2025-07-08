@@ -1,8 +1,50 @@
 # RiskIt - Premium 3D Product Website
 
+[**Live Demo**](https://your-deployment-link-here.com)
+
 ## Project Overview
 
 The "RiskIt" website is a high-end, fully-interactive digital storefront designed for a single premium product, in this case, a beverage. Its main goal is to create a memorable and engaging user experience that goes far beyond a typical e-commerce site. It uses advanced 3D graphics and fluid animations to make the product feel tangible and exciting.
+
+---
+
+## Getting Started
+
+To run this project on your local machine, follow these steps:
+
+### Prerequisites
+
+*   Node.js (v18 or later recommended)
+*   npm
+
+### Installation & Setup
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/YOUR-USERNAME/YOUR-REPOSITORY-NAME.git
+    cd YOUR-REPOSITORY-NAME
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Set up environment variables:**
+    Create a `.env` file in the root of your project and add the following, which are required for the contact forms to work:
+    ```
+    # Your Resend API key from https://resend.com
+    RESEND_API_KEY=your_key_here
+    
+    # The email address you want to receive submissions at
+    FORM_TO_EMAIL=your_email@example.com
+    ```
+
+4.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+    The website will be available at `http://localhost:9003` or the port specified in your terminal.
 
 ---
 
@@ -56,3 +98,15 @@ Here is a list of the website's main functions:
 6.  **Fully Responsive Design:**
     *   The entire website, including the complex 3D scenes, is designed to work flawlessly on all device sizes.
     *   On mobile, the navigation collapses into a sleek, slide-out menu for a clean and user-friendly experience.
+
+---
+
+## How to Deploy
+
+The best way to deploy this Next.js application is with **Vercel**, the company that created Next.js.
+
+1.  Push your code to a public GitHub repository using the steps I provided earlier.
+2.  Go to [vercel.com](https://vercel.com/) and sign up with your GitHub account.
+3.  Import your GitHub repository into Vercel.
+4.  Add your `RESEND_API_KEY` and `FORM_TO_EMAIL` as Environment Variables in the Vercel project settings.
+5.  Click **Deploy**. Vercel will automatically build and deploy your site, providing you with a live URL to add to the top of this README.
