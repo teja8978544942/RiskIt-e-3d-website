@@ -1,7 +1,0 @@
-Hello!
-
-If you can see this file in your VS Code explorer, it means the connection is working.
-
-Please let me know if you can see a file named "CAN-YOU-SEE-THIS-FILE.txt".
-
-If you can, then I can restore the rest of the project for you. If you cannot see this, then there is a problem with the editor that I cannot fix, and you may need to restart the session.
