@@ -103,9 +103,9 @@ Here is a list of the website's main functions:
 
 ## How to Push to GitHub (Step-by-Step)
 
-To get this project on your GitHub profile, follow these steps in your terminal. **Run these commands one by one.**
+If you have created a new, empty repository on GitHub, you can upload your project using these standard commands. Run them one by one in your terminal.
 
-1.  **Initialize Git:** This sets up your project to be a Git repository. This project uses `master` as the default branch name.
+1.  **Initialize Git:** This sets up your project to be a Git repository.
     ```bash
     git init -b master
     ```
@@ -124,36 +124,13 @@ To get this project on your GitHub profile, follow these steps in your terminal.
     ```bash
     git remote add origin https://github.com/teja8978544942/RiskIt-e-3d-website.git
     ```
-    *   **Note:** If you get an error that says `remote origin already exists`, it means you've tried this step before. That's okay. Just continue to the next step.
 
 5.  **Push Your Code to GitHub:** This is the final step to upload your files.
     ```bash
     git push -u origin master
     ```
-
-### **Authentication (If You Get an Error)**
-
-When you run `git push`, the terminal should ask for your username and password. **You must use a [Personal Access Token (PAT)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) as your password.**
-
-If the command fails with an `Authentication failed` error without even asking for your password, use this workaround:
-
-1.  **First, make sure your Personal Access Token is copied to your clipboard.**
-
-2.  **Next, remove the old remote URL:**
-    ```bash
-    git remote remove origin
-    ```
-
-3.  **Then, add a new one with your token embedded in it.**
-    *   **Important:** Replace `<YOUR-TOKEN-HERE>` with your actual Personal Access Token.
-    ```bash
-    git remote add origin https://teja8978544942:<YOUR-TOKEN-HERE>@github.com/teja8978544942/RiskIt-e-3d-website.git
-    ```
-
-4.  **Now, try pushing again.** This time, it should work without asking for a password.
-    ```bash
-    git push -u origin master
-    ```
+    
+    *If command-line authentication fails, you can also upload your project files manually through the GitHub website's "Add file" > "Upload files" interface.*
 
 ---
 
