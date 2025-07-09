@@ -31,17 +31,7 @@ To run this project on your local machine, follow these steps:
     npm install
     ```
 
-3.  **Set up environment variables:**
-    Create a `.env` file in the root of your project and add the following, which are required for the contact forms to work:
-    ```
-    # Your Resend API key from https://resend.com
-    RESEND_API_KEY=your_key_here
-    
-    # The email address you want to receive submissions at
-    FORM_TO_EMAIL=your_email@example.com
-    ```
-
-4.  **Run the development server:**
+3.  **Run the development server:**
     ```bash
     npm run dev
     ```
@@ -84,5 +74,5 @@ The best way to deploy this Next.js application is with **Vercel**, the company 
 1.  Push your code to a public GitHub repository using the aformentioned steps.
 2.  Go to [vercel.com](https://vercel.com/) and sign up with your GitHub account.
 3.  Import your GitHub repository into Vercel.
-4.  Add your `RESEND_API_KEY` and `FORM_TO_EMAIL` as Environment Variables in the Vercel project settings.
+4.  Vercel will detect it's a Next.js project and configure it automatically. No environment variables are needed.
 5.  Click **Deploy**. Vercel will automatically build and deploy your site, providing you with a live URL to add to the top of this README.
