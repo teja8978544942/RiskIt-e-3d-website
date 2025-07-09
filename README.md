@@ -119,8 +119,7 @@ If you have created a new, empty repository on GitHub, the most reliable way to 
 3.  **Upload Your Files and Folders:**
     You are now on the upload page. In the center of the page, there is a link that says **"choose your files"**.
     
-    *   Click on **"choose your files"**. This will open your computer's file browser.
-    *   Navigate to your project's main folder (it is named `studio`).
+    *   Click on **"choose your files"**. This will open your computer's file browser. You should already be in your project's main folder.
     *   First, select the entire **`src`** folder and click "Upload". GitHub will automatically upload all the files and folders inside it.
     *   Next, click "Upload files" again on the GitHub page.
     *   This time, select all of the following configuration files from your project's main folder. You can hold down `Ctrl` (on Windows) or `Cmd` (on Mac) to select multiple files at once:
