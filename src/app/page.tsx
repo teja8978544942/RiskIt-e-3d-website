@@ -48,6 +48,7 @@ export default function Home() {
   const router = useRouter();
   const [animatingFlavor, setAnimatingFlavor] = useState<{name: string, color: string} | null>(null);
   const [showHint, setShowHint] = useState(false);
+  const [year, setYear] = useState<number | null>(null);
 
   const { toast } = useToast();
 
@@ -63,6 +64,10 @@ export default function Home() {
     }, 3000);
 
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
   }, []);
 
   useEffect(() => {
@@ -291,7 +296,7 @@ export default function Home() {
           </section>
 
           <footer className="h-[50vh] flex items-center justify-center text-center text-foreground/60">
-            <p>&copy; {new Date().getFullYear()} RiskIt. All rights reserved.</p>
+            <p>&copy; {year} RiskIt. All rights reserved.</p>
           </footer>
         </div>
       </main>
