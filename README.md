@@ -101,33 +101,59 @@ Here is a list of the website's main functions:
 
 ---
 
-## How to Push to GitHub
+## How to Push to GitHub (Step-by-Step)
 
-To get this project on your GitHub profile, follow these steps in your terminal.
+To get this project on your GitHub profile, follow these steps in your terminal. **Run these commands one by one.**
 
-1.  **Create an empty repository on GitHub.** Do not add a README or any other files.
-2.  **Run the following commands one by one in your VS Code terminal:**
-
+1.  **Initialize Git:** This sets up your project to be a Git repository. This project uses `master` as the default branch name.
     ```bash
-    # Initialize Git (this environment uses 'master' as the default branch)
     git init -b master
+    ```
 
-    # Add all your files for tracking
+2.  **Add All Files:** This prepares all of your project files for the first save.
+    ```bash
     git add .
+    ```
 
-    # Save your files in a commit
+3.  **Save Your Files (Commit):** This creates a snapshot of your project.
+    ```bash
     git commit -m "Initial commit of the RiskIt website"
-    
-    # In case a remote was added incorrectly before, remove it
-    git remote remove origin
+    ```
 
-    # Connect your local project to your GitHub repository
+4.  **Connect to Your GitHub Repository:** This links your local project to the empty repository you created on GitHub.
+    ```bash
     git remote add origin https://github.com/teja8978544942/RiskIt-e-3d-website.git
+    ```
+    *   **Note:** If you get an error that says `remote origin already exists`, it means you've tried this step before. That's okay. Just continue to the next step.
 
-    # Push your code to GitHub
+5.  **Push Your Code to GitHub:** This is the final step to upload your files.
+    ```bash
     git push -u origin master
     ```
-    **Note:** When you push for the first time, GitHub will ask for your credentials. Enter your username, and for the password, use a [Personal Access Token (PAT)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) with `repo` scopes.
+
+### **Authentication (If You Get an Error)**
+
+When you run `git push`, the terminal should ask for your username and password. **You must use a [Personal Access Token (PAT)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) as your password.**
+
+If the command fails with an `Authentication failed` error without even asking for your password, use this workaround:
+
+1.  **First, make sure your Personal Access Token is copied to your clipboard.**
+
+2.  **Next, remove the old remote URL:**
+    ```bash
+    git remote remove origin
+    ```
+
+3.  **Then, add a new one with your token embedded in it.**
+    *   **Important:** Replace `<YOUR-TOKEN-HERE>` with your actual Personal Access Token.
+    ```bash
+    git remote add origin https://teja8978544942:<YOUR-TOKEN-HERE>@github.com/teja8978544942/RiskIt-e-3d-website.git
+    ```
+
+4.  **Now, try pushing again.** This time, it should work without asking for a password.
+    ```bash
+    git push -u origin master
+    ```
 
 ---
 
