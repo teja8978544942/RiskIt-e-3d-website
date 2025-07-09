@@ -101,36 +101,43 @@ Here is a list of the website's main functions:
 
 ---
 
-## How to Push to GitHub (Step-by-Step)
+## How to Add Your Code to GitHub
 
-If you have created a new, empty repository on GitHub, you can upload your project using these standard commands. Run them one by one in your terminal.
+If you have created a new, empty repository on GitHub, the most reliable way to upload your project is by using the GitHub website's upload feature.
 
-1.  **Initialize Git:** This sets up your project to be a Git repository.
-    ```bash
-    git init -b master
-    ```
+**Step-by-Step Guide:**
 
-2.  **Add All Files:** This prepares all of your project files for the first save.
-    ```bash
-    git add .
-    ```
+1.  **Open Your Repository:**
+    Go to your repository page on GitHub. It will look something like this:
+    `https://github.com/teja8978544942/RiskIt-e-3d-website`
 
-3.  **Save Your Files (Commit):** This creates a snapshot of your project.
-    ```bash
-    git commit -m "Initial commit of the RiskIt website"
-    ```
+2.  **Find the Upload Link:**
+    On the main page of your empty repository, find the sentence that says:
+    "Get started by creating a new file or **uploading an existing file**."
+    Click on the blue link that says **"uploading an existing file"**.
 
-4.  **Connect to Your GitHub Repository:** This links your local project to the empty repository you created on GitHub.
-    ```bash
-    git remote add origin https://github.com/teja8978544942/RiskIt-e-3d-website.git
-    ```
-
-5.  **Push Your Code to GitHub:** This is the final step to upload your files.
-    ```bash
-    git push -u origin master
-    ```
+3.  **Upload Your Files and Folders:**
+    You are now on the upload page. In the center of the page, there is a link that says **"choose your files"**.
     
-    *If command-line authentication fails, you can also upload your project files manually through the GitHub website's "Add file" > "Upload files" interface.*
+    *   Click on **"choose your files"**. This will open your computer's file browser.
+    *   Navigate to your project's main folder (it is named `studio`).
+    *   First, select the entire **`src`** folder and click "Upload". GitHub will automatically upload all the files and folders inside it.
+    *   Next, click "Upload files" again on the GitHub page.
+    *   This time, select all of the following configuration files from your project's main folder. You can hold down `Ctrl` (on Windows) or `Cmd` (on Mac) to select multiple files at once:
+        *   `package.json`
+        *   `tailwind.config.ts`
+        *   `next.config.ts`
+        *   `README.md`
+        *   `components.json`
+        *   `tsconfig.json`
+    *   Click "Open" to add them to the upload queue.
+
+4.  **Commit Your Changes:**
+    *   Once all your files and the `src` folder are listed on the page, scroll down to the bottom.
+    *   You will see a "Commit changes" box. You can type a message like `Initial project upload`.
+    *   Click the final green **"Commit changes"** button.
+
+After this, all of your project code will be in your GitHub repository, ready to be shared on your resume.
 
 ---
 
@@ -138,7 +145,7 @@ If you have created a new, empty repository on GitHub, you can upload your proje
 
 The best way to deploy this Next.js application is with **Vercel**, the company that created Next.js.
 
-1.  Push your code to a public GitHub repository using the steps above.
+1.  Push your code to a public GitHub repository using the aformentioned steps.
 2.  Go to [vercel.com](https://vercel.com/) and sign up with your GitHub account.
 3.  Import your GitHub repository into Vercel.
 4.  Add your `RESEND_API_KEY` and `FORM_TO_EMAIL` as Environment Variables in the Vercel project settings.
