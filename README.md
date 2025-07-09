@@ -102,42 +102,36 @@ Here is a list of the website's main functions:
 
 ---
 
-## How to Add Your Code to GitHub
+## How to Get Your Code onto GitHub (From a Cloud Editor)
 
-If you have created a new, empty repository on GitHub, the most reliable way to upload your project is by using the GitHub website's upload feature.
+The easiest way to upload your project is by using the GitHub website's upload feature. This is a two-part process: first, you will download the project from your cloud editor to your computer, and then you will upload it to GitHub.
 
-**Step-by-Step Guide:**
+### Part 1: Download the Project to Your Computer
 
-1.  **Open Your Repository:**
-    Go to your repository page on GitHub. It will look something like this:
-    `https://github.com/teja8978544942/RiskIt-e-3d-website`
+1.  In your cloud code editor, look for a **"File"** or **"Project"** menu at the top of the screen.
+2.  Find an option like **"Download Project"** or **"Export as Zip"** and click it.
+3.  A `.zip` file containing your entire project will be saved to your computer's "Downloads" folder.
+4.  Go to your "Downloads" folder, find the zip file, and **unzip it**. This will create a normal folder with all your project code inside.
 
-2.  **Find the Upload Link:**
-    On the main page of your empty repository, find the sentence that says:
-    "Get started by creating a new file or **uploading an existing file**."
-    Click on the blue link that says **"uploading an existing file"**.
+### Part 2: Upload the Project to GitHub
 
-3.  **Upload Your Files and Folders:**
-    You are now on the upload page. In the center of the page, there is a link that says **"choose your files"**.
-    
-    *   Click on **"choose your files"**. This will open your computer's file browser. You should already be in your project's main folder.
-    *   First, select the entire **`src`** folder and click "Upload". GitHub will automatically upload all the files and folders inside it.
-    *   Next, click "Upload files" again on the GitHub page.
-    *   This time, select all of the following configuration files from your project's main folder. You can hold down `Ctrl` (on Windows) or `Cmd` (on Mac) to select multiple files at once:
-        *   `package.json`
-        *   `tailwind.config.ts`
-        *   `next.config.ts`
-        *   `README.md`
-        *   `components.json`
-        *   `tsconfig.json`
-    *   Click "Open" to add them to the upload queue.
+Now that the project files are on your computer, you can easily upload them.
 
-4.  **Commit Your Changes:**
-    *   Once all your files and the `src` folder are listed on the page, scroll down to the bottom.
-    *   You will see a "Commit changes" box. You can type a message like `Initial project upload`.
-    *   Click the final green **"Commit changes"** button.
-
-After this, all of your project code will be in your GitHub repository, ready to be shared on your resume.
+1.  Go to your empty GitHub repository page in your browser.
+2.  Click the link that says **"uploading an existing file"**.
+3.  On the next page, click the blue link that says **"choose your files"**.
+4.  Your computer's file explorer will open. Navigate to the folder you just unzipped in **Part 1**.
+5.  First, select the **`src` folder** and click **"Upload"**.
+6.  Click **"Upload files"** again on the GitHub page.
+7.  This time, select all of the following configuration files from your project folder. You can hold down `Ctrl` (on Windows) or `Cmd` (on Mac) to select multiple files at once:
+    *   `package.json`
+    *   `tailwind.config.ts`
+    *   `next.config.ts`
+    *   `README.md`
+    *   `components.json`
+    *   `tsconfig.json`
+8.  Click **"Open"** to add them to the upload queue.
+9.  Finally, scroll to the bottom, type a commit message like `Initial project upload`, and click the green **"Commit changes"** button.
 
 ---
 
