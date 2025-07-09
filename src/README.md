@@ -45,7 +45,7 @@ To run this project on your local machine, follow these steps:
     ```bash
     npm run dev
     ```
-    The website will be available at `http://localhost:9002`.
+    The website will be available at `http://localhost:3000`.
 
 ---
 
