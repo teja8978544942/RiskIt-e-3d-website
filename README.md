@@ -44,7 +44,7 @@ To run this project on your local machine, follow these steps:
     ```bash
     npm run dev
     ```
-    The website will be available at `http://localhost:9003` or the port specified in your terminal.
+    The website will be available at `http://localhost:9002`.
 
 ---
 
@@ -117,10 +117,12 @@ To get this project on your GitHub profile, follow these steps in your terminal.
 
     # Save your files in a commit
     git commit -m "Initial commit of the RiskIt website"
+    
+    # In case a remote was added incorrectly before, remove it
+    git remote remove origin
 
     # Connect your local project to your GitHub repository
-    # (Replace the URL with your own)
-    git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
+    git remote add origin https://github.com/teja8978544942/RiskIt-e-3d-website.git
 
     # Push your code to GitHub
     git push -u origin master
