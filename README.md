@@ -49,23 +49,31 @@ To run this project on your local machine, follow these steps:
 
 ---
 
-## How to Get Your Code onto GitHub (From a Cloud Editor)
+## How to Get Your Code onto GitHub
 
-The easiest way to upload your project is by using the editor's built-in Source Control panel. This will connect directly to your GitHub account.
+This editor has a built-in feature to make this easy. Please follow these steps exactly.
 
-### **Part 1: Commit Your Files**
+### Step 1: Open the "Source Control" Panel
 
-1.  **Open the Source Control Panel:** On the far left of the editor, click the icon that looks like a branching road. This is the "Source Control" panel.
-2.  **Write a Commit Message:** At the top of the panel, you will see a text box labeled "Message". Type a short description here, like `Initial project commit`.
-3.  **Commit the Files:** Click the **Commit** button. This saves a snapshot of your project's current state.
+On the far left of your editor window, you will see a vertical bar of icons. The third icon from the top looks like a road splitting into two paths. **Click this icon.**
 
-### **Part 2: Publish to GitHub**
+This will open the **Source Control** panel.
 
-1.  **Publish the Branch:** After you commit, a new button will appear called **Publish Branch**. Click it.
-2.  **Sign in to GitHub:** A new browser tab or pop-up may appear asking you to sign in to your GitHub account and authorize the application. Follow the on-screen instructions to grant permission.
-3.  **Choose a Repository Name:** You will be prompted to choose a name for your new repository on GitHub. You can keep the suggested name or change it.
-4.  **Select Public or Private:** Choose to create a **Public** repository so that you can share it in your resume and portfolio.
-5.  **Wait for Upload:** The editor will now upload all your files to the newly created repository on GitHub. Once it's finished, you're done! Your code is now live on your GitHub profile.
+### Step 2: Write a "Commit Message"
+
+At the very top of the Source Control panel, you will see a text input box. It is right above a blue button and says "Message" inside it. **Click inside this box and type a message.**
+
+A good message is: `Initial project commit`
+
+### Step 3: "Commit" the Files
+
+After you have typed your message in the box, **click the blue "Commit" button** that is right below it. This saves a snapshot of your project.
+
+### Step 4: "Publish" to GitHub
+
+After you commit, a new button will appear called **Publish Branch**. **Click this button.**
+
+This will upload your code. You may be asked to sign in to GitHub and choose a name for your repository. Please choose to make it a **Public** repository so you can share it.
 
 ---
 
